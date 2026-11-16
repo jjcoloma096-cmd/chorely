@@ -8,7 +8,7 @@ jobs:
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: 17 }
       - uses: dtolnay/rust-toolchain@stable
-        with: { targets: aarch64-linux-android }
+        with: { targets: aarch64-linux-android, armv7-linux-androideabi }
       - run: cargo install tauri-cli --version "^2" --locked
       - name: Build APK
         run: |
@@ -16,6 +16,6 @@ jobs:
           cargo tauri icon src-tauri/app-icon.png
           cargo tauri android init
           sed -i 's|<application|<uses-permission android:name="android.permission.CAMERA" />\n<application|' src-tauri/gen/android/app/src/main/AndroidManifest.xml
-          cargo tauri android build --apk --debug --target aarch64
+          cargo tauri android build --apk --debug --target aarch64 --target armv7
       - uses: actions/upload-artifact@v4
         with: { name: chorely-apk, path: "src-tauri/gen/android/app/build/outputs/apk/**/*.apk" }
