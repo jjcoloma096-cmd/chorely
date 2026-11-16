@@ -142,7 +142,7 @@ function vSettings(){const seg=(k,o)=>`<div class=seg>${o.map(([v,l])=>`<button 
  <div class=set><h3>Auto-refresh</h3>${seg('sec',[[10,'10 sec'],[20,'20 sec'],[60,'1 min']])}</div>
  <div class=set><h3>Cloud storage</h3><small>${usage?`Photos ${Math.round(usage.files/MB)} of 1024 MB · Database ${Math.round(usage.db/MB)} of 500 MB`:'Checking…'}</small><br><button class=g onclick="cleanupView()">Free up space…</button></div>
  <div class=set><h3>Storage</h3><small>Photos are kept in memory while the app is open.</small><br><button class=g onclick="clearPh()">Clear photo cache</button></div>
- <p class=note>Chorely v4<br>Made by Jayson. LC PHILIPPINES</p>`}
+ <p class=note>Chorely v5<br>Made by Jayson. LC PHILIPPINES</p>`}
 function setCS(k,v){CS[k]=v;saveCS();if(k=='sec')start();render()}
 function clearPh(){Object.values(ph).forEach(u=>URL.revokeObjectURL(u));ph={};alert('Cache cleared')}
 async function saveName(){const n=$('#dn').value.trim();if(!n)return;try{await db(`/rest/v1/profiles?id=eq.${S.id}`,{m:'PATCH',b:{name:n}});S.name=n;save();document.activeElement.blur();alert('Name saved')}catch{alert('Could not save, try again')}load()}
@@ -236,14 +236,14 @@ async function profile(id){const w=W[id]||{credits:0,screen_seconds:0};let r=[];
  <div><b>${n(t)}</b>today</div><div><b>${n(wk)}</b>last 7 days</div><div><b>${n(mo)}</b>this month</div><div><b>${r.length}</b>all time</div></div>
  <div style="display:flex;gap:8px;margin-top:16px"><button class=g style="flex:1" onclick="closeSh()">Close</button>${id!=S.id?`<button style="flex:1" onclick="dm('${id}')">💬 Message</button>`:''}</div>`;$('#sh').classList.add('show');loadImgs()}
 function walletView(){const w=W[S.id]||{credits:0,screen_seconds:0};
- $('#shc').innerHTML=`<h2>👛 My wallet</h2><div class=set style="margin:10px 0"><h3>${w.credits} credits</h3><small>≈ ₱${(w.credits/75).toFixed(2)} (75 credits = ₱1). Your credits never reset.</small></div>
+ $('#shc').innerHTML=`<h2>👛 My wallet</h2><div class=set style="margin:10px 0"><h3>${w.credits} credits</h3><small>≈ ₱${(w.credits/15).toFixed(2)} (15 credits = ₱1). Your credits never reset.</small></div>
  <div class=set style="margin:10px 0"><h3>⏳ Screen time: <span data-cd="${S.id}">${fmtDur(leftSec(w))}</span></h3><small>${leftSec(w)?'Ends '+fmt(w.screen_until):'No active screen time'} · counts down automatically</small></div>
  <h3 style="margin-top:12px">Cash out</h3><small style="color:var(--mut)">60 credits = 1h 45m screen time · 75 credits = ₱1</small>
  <input id=ca type=number min=1 placeholder="Credits to cash out"><div class=seg><button class=g onclick="$('#ca').value=${w.credits}">All</button></div>
  <div style="display:flex;gap:8px;margin-top:12px"><button style="flex:1" onclick="cash('screen')">Screen time</button><button style="flex:1;background:var(--ok);color:#000" onclick="cash('money')">Money (₱)</button></div>
  <button class=g style="width:100%;margin-top:12px" onclick="closeSh()">Close</button>`;$('#sh').classList.add('show')}
 async function cash(k){const a=parseInt($('#ca').value),w=W[S.id]||{credits:0};if(!a||a<1)return alert('Enter an amount');if(a>w.credits)return alert('Not enough credits');
- if(!confirm(k=='money'?`Cash out ${a} credits = ₱${(a/75).toFixed(2)}?`:`Convert ${a} credits to ${fmtDur(a*105)} of screen time?`))return;
+ if(!confirm(k=='money'?`Cash out ${a} credits = ₱${(a/15).toFixed(2)}?`:`Convert ${a} credits to ${fmtDur(a*105)} of screen time?`))return;
  try{await rpc('cash_out',{kind:k,amount:a});alert(k=='screen'?'Done! Your screen time countdown started. Meriam and you were notified.':'Done! Meriam was notified.');closeSh();load()}catch(e){alert('Could not cash out: '+(e.t||''))}}
 function warn(){return pct()>=.8?`<div class=warn>⚠ Cloud storage is ${Math.round(pct()*100)}% full. Delete old data to keep Chorely working.<br><button class=g style="margin-top:8px" onclick="cleanupView()">Delete old data…</button></div>`:''}
 async function checkStorage(){try{usage=await rpc('storage_usage',{})}catch{}}
