@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Chorely</title>
+<style>
+:root{--bg:#0f1115;--card:#181b22;--tx:#eef0f4;--mut:#8a91a0;--ac:#7c5cff;--ok:#2fd08a;--wa:#f5a524;--bd:#262a33}
+body.light{--bg:#f4f5f9;--card:#fff;--tx:#14161b;--mut:#6b7280;--bd:#e2e4ec}
+*{box-sizing:border-box;margin:0;font-family:system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--tx);padding:env(safe-area-inset-top) 0 150px}
+header{padding:18px 150px 6px 16px;display:flex;justify-content:space-between;align-items:center}h1{font-size:24px}
+.row{display:flex;gap:8px;overflow-x:auto;padding:6px 16px;scrollbar-width:none}
+.mo{display:flex;align-items:center;justify-content:space-between;padding:4px 16px}.mo b{font-size:17px}.mo button{padding:6px 14px;font-size:18px}
+.day{flex:0 0 52px;text-align:center;padding:8px 0;border-radius:14px;background:var(--card);border:1px solid var(--bd);color:var(--mut);font-size:12px}
+.day b{display:block;font-size:18px;color:var(--tx)}.day.on{background:var(--ac);color:#fff;border-color:var(--ac)}.day.on b{color:#fff}
+.dot{display:block;height:6px;width:6px;border-radius:3px;margin:3px auto 0}.dot.p{background:var(--ac)}.dot.d{background:var(--ok)}.on .dot.p{background:#fff}
+.chip{flex:0 0 auto;padding:7px 14px;border-radius:20px;background:var(--card);border:1px solid var(--bd);color:var(--mut);font-size:14px}.chip.on{background:var(--tx);color:var(--bg)}
+.card{margin:10px 16px;padding:12px;background:var(--card);border:1px solid var(--bd);border-radius:18px}
+.top{display:flex;gap:12px;align-items:center}.av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-weight:700;flex:0 0 auto;color:#fff}
+.m{flex:1;min-width:0}.m small,.note,.ct{display:block;color:var(--mut);font-size:12px;margin-top:3px}.ct{margin:0 0 2px}.note{text-align:center;margin:16px}
+.pics{display:flex;gap:10px;margin-top:10px}figure{flex:1;text-align:center}figcaption{font-size:11px;color:var(--mut);margin-top:3px}
+.th{width:100%;height:110px;border-radius:12px;object-fit:cover;background:var(--bd)}
+button{border:0;border-radius:12px;padding:10px 14px;background:var(--ac);color:#fff;font-weight:600;font-size:14px}
+button.g{background:var(--bg);color:var(--mut);border:1px solid var(--bd)}button.ic{background:none;font-size:20px;padding:6px}
+.sm{margin-top:8px;font-size:12px;padding:7px 10px}
+.seg{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}.seg button{padding:6px 11px;font-size:12px;background:var(--bg);color:var(--mut);border:1px solid var(--bd)}
+.seg .on.later{background:var(--wa);color:#000}.seg .on.pending{background:var(--ac);color:#fff}.seg .on.done{background:var(--ok);color:#000}
+.tag{display:inline-block;margin-top:8px;padding:4px 10px;border-radius:10px;font-size:12px;font-weight:600;color:#fff}.tag.later{background:var(--wa);color:#000}.tag.pending{background:var(--ac)}.tag.done{background:var(--ok);color:#000}
+.act{display:flex;gap:8px;margin-top:10px}.act button{padding:7px 12px}.act .on{color:#ff5d7a;border-color:#ff5d7a}
+.cms{margin-top:10px;border-top:1px solid var(--bd);padding-top:8px}.cm{font-size:14px;margin-bottom:8px}.cm small{display:inline;color:var(--mut)}.cm a{color:#ff6b6b;margin-left:6px}
+.cin{display:flex;gap:6px}.cin input{margin-top:0}
+.prog{margin:6px 16px}.pb{height:8px;border-radius:4px;background:var(--bd);margin-top:6px;overflow:hidden}.pb i{display:block;height:100%;background:var(--ok)}
+.rk{width:36px;font-size:22px;text-align:center}.cnt{font-size:22px}
+.set{margin:10px 16px;padding:14px;background:var(--card);border:1px solid var(--bd);border-radius:18px}.set h3{font-size:15px;margin-bottom:4px}.set small{color:var(--mut)}.set button{margin-top:8px;margin-right:6px}
+.fab{position:fixed;right:18px;bottom:calc(80px + env(safe-area-inset-bottom));width:58px;height:58px;border-radius:50%;font-size:30px;box-shadow:0 8px 24px #7c5cff66;z-index:3}
+#nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--bd);padding:6px 0 calc(6px + env(safe-area-inset-bottom));z-index:4}
+#nav button{flex:1;background:none;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:2px;font-size:20px;padding:6px}#nav button span{font-size:11px}#nav button.on{color:var(--ac)}
+input{width:100%;padding:13px;border-radius:12px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font-size:16px;margin-top:10px}
+.sheet{position:fixed;inset:0;background:#000a;display:none;align-items:flex-end;z-index:5}.sheet.show{display:flex}.sheet>div{background:var(--bg);width:100%;padding:20px;border-radius:24px 24px 0 0;max-height:90vh;overflow:auto}
+.pk{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.pk button{background:var(--card);color:var(--tx);border:1px solid var(--bd);font-weight:500}.pk .on{background:var(--ac);color:#fff;border-color:var(--ac)}
+#wal{position:fixed;top:calc(10px + env(safe-area-inset-top));right:12px;z-index:6;background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:8px 12px;font-weight:700;font-size:14px}#wal:empty{display:none}
+.bub{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:8px 12px;margin:8px 0;max-width:85%}.bub.me{margin-left:auto;background:var(--ac);color:#fff}.bub small{display:block;font-size:11px;opacity:.7}.bub a{font-size:12px}
+.pp{flex:0 0 auto;text-align:center;font-size:11px;color:var(--mut)}.pp .aw{margin:0 auto 4px}.aw{position:relative;flex:0 0 auto}.pd{position:absolute;right:0;bottom:0;width:12px;height:12px;border-radius:50%;border:2px solid var(--card);background:#8a91a0}.pd.on{background:#2fd08a}
+.warn{margin:8px 16px;padding:12px;border-radius:14px;background:#e5484d22;border:1px solid #e5484d;font-size:14px}
+.st{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.st div{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px;text-align:center;font-size:12px;color:var(--mut)}.st b{display:block;font-size:20px;color:var(--tx)}
+.chk{width:30px;height:30px;border-radius:8px;border:2px solid var(--bd);background:var(--bg);color:#000;padding:0;font-size:18px;flex:0 0 auto}.chk.on{background:var(--ok);border-color:var(--ok)}
+.toast{position:fixed;top:calc(60px + env(safe-area-inset-top));left:12px;right:12px;z-index:9;background:var(--tx);color:var(--bg);padding:12px;border-radius:14px;font-size:14px}.nf{padding:10px 0;border-bottom:1px solid var(--bd);font-size:14px}.nf.un{font-weight:700}
+.login{max-width:380px;margin:10vh auto;padding:20px}.empty{text-align:center;color:var(--mut);padding:40px}#err{color:#ff6b6b;margin-top:8px;font-size:14px}#big{width:100%;border-radius:16px}
+</style></head><body>
+<div id="app"></div><div id="wal" onclick="walletView()"></div><nav id="nav"></nav><div class="sheet" id="sh"><div id="shc"></div></div>
+<input id="f" type="file" accept="image/*" capture="environment" hidden>
+<input id="fm" type="file" accept="image/*" multiple hidden>
+<script src="config.js"></script>
+<script>
+if(!window.CFG||/YOUR/.test(CFG.url)){document.body.innerHTML='<p style="padding:30px">Open app-ui/config.js and paste your Supabase URL and key, then rebuild.</p>';throw 0}
+const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let S={};try{S=JSON.parse(localStorage.getItem('chorely2')||'{}')}catch{}
+const save=()=>{try{localStorage.setItem('chorely2',JSON.stringify(S))}catch{}};
+let CS={theme:'dark',h24:false,def:'pending',sec:20};try{Object.assign(CS,JSON.parse(localStorage.getItem('chorely_set')||'{}'))}catch{}
+const saveCS=()=>{try{localStorage.setItem('chorely_set',JSON.stringify(CS))}catch{}document.body.classList.toggle('light',CS.theme=='light')};saveCS();
+let notifs=[],lastUn=null,tasks=[],pend=[],tSel=new Set(),schedOn=false,W={},convs=[],lastM={},chat=null,chatMsgs=[],alertsL=[],usage=null,tab='chores',users=[],chores=[],days={},hearts={},cms={},openC={},ph={},who='',flt='all',range='today',leaders=[],mode=null,target=null,timer,newStatus='pending',newBlob=null,refreshing=null;
+const local=()=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const add=(s,n)=>{const d=new Date(s+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)};
+let date=local();const LBL={later:'Later',pending:'Pending',done:'Done'};
+const fmt=s=>new Date(s).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit',hour12:!CS.h24});
+const slug=n=>n.trim().toLowerCase().replace(/[^a-z0-9]+/g,'');
+function setSession(j){S.access=j.access_token;S.refresh=j.refresh_token;S.exp=Date.now()+(j.expires_in-60)*1000;S.id=j.user.id;save()}
+function refresh(){if(!refreshing)refreshing=(async()=>{const r=await fetch(`${CFG.url}/auth/v1/token?grant_type=refresh_token`,{method:'POST',headers:{apikey:CFG.key,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:S.refresh})});if(!r.ok)throw 401;setSession(await r.json())})().finally(()=>refreshing=null);return refreshing}
+async function req(path,o={}){if(S.access&&Date.now()>S.exp)await refresh();
+ const go=()=>fetch(CFG.url+path,{method:o.m||'GET',headers:{apikey:CFG.key,...(S.access?{Authorization:'Bearer '+S.access}:{}),...(o.h||{})},body:o.body});
+ let r=await go();if(r.status==401&&S.refresh){await refresh();r=await go()}
+ if(!r.ok)throw {s:r.status,t:await r.text()};return r}
+async function db(path,o={}){const r=await req(path,{m:o.m,h:{'Content-Type':'application/json',Prefer:'return=minimal',...(o.h||{})},body:o.b&&JSON.stringify(o.b)});const t=await r.text();return t?JSON.parse(t):null}
+function loginView(msg=''){clearInterval(timer);clearInterval(beatT);$('#wal').innerHTML='';$('#nav').innerHTML='';$('#app').innerHTML=`<div class=login><h1>Chorely</h1><p style="color:var(--mut);margin-top:6px">Shared chores with photo proof</p>
+<input id=nm placeholder="Your name" value="${esc(S.name||'')}" autocapitalize=words><input id=pw type=password placeholder="Password (6+ characters)">
+<p id=err>${esc(msg)}</p><div style="display:flex;gap:8px;margin-top:14px"><button style="flex:1" onclick="auth('login')">Log in</button><button class=g style="flex:1" onclick="auth('register')">Create account</button></div></div>`}
+async function auth(kind){const name=$('#nm').value.trim(),pw=$('#pw').value;
+ if(!slug(name)||pw.length<6)return $('#err').textContent='Enter a name and a password of 6+ characters';
+ try{const r=await fetch(`${CFG.url}/auth/v1/${kind=='login'?'token?grant_type=password':'signup'}`,{method:'POST',headers:{apikey:CFG.key,'Content-Type':'application/json'},body:JSON.stringify({email:slug(name)+'@chorely.app',password:pw})});
+  const j=await r.json();if(!r.ok)throw {s:r.status,t:j.msg||j.error_description||j.message||''};
+  if(!j.access_token)throw {s:0,t:'confirm'};
+  setSession(j);
+  if(kind=='register'){await db('/rest/v1/profiles',{m:'POST',b:{id:S.id,name}});S.name=name}
+  else{const p=await db(`/rest/v1/profiles?select=name&id=eq.${S.id}`);S.name=(p&&p[0]&&p[0].name)||name}
+  save();start()}
+ catch(e){S.access=null;$('#err').textContent=e.t=='confirm'?'Turn off "Confirm email" in Supabase':/already|registered/i.test(e.t||'')?'That name is taken':e.s==400&&kind=='login'?'Wrong name or password':e instanceof TypeError?'Cannot reach the internet':'Problem: '+(e.t||e)}}
+function logout(){S={name:S.name};save();ph={};users=[];tab='chores';loginView()}
+function start(){checkStorage();purgeTasks();load();clearInterval(beatT);beatT=setInterval(beat,30000);beat();clearInterval(timer);timer=setInterval(()=>{if(!document.hidden)load()},CS.sec*1000)}
+async function load(){try{
+ const [u,c,d]=await Promise.all([db('/rest/v1/profiles?select=id,name,avatar_path,last_seen&order=name'),
+  db(`/rest/v1/chores?select=id,title,owner,status,created_at,done_at,before_path,photo_path,credits,profiles(name)&due_date=eq.${date}&order=created_at.desc,id.desc`),
+  db(`/rest/v1/chores?select=due_date,status&due_date=gte.${add(date,-3)}&due_date=lte.${add(date,10)}`)]);
+ const h={},m={},dy={};
+ d.forEach(x=>{const k=dy[x.due_date]||(dy[x.due_date]={total:0,done:0});k.total++;if(x.status=='done')k.done++});
+ if(c.length){const ids=c.map(x=>x.id).join(',');
+  const [hh,mm]=await Promise.all([db(`/rest/v1/hearts?select=chore_id,user_id&chore_id=in.(${ids})`),db(`/rest/v1/comments?select=id,chore_id,author,body,created_at,profiles(name)&chore_id=in.(${ids})&order=created_at`)]);
+  hh.forEach(x=>{const k=h[x.chore_id]||(h[x.chore_id]={n:0,mine:false});k.n++;if(x.user_id==S.id)k.mine=true});
+  mm.forEach(x=>(m[x.chore_id]||(m[x.chore_id]=[])).push(x))}
+ users=u;chores=c;days=dy;hearts=h;cms=m;
+ if(tab=='leaders')await loadLeaders();await loadExtra();
+ render()
+}catch(e){if(e==401||e.s==401)logout();else if(e.s)$('#app').innerHTML='<div class=empty>Problem: '+esc(e.t||e.s)+'<br><br>Did you run ALL the .sql update files in Supabase? (update4.sql is the newest)</div>';else if(!users.length)$('#app').innerHTML='<div class=empty>Cannot reach the internet. Retrying…</div>'}}
+const ld=t=>new Date(new Date(t).getTime()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
+async function loadLeaders(){const d=new Date();d.setHours(0,0,0,0);if(range=='week')d.setDate(d.getDate()-6);if(range=='month')d.setDate(1);if(range=='all')d.setTime(0);
+ const old=new Date();old.setDate(old.getDate()-60);
+ const [r,sr]=await Promise.all([db(`/rest/v1/chores?select=owner&status=eq.done&done_at=gte.${encodeURIComponent(d.toISOString())}`),db(`/rest/v1/chores?select=owner,done_at&status=eq.done&done_at=gte.${encodeURIComponent(old.toISOString())}`)]),n={},ds={};
+ r.forEach(x=>n[x.owner]=(n[x.owner]||0)+1);sr.forEach(x=>(ds[x.owner]||(ds[x.owner]=new Set())).add(ld(x.done_at)));
+ const streak=id=>{const st=ds[id];if(!st)return 0;let k=0,day=local();if(!st.has(day))day=add(day,-1);while(st.has(day)){k++;day=add(day,-1)}return k};
+ leaders=users.map(u=>({...u,n:n[u.id]||0,s:streak(u.id)})).sort((a,b)=>b.n-a.n||a.name.localeCompare(b.name))}
+function render(){
+ if($('#sh').classList.contains('show')||(document.activeElement&&document.activeElement.tagName=='INPUT'))return;
+ $('#app').innerHTML=tab=='chores'?vChores():tab=='msgs'?vMsgs():tab=='tasks'?vTasks():tab=='leaders'?vLeaders():vSettings();{const un=notifs.filter(n=>!n.read).length;$('#wal').innerHTML=`<span onclick="event.stopPropagation();bellView()">🔔${un?` <b style="color:#ff5d7a">${un}</b>`:''}</span> &nbsp; 👛 ${(W[S.id]||{credits:0}).credits}`}
+ $('#nav').innerHTML=[['chores','📋','Chores'],['msgs','💬','Messages'],['tasks','✅','Tasks'],['leaders','🏆','Leaders'],['settings','⚙️','Settings']].map(([t,i,l])=>`<button class="${tab==t?'on':''}" onclick="tab='${t}';load()">${i}<span>${l}</span></button>`).join('');
+ loadImgs()}
+function loadImgs(){document.querySelectorAll('img[data-p]').forEach(async i=>{try{i.src=await photo(i.dataset.p)}catch{}})}
+function vChores(){const t=local(),mo=new Date(date+'T12:00:00Z').toLocaleDateString([], {month:'long',year:'numeric',timeZone:'UTC'});
+ const strip=Array.from({length:14},(_,i)=>add(date,i-3)).map(d=>{const x=days[d],c=!x?'':x.done==x.total?'d':'p',w=new Date(d+'T12:00:00Z').toLocaleDateString([], {weekday:'short',timeZone:'UTC'});
+  return `<div class="day ${d==date?'on':''}" onclick="go('${d}')">${w}<b>${+d.slice(8)}</b><i class="dot ${c}"></i></div>`}).join('');
+ const chips=[{id:'',name:'Everyone'},...users].map(u=>`<div class="chip ${who==u.id?'on':''}" onclick="who='${u.id}';render()">${esc(u.id==S.id?'Me':u.name)}</div>`).join('');
+ const fl=['all','later','pending','done'].map(s=>`<div class="chip ${flt==s?'on':''}" onclick="flt='${s}';render()">${s=='all'?'All':LBL[s]}</div>`).join('');
+ const tot=chores.length,dn=chores.filter(c=>c.status=='done').length;
+ const prog=tot?`<div class=prog><div class=pb><i style="width:${dn/tot*100}%"></i></div><small style="color:var(--mut)">${dn} of ${tot} done</small></div>`:'';
+ const cards=chores.filter(c=>(!who||c.owner==who)&&(flt=='all'||c.status==flt)).map(card).join('')||'<div class=empty>No chores here</div>';
+ return `<header><h1>Chorely</h1>${date!=t?`<button class=g onclick="go('${t}')">Today</button>`:''}</header>
+ <div class=mo><button class=g onclick="shiftMonth(-1)">‹</button><b>${mo}</b><button class=g onclick="shiftMonth(1)">›</button></div>
+ <div class=row>${strip}</div><div class=row>${chips}</div><div class=row>${fl}</div>${warn()}${prog}${cards}<button class=fab onclick="addView()">+</button>`}
+function card(c){const mine=c.owner==S.id,nm=(c.profiles&&c.profiles.name)||'?',hue=parseInt(c.owner.slice(0,6),16)%360,h=hearts[c.id]||{n:0,mine:false},cl=cms[c.id]||[];
+ const ctl=mine?`<div class=seg>${['later','pending','done'].map(s=>`<button class="${c.status==s?'on '+s:''}" onclick="setS(${c.id},'${s}')">${LBL[s]}</button>`).join('')}</div>${!c.before_path?`<button class="g sm" onclick="pickPhoto('before',${c.id})">📷 Add before photo</button>`:''}`:`<span class="tag ${c.status}">${LBL[c.status]}</span>`;
+ const pics=(c.before_path||c.photo_path)?`<div class=pics>${[['Before',c.before_path],['After',c.photo_path]].filter(x=>x[1]).map(([l,p])=>`<figure><img class=th data-p="${esc(p)}" onclick="show(this.dataset.p)"><figcaption>${l}</figcaption></figure>`).join('')}</div>`:'';
+ const cmHtml=openC[c.id]?`<div class=cms>${cl.map(m=>`<div class=cm><b>${esc((m.profiles&&m.profiles.name)||'?')}</b> <small>${fmt(m.created_at)}</small>${m.author==S.id?`<a onclick="delC(${m.id})">✕</a>`:''}<div>${esc(m.body)}</div></div>`).join('')||'<small style="color:var(--mut)">No comments yet</small>'}<div class=cin style="margin-top:8px"><input id="c${c.id}" placeholder="Write a comment…" maxlength=500><button onclick="send(${c.id})">Send</button></div></div>`:'';
+ return `<div class=card><div class=top>${av(c.owner)}<div class=m><span class=ct>Created ${fmt(c.created_at)}${c.status!='done'&&date<local()?' · ⚠ Overdue':''}</span><b>${esc(c.title)}</b><small>${esc(nm)}${c.done_at?' · ✓ done '+fmt(c.done_at)+(c.credits?' · +'+c.credits+' 👛':''):''}</small></div>${mine?`<button class=ic onclick="editView(${c.id})">✏️</button><button class=ic onclick="del(${c.id})">🗑️</button>`:''}</div>${ctl}${pics}
+ <div class=act><button class="g ${h.mine?'on':''}" onclick="heart(${c.id})">${h.mine?'❤️':'🤍'} ${h.n}</button><button class=g onclick="openC[${c.id}]=!openC[${c.id}];render()">💬 ${cl.length}</button></div>${cmHtml}</div>`}
+function vLeaders(){const max=Math.max(1,...leaders.map(x=>x.n)),med=['🥇','🥈','🥉'];
+ return `<header><h1>Leaderboard</h1></header><div class=row>${[['today','Today'],['week','Last 7 days'],['month','This month'],['all','All time']].map(([r,l])=>`<div class="chip ${range==r?'on':''}" onclick="range='${r}';load()">${l}</div>`).join('')}</div>
+ ${leaders.map((u,i)=>`<div class="card top"><div class=rk>${(u.n&&med[i])||i+1}</div><div class=m><b>${esc(u.name)}${u.id==S.id?' (you)':''}${u.s?` 🔥${u.s}`:''}</b><div class=pb><i style="width:${u.n/max*100}%"></i></div></div><b class=cnt>${u.n}</b></div>`).join('')||'<div class=empty>No data yet</div>'}
+ <p class=note>Counts chores marked Done in this period. 🔥 = days in a row with at least one chore done.</p>`}
+function vSettings(){const seg=(k,o)=>`<div class=seg>${o.map(([v,l])=>`<button class="${CS[k]===v?'on pending':''}" onclick='setCS("${k}",${JSON.stringify(v)})'>${l}</button>`).join('')}</div>`;
+ return `<header><h1>Settings</h1></header>
+ <div class=set><h3>Account</h3><small>Signed in as ${esc(S.name||'')}</small><input id=dn value="${esc(S.name||'')}" maxlength=30><button onclick="saveName()">Save name</button><button class=g onclick="pickPhoto('avatar')">🖼 Change picture</button><button class=g onclick="logout()">Log out</button></div>
+ <div class=set><h3>Appearance</h3>${seg('theme',[['dark','Dark'],['light','Light']])}</div>
+ <div class=set><h3>Time format</h3>${seg('h24',[[false,'12-hour'],[true,'24-hour']])}</div>
+ <div class=set><h3>New chores start as</h3>${seg('def',[['later','Later'],['pending','Pending']])}</div>
+ <div class=set><h3>Auto-refresh</h3>${seg('sec',[[10,'10 sec'],[20,'20 sec'],[60,'1 min']])}</div>
+ <div class=set><h3>Cloud storage</h3><small>${usage?`Photos ${Math.round(usage.files/MB)} of 1024 MB · Database ${Math.round(usage.db/MB)} of 500 MB`:'Checking…'}</small><br><button class=g onclick="cleanupView()">Free up space…</button></div>
+ <div class=set><h3>Storage</h3><small>Photos are kept in memory while the app is open.</small><br><button class=g onclick="clearPh()">Clear photo cache</button></div>
+ <p class=note>Chorely v4<br>Made by Jayson. LC PHILIPPINES</p>`}
+function setCS(k,v){CS[k]=v;saveCS();if(k=='sec')start();render()}
+function clearPh(){Object.values(ph).forEach(u=>URL.revokeObjectURL(u));ph={};alert('Cache cleared')}
+async function saveName(){const n=$('#dn').value.trim();if(!n)return;try{await db(`/rest/v1/profiles?id=eq.${S.id}`,{m:'PATCH',b:{name:n}});S.name=n;save();document.activeElement.blur();alert('Name saved')}catch{alert('Could not save, try again')}load()}
+async function photo(p){if(!ph[p])ph[p]=URL.createObjectURL(await(await req('/storage/v1/object/authenticated/proof/'+p)).blob());return ph[p]}
+function go(d){date=d;load()}
+function shiftMonth(n){const d=new Date(date+'T12:00:00Z');d.setUTCDate(1);d.setUTCMonth(d.getUTCMonth()+n);const k=d.toISOString().slice(0,10),t=local();date=k.slice(0,7)==t.slice(0,7)?t:k;load()}
+async function show(p){$('#shc').innerHTML=`<img id=big src="${await photo(p)}"><button class=g style="width:100%;margin-top:12px" onclick="closeSh()">Close</button>`;$('#sh').classList.add('show')}
+function closeSh(){$('#sh').classList.remove('show');render()}
+function pickPhoto(m,id){mode=m;target=id;$('#f').click()}
+async function setS(id,s){const c=chores.find(x=>x.id==id);if(c.status==s)return;
+ if(s=='done'){if(!c.before_path)return alert('Add a BEFORE photo first (tap "Add before photo"), then mark it Done with an AFTER photo.');pickPhoto('after',id);return}
+ try{await db(`/rest/v1/chores?id=eq.${id}`,{m:'PATCH',b:{status:s}})}catch{alert('Could not save, try again')}load()}
+async function shrink(f,mx=1024){const b=await createImageBitmap(f),k=Math.min(1,mx/Math.max(b.width,b.height)),c=document.createElement('canvas');c.width=b.width*k;c.height=b.height*k;c.getContext('2d').drawImage(b,0,0,c.width,c.height);return new Promise(r=>c.toBlob(r,'image/jpeg',.7))}
+async function upload(blob){const p=`${S.id}/${Date.now()}${Math.random().toString(36).slice(2,6)}.jpg`;await req('/storage/v1/object/proof/'+p,{m:'POST',h:{'Content-Type':'image/jpeg'},body:blob});return p}
+$('#f').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+ try{const blob=await shrink(f,mode=='avatar'?256:1024);if(mode=='new'){newBlob=blob;$('#np').textContent='✓ photo added';return}
+  const p=await upload(blob);await(mode=='avatar'?db(`/rest/v1/profiles?id=eq.${S.id}`,{m:'PATCH',b:{avatar_path:p}}):db(`/rest/v1/chores?id=eq.${target}`,{m:'PATCH',b:mode=='before'?{before_path:p}:{status:'done',photo_path:p}}))}
+ catch(x){alert('Could not save: '+(x.t||x.message||'try again'))}load()};
+async function del(id){if(!confirm('Delete this chore, its photos and comments?'))return;const c=chores.find(x=>x.id==id);
+ try{await db(`/rest/v1/chores?id=eq.${id}`,{m:'DELETE'});[c.before_path,c.photo_path].filter(Boolean).forEach(p=>req('/storage/v1/object/proof/'+p,{m:'DELETE'}).catch(()=>{}))}catch{alert('Could not delete, try again')}load()}
+async function heart(id){const h=hearts[id]||{n:0,mine:false};hearts[id]={n:h.n+(h.mine?-1:1),mine:!h.mine};render();
+ try{h.mine?await db(`/rest/v1/hearts?chore_id=eq.${id}&user_id=eq.${S.id}`,{m:'DELETE'}):await db('/rest/v1/hearts',{m:'POST',b:{chore_id:id}})}catch{}load()}
+async function send(id){const el=$('#c'+id),b=el.value.trim();if(!b)return;el.value='';el.blur();try{await db('/rest/v1/comments',{m:'POST',b:{chore_id:id,body:b}})}catch{alert('Could not send, try again')}load()}
+async function delC(id){try{await db(`/rest/v1/comments?id=eq.${id}`,{m:'DELETE'})}catch{}load()}
+const PICKS=[['🍽️','Dishes'],['🧹','Sweeping'],['🧺','Washing Clothes'],['👔','Hanging Clothes'],['🧦','Folding Clothes'],['✏️','Others']];
+let pickIdx=-1,rep='once';
+function addView(){newBlob=null;newStatus=CS.def;pickIdx=-1;rep='once';const t=local();
+ $('#shc').innerHTML=`<h2>New chore</h2><div class=pk id=pk></div><input id=t placeholder="Type the chore…" maxlength=100 style="display:none">
+ <input id=d type=date min="${t}" value="${date<t?t:date}"><div class=seg id=ns style="margin-top:14px"></div><small style="color:var(--mut)">Repeat</small><div class=seg id=rp style="margin-top:4px"></div>
+ <button class=g style="margin-top:12px" onclick="pickPhoto('new')">📷 Add before photo (optional)</button> <small id=np style="color:var(--ok)"></small>
+ <div style="display:flex;gap:8px;margin-top:16px"><button class=g style="flex:1" onclick="closeSh()">Cancel</button><button style="flex:1" onclick="saveChore()">Add</button></div>`;
+ pickC(-1);pickS(newStatus);pickR('once');$('#sh').classList.add('show')}
+function pickC(i){pickIdx=i;$('#pk').innerHTML=PICKS.map(([e,n],j)=>`<button class="${j==i?'on':''}" onclick="pickC(${j})">${e} ${n}</button>`).join('');const o=i==PICKS.length-1;$('#t').style.display=o?'block':'none';if(o)$('#t').focus()}
+function pickS(s){newStatus=s;$('#ns').innerHTML=['later','pending'].map(x=>`<button class="${x==s?'on '+x:''}" onclick="pickS('${x}')">${LBL[x]}</button>`).join('')}
+function pickR(r){rep=r;$('#rp').innerHTML=[['once','Once'],['daily','Daily × 7'],['weekly','Weekly × 4']].map(([v,l])=>`<button class="${v==r?'on pending':''}" onclick="pickR('${v}')">${l}</button>`).join('')}
+async function saveChore(){const o=pickIdx==PICKS.length-1,title=pickIdx<0?'':o?$('#t').value.trim():PICKS[pickIdx][1],d=$('#d').value;
+ if(!title)return alert(pickIdx<0?'Pick a chore first':'Type the chore name');
+ if(!d||d<local())return alert("You can't add chores in the past. Pick today or a future date.");
+ const n=rep=='daily'?7:rep=='weekly'?4:1,step=rep=='weekly'?7:1;
+ try{const bp=newBlob?await upload(newBlob):null;await db('/rest/v1/chores',{m:'POST',b:Array.from({length:n},(_,i)=>({title,due_date:add(d,i*step),status:newStatus,before_path:i?null:bp}))});date=d}catch(e){return alert('Could not save: '+(e.t||'try again'))}closeSh();load()}
+function editView(id){const c=chores.find(x=>x.id==id);$('#shc').innerHTML=`<h2>Edit chore</h2><input id=et value="${esc(c.title)}" maxlength=100><input id=ed type=date min="${local()}" value="${date}"><small style="color:var(--mut)">Change the date to move it to another day</small>
+ <div style="display:flex;gap:8px;margin-top:16px"><button class=g style="flex:1" onclick="closeSh()">Cancel</button><button style="flex:1" onclick="saveEdit(${id})">Save</button></div>`;$('#sh').classList.add('show')}
+async function saveEdit(id){const t=$('#et').value.trim(),d=$('#ed').value;if(!t||!d)return;if(d!=date&&d<local())return alert("You can't move a chore to the past.");
+ try{await db(`/rest/v1/chores?id=eq.${id}`,{m:'PATCH',b:{title:t,due_date:d}});date=d}catch{return alert('Could not save, try again')}closeSh();load()}
+const MB=1048576,rpc=(f,b)=>db('/rest/v1/rpc/'+f,{m:'POST',b,h:{Prefer:'return=representation'}});
+const fmtDur=s=>`${Math.floor(s/3600)}h ${Math.floor(s%3600/60)}m ${Math.floor(s%60)}s`;
+const leftSec=w=>w.screen_until?Math.max(0,Math.floor((new Date(w.screen_until)-Date.now())/1000)):0;
+const nmOf=id=>(users.find(u=>u.id==id)||{}).name||'?';
+const pct=()=>usage?Math.max(usage.files/(1024*MB),usage.db/(500*MB)):0;
+const online=id=>{if(id==S.id)return true;const u=users.find(x=>x.id==id);return !!(u&&u.last_seen&&Date.now()-new Date(u.last_seen)<75000)};
+function av(id,z=42){const u=users.find(x=>x.id==id)||{name:'?'},hue=parseInt(String(id).slice(0,6),16)%360;
+ return `<div class=aw onclick="event.stopPropagation();profile('${id}')" style="width:${z}px;height:${z}px"><div class=av style="width:100%;height:100%;background:hsl(${hue} 60% 45%);overflow:hidden">${u.avatar_path?`<img data-p="${esc(u.avatar_path)}" style="width:100%;height:100%;object-fit:cover">`:esc((u.name||'?')[0].toUpperCase())}</div><i class="pd ${online(id)?'on':''}"></i></div>`}
+async function loadExtra(){const w=await db('/rest/v1/wallets?select=*');W={};w.forEach(x=>W[x.user_id]=x);
+ notifs=await db('/rest/v1/notifs?select=id,body,read,created_at&order=created_at.desc&limit=40');const un=notifs.filter(n=>!n.read).length;if(lastUn!==null&&un>lastUn){navigator.vibrate&&navigator.vibrate(200);toast(notifs.find(n=>!n.read).body)}lastUn=un;
+ if(tab=='tasks')tasks=await db(`/rest/v1/tasks?select=*&or=(scheduled.eq.true,created_day.eq.${local()})&order=created_at.desc`);
+ if(tab=='msgs'){convs=await db('/rest/v1/convs?select=id,title,is_group,members(user_id)&order=id.desc');
+  const m=await db('/rest/v1/msgs?select=conv_id,sender,body,created_at&order=created_at.desc&limit=300');lastM={};m.forEach(x=>{if(!lastM[x.conv_id])lastM[x.conv_id]=x});
+  alertsL=await db('/rest/v1/alerts?select=id,body,ends_at,created_at&order=created_at.desc&limit=50');
+  if(chat)chatMsgs=await db(`/rest/v1/msgs?select=id,sender,body,images,created_at&conv_id=eq.${chat}&order=created_at&limit=300`)}}
+function vMsgs(){if(chat)return vChat();
+ const ppl=users.filter(u=>u.id!=S.id).map(u=>`<div class=pp onclick="profile('${u.id}')">${av(u.id,48)}${esc(u.name)}</div>`).join('');
+ const list=convs.map(c=>{const o=c.members.map(m=>m.user_id).filter(i=>i!=S.id),l=lastM[c.id];
+  return `<div class="card top" onclick="chat=${c.id};load()">${c.is_group?'<div class=av style="background:var(--ac)">👥</div>':av(o[0])}<div class=m><b>${esc(c.is_group?(c.title||'Group'):nmOf(o[0]))}</b><small>${l?esc((l.sender==S.id?'You: ':'')+(l.body.slice(0,50)||'📷 Photo')):'No messages yet'}</small></div>${l?`<small>${fmt(l.created_at)}</small>`:''}</div>`}).join('');
+ return `<header><h1>Messages</h1><button class=g onclick="groupView()">＋ Group</button></header><div class=row>${ppl}</div>
+ ${alertsL.length?`<div class="card top" onclick="alertsView()"><div class=av style="background:#e5484d">🔔</div><div class=m><b>System Alerts</b><small>${esc(alertsL[0].body+(alertsL[0].ends_at?' · ends '+fmt(alertsL[0].ends_at):''))}</small></div></div>`:''}${list||'<div class=empty>Tap a person above to chat, or make a group</div>'}`}
+function vChat(){const c=convs.find(x=>x.id==chat);if(!c){chat=null;return vMsgs()}
+ const o=c.members.map(m=>m.user_id).filter(i=>i!=S.id);
+ return `<header><button class=g onclick="chat=null;render()">‹ Back</button><b>${esc(c.is_group?(c.title||'Group'):nmOf(o[0]))}</b>${c.is_group?'<button class=g onclick="grpMenu()">⋯</button>':'<span></span>'}</header>
+ <div style="padding:0 16px">${chatMsgs.map(m=>`<div class="bub ${m.sender==S.id?'me':''}"><small>${esc(nmOf(m.sender))} · ${fmt(m.created_at)}</small><div>${esc(m.body)}</div>${imgs(m.images,m.sender==S.id,'m',m.id)}${m.sender==S.id?`<a onclick="delM(${m.id})">🗑 Delete</a>`:''}</div>`).join('')||'<div class=empty>Say hi 👋</div>'}</div>
+ <div class=cin style="position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom));padding:8px 16px;background:var(--bg);z-index:3"><button class=g onclick="attach()">📎<span id=pc>${pend.length||''}</span></button><input id=mi placeholder="Message…" maxlength=1000><button onclick="sendM()">Send</button></div>`}
+async function sendM(){const el=$('#mi'),b=el.value.trim();if(!b&&!pend.length)return;el.value='';el.blur();
+ try{const im=[];for(const x of pend)im.push(await upload(x));pend=[];await db('/rest/v1/msgs',{m:'POST',b:{conv_id:chat,body:b,images:im}})}catch{alert('Could not send')}load()}
+async function delM(id){const m=chatMsgs.find(x=>x.id==id);try{await db(`/rest/v1/msgs?id=eq.${id}`,{m:'DELETE'});if(m&&m.images&&m.images.length)rmFiles(m.images)}catch{}load()}
+function alertsView(){$('#shc').innerHTML=`<h2>🔔 System Alerts</h2>${alertsL.map(a=>`<div class=cm style="margin-top:12px"><b>${esc(a.body)}</b>${a.ends_at?`<br>⏳ Screen time ends <b>${fmt(a.ends_at)}</b>`:''}<br><small>${fmt(a.created_at)}</small></div>`).join('')}<button class=g style="width:100%;margin-top:14px" onclick="closeSh()">Close</button>`;$('#sh').classList.add('show')}
+let gSel=new Set();
+function groupView(){gSel=new Set();$('#shc').innerHTML=`<h2>New group</h2><input id=gn placeholder="Group name" maxlength=40><small style="color:var(--mut)">Add members</small><div class=pk id=gp></div><div style="display:flex;gap:8px;margin-top:16px"><button class=g style="flex:1" onclick="closeSh()">Cancel</button><button style="flex:1" onclick="mkGroup()">Create</button></div>`;gRender();$('#sh').classList.add('show')}
+function gRender(){$('#gp').innerHTML=users.filter(u=>u.id!=S.id).map(u=>`<button class="${gSel.has(u.id)?'on':''}" onclick="gSel.has('${u.id}')?gSel.delete('${u.id}'):gSel.add('${u.id}');gRender()">${esc(u.name)}</button>`).join('')}
+async function mkGroup(){const t=$('#gn').value.trim();if(!t||!gSel.size)return alert('Name the group and add at least one member');try{chat=await rpc('start_chat',{title:t,uids:[...gSel],grp:true});closeSh();load()}catch{alert('Could not create group')}}
+async function dm(id){try{chat=await rpc('start_chat',{title:null,uids:[id],grp:false});tab='msgs';closeSh();load()}catch{alert('Could not open chat')}}
+function grpMenu(){const c=convs.find(x=>x.id==chat),ids=c.members.map(m=>m.user_id),rest=users.filter(u=>!ids.includes(u.id));
+ $('#shc').innerHTML=`<h2>${esc(c.title||'Group')}</h2><small style="color:var(--mut)">Members</small><div class=row style="padding:8px 0">${ids.map(i=>`<div class=pp>${av(i,44)}${esc(nmOf(i))}</div>`).join('')}</div>
+ ${rest.length?`<small style="color:var(--mut)">Add a member</small><div class=pk>${rest.map(u=>`<button onclick="addMem('${u.id}')">${esc(u.name)}</button>`).join('')}</div>`:''}
+ <div style="display:flex;gap:8px;margin-top:16px"><button class=g style="flex:1" onclick="closeSh()">Close</button><button style="flex:1;background:#e5484d" onclick="leave()">Leave group</button></div>`;$('#sh').classList.add('show');loadImgs()}
+async function addMem(u){try{await rpc('add_member',{cid:chat,uid:u});closeSh();load()}catch{alert('Could not add')}}
+async function leave(){if(!confirm('Leave this group?'))return;try{await db(`/rest/v1/members?conv_id=eq.${chat}&user_id=eq.${S.id}`,{m:'DELETE'})}catch{}chat=null;closeSh();load()}
+async function profile(id){const w=W[id]||{credits:0,screen_seconds:0};let r=[];try{r=await db(`/rest/v1/chores?select=done_at&owner=eq.${id}&status=eq.done`)}catch{}
+ const t=new Date();t.setHours(0,0,0,0);const wk=new Date(t);wk.setDate(wk.getDate()-6);const mo=new Date(t);mo.setDate(1);
+ const n=d=>r.filter(x=>new Date(x.done_at)>=d).length;
+ $('#shc').innerHTML=`<div style="text-align:center"><div style="display:flex;justify-content:center">${av(id,84)}</div><h2 style="margin-top:8px">${esc(nmOf(id))}</h2><small style="color:var(--mut)">${online(id)?'🟢 Online':'⚪ Offline'}</small></div>
+ <div class=st><div><b>👛 ${w.credits}</b>credits</div><div><b>₱${(w.credits/75).toFixed(2)}</b>money value</div><div style="grid-column:span 2"><b data-cd="${id}">${fmtDur(leftSec(w))}</b>screen time left${leftSec(w)?' · ends '+fmt(w.screen_until):''}</div>
+ <div><b>${n(t)}</b>today</div><div><b>${n(wk)}</b>last 7 days</div><div><b>${n(mo)}</b>this month</div><div><b>${r.length}</b>all time</div></div>
+ <div style="display:flex;gap:8px;margin-top:16px"><button class=g style="flex:1" onclick="closeSh()">Close</button>${id!=S.id?`<button style="flex:1" onclick="dm('${id}')">💬 Message</button>`:''}</div>`;$('#sh').classList.add('show');loadImgs()}
+function walletView(){const w=W[S.id]||{credits:0,screen_seconds:0};
+ $('#shc').innerHTML=`<h2>👛 My wallet</h2><div class=set style="margin:10px 0"><h3>${w.credits} credits</h3><small>≈ ₱${(w.credits/75).toFixed(2)} (75 credits = ₱1). Your credits never reset.</small></div>
+ <div class=set style="margin:10px 0"><h3>⏳ Screen time: <span data-cd="${S.id}">${fmtDur(leftSec(w))}</span></h3><small>${leftSec(w)?'Ends '+fmt(w.screen_until):'No active screen time'} · counts down automatically</small></div>
+ <h3 style="margin-top:12px">Cash out</h3><small style="color:var(--mut)">60 credits = 1h 45m screen time · 75 credits = ₱1</small>
+ <input id=ca type=number min=1 placeholder="Credits to cash out"><div class=seg><button class=g onclick="$('#ca').value=${w.credits}">All</button></div>
+ <div style="display:flex;gap:8px;margin-top:12px"><button style="flex:1" onclick="cash('screen')">Screen time</button><button style="flex:1;background:var(--ok);color:#000" onclick="cash('money')">Money (₱)</button></div>
+ <button class=g style="width:100%;margin-top:12px" onclick="closeSh()">Close</button>`;$('#sh').classList.add('show')}
+async function cash(k){const a=parseInt($('#ca').value),w=W[S.id]||{credits:0};if(!a||a<1)return alert('Enter an amount');if(a>w.credits)return alert('Not enough credits');
+ if(!confirm(k=='money'?`Cash out ${a} credits = ₱${(a/75).toFixed(2)}?`:`Convert ${a} credits to ${fmtDur(a*105)} of screen time?`))return;
+ try{await rpc('cash_out',{kind:k,amount:a});alert(k=='screen'?'Done! Your screen time countdown started. Meriam and you were notified.':'Done! Meriam was notified.');closeSh();load()}catch(e){alert('Could not cash out: '+(e.t||''))}}
+function warn(){return pct()>=.8?`<div class=warn>⚠ Cloud storage is ${Math.round(pct()*100)}% full. Delete old data to keep Chorely working.<br><button class=g style="margin-top:8px" onclick="cleanupView()">Delete old data…</button></div>`:''}
+async function checkStorage(){try{usage=await rpc('storage_usage',{})}catch{}}
+function cleanupView(){$('#shc').innerHTML=`<h2>Free up space</h2><small style="color:var(--mut)">Deletes YOUR old chores, photos and messages. Other people's data is not touched.</small><div class=pk>${[30,60,90].map(d=>`<button onclick="cleanup(${d})">Older than ${d} days</button>`).join('')}</div><button class=g style="width:100%;margin-top:14px" onclick="closeSh()">Cancel</button>`;$('#sh').classList.add('show')}
+async function cleanup(days){if(!confirm(`Delete YOUR chores, photos and messages older than ${days} days? This cannot be undone.`))return;const cut=add(local(),-days);
+ try{const old=await db(`/rest/v1/chores?select=before_path,photo_path&owner=eq.${S.id}&due_date=lt.${cut}`),paths=old.flatMap(c=>[c.before_path,c.photo_path]).filter(Boolean);
+  if(paths.length)await req('/storage/v1/object/proof',{m:'DELETE',h:{'Content-Type':'application/json'},body:JSON.stringify({prefixes:paths})});
+  await db(`/rest/v1/chores?owner=eq.${S.id}&due_date=lt.${cut}`,{m:'DELETE'});await db(`/rest/v1/msgs?sender=eq.${S.id}&created_at=lt.${cut}`,{m:'DELETE'});
+  alert('Old data deleted');closeSh();checkStorage();load()}catch{alert('Could not clean up, try again')}}
+setInterval(()=>document.querySelectorAll('[data-cd]').forEach(e=>{const w=W[e.dataset.cd];if(w)e.textContent=fmtDur(leftSec(w))}),1000);
+const rmFiles=p=>req('/storage/v1/object/proof',{m:'DELETE',h:{'Content-Type':'application/json'},body:JSON.stringify({prefixes:p})}).catch(()=>{});
+const attach=()=>$('#fm').click();
+$('#fm').onchange=async e=>{const fs=[...e.target.files];e.target.value='';for(const f of fs)try{pend.push(await shrink(f))}catch{}const c=$('#pc');if(c)c.textContent=pend.length||''};
+function imgs(list,canDel,kind,id){return list&&list.length?`<div class=pics style="flex-wrap:wrap">${list.map((p,i)=>`<figure style="flex:0 0 31%"><img class=th data-p="${esc(p)}" onclick="show(this.dataset.p)">${canDel?`<figcaption onclick="rmImg('${kind}',${id},${i})" style="color:#ff6b6b">✕ remove</figcaption>`:''}</figure>`).join('')}</div>`:''}
+async function rmImg(kind,id,i){if(!confirm('Remove this photo?'))return;const o=kind=='t'?tasks.find(x=>x.id==id):chatMsgs.find(x=>x.id==id),p=o.images[i];
+ try{await db(`/rest/v1/${kind=='t'?'tasks':'msgs'}?id=eq.${id}`,{m:'PATCH',b:{images:o.images.filter((_,j)=>j!=i)}});rmFiles([p])}catch{alert('Could not remove. To remove the last photo of a photo-only message, delete the message.')}load()}
+function toast(t){const d=document.createElement('div');d.className='toast';d.textContent='🔔 '+t;document.body.appendChild(d);setTimeout(()=>d.remove(),4000)}
+function bellView(){$('#shc').innerHTML=`<h2>🔔 Notifications</h2>${notifs.map(n=>`<div class="nf ${n.read?'':'un'}">${esc(n.body)}<br><small style="color:var(--mut);font-weight:400">${fmt(n.created_at)}</small></div>`).join('')||'<div class=empty>Nothing yet</div>'}
+ <div style="display:flex;gap:8px;margin-top:14px"><button class=g style="flex:1" onclick="clearN()">Clear all</button><button style="flex:1" onclick="closeSh()">Close</button></div>`;$('#sh').classList.add('show');
+ if(notifs.some(n=>!n.read))db('/rest/v1/notifs?read=eq.false',{m:'PATCH',b:{read:true}}).then(load).catch(()=>{})}
+async function clearN(){try{await db(`/rest/v1/notifs?user_id=eq.${S.id}`,{m:'DELETE'})}catch{}closeSh();load()}
+function vTasks(){const cards=tasks.map(t=>{const mine=t.created_by==S.id,as=t.assignees.length?t.assignees.map(i=>'@'+nmOf(i)).join(', '):'@everyone';
+ return `<div class=card><div class=top><button class="chk ${t.done?'on':''}" onclick="chkT(${t.id},${!t.done})">${t.done?'✓':''}</button><div class=m><b style="${t.done?'text-decoration:line-through;opacity:.6':''}">${esc(t.title)}</b>${t.scheduled?`<span class="tag later" style="margin-left:6px">📅 Scheduled${t.sched_date?' · '+t.sched_date:''}</span>`:''}</div>${mine?`<button class=ic onclick="delT(${t.id})">🗑️</button>`:''}</div>
+ ${imgs(t.images,mine,'t',t.id)}<small class=ct style="margin-top:8px">by ${esc(nmOf(t.created_by))}</small><small class=ct>to ${esc(as)}</small>${t.done?`<small class=ct style="color:var(--ok)">✓ done by ${esc(nmOf(t.done_by))}</small>`:''}</div>`}).join('')||'<div class=empty>No tasks yet. Tap + to add one</div>';
+ return `<header><h1>Tasks</h1></header>${cards}<p class=note>Daily tasks disappear at 12 AM. 📅 Scheduled tasks stay until deleted.</p><button class=fab onclick="taskView()">+</button>`}
+function taskView(){tSel=new Set();pend=[];schedOn=false;$('#shc').innerHTML=`<h2>New task</h2><input id=tt placeholder="Task title" maxlength=120><small style="color:var(--mut)">Assign to (none selected = everyone)</small><div class=pk id=tp></div>
+ <div class=seg><button id=sc class=g onclick="schedOn=!schedOn;$('#sc').className=schedOn?'':'g';$('#sd').style.display=schedOn?'block':'none'">📅 Schedule (keep until deleted)</button></div><input id=sd type=date min="${local()}" style="display:none">
+ <button class=g style="margin-top:12px" onclick="attach()">📎 Add photos <span id=pc></span></button>
+ <div style="display:flex;gap:8px;margin-top:16px"><button class=g style="flex:1" onclick="closeSh()">Cancel</button><button style="flex:1" onclick="saveTask()">Add</button></div>`;tRender();$('#sh').classList.add('show')}
+function tRender(){$('#tp').innerHTML=users.map(u=>`<button class="${tSel.has(u.id)?'on':''}" onclick="tSel.has('${u.id}')?tSel.delete('${u.id}'):tSel.add('${u.id}');tRender()">${esc(u.id==S.id?'Me':u.name)}</button>`).join('')}
+async function saveTask(){const t=$('#tt').value.trim();if(!t)return alert('Type the task');
+ try{const im=[];for(const x of pend)im.push(await upload(x));pend=[];await db('/rest/v1/tasks',{m:'POST',b:{title:t,assignees:[...tSel],scheduled:schedOn,sched_date:(schedOn&&$('#sd').value)||null,created_day:local(),images:im}})}catch(e){return alert('Could not save: '+(e.t||''))}closeSh();load()}
+async function chkT(id,v){try{await db(`/rest/v1/tasks?id=eq.${id}`,{m:'PATCH',b:{done:v}})}catch{alert('Could not update')}load()}
+async function delT(id){if(!confirm('Delete this task?'))return;const t=tasks.find(x=>x.id==id);try{await db(`/rest/v1/tasks?id=eq.${id}`,{m:'DELETE'});if(t.images.length)rmFiles(t.images)}catch{alert('Could not delete')}load()}
+async function purgeTasks(){try{const q=`scheduled=eq.false&created_day=lt.${local()}`,ex=await db(`/rest/v1/tasks?select=images&${q}&created_by=eq.${S.id}`),p=ex.flatMap(x=>x.images);if(p.length)await rmFiles(p);await db(`/rest/v1/tasks?${q}`,{m:'DELETE'})}catch{}}
+let beatT;const beat=()=>{if(S.access&&!document.hidden)rpc('touch',{}).catch(()=>{})};
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.access){beat();load()}});
+S.access?start():loginView();
+</script></body></html>
