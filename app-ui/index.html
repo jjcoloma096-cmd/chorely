@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Chorely</title>
+<style>
+:root{--bg:#0f1115;--card:#181b22;--tx:#eef0f4;--mut:#8a91a0;--ac:#7c5cff;--ok:#2fd08a;--wa:#f5a524;--bd:#262a33}
+*{box-sizing:border-box;margin:0;font-family:system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--tx);padding:env(safe-area-inset-top) 0 100px}
+header{padding:18px 16px 6px;display:flex;justify-content:space-between;align-items:center}
+h1{font-size:24px}
+.row{display:flex;gap:8px;overflow-x:auto;padding:8px 16px;scrollbar-width:none}
+.day{flex:0 0 52px;text-align:center;padding:8px 0;border-radius:14px;background:var(--card);border:1px solid var(--bd);color:var(--mut);font-size:12px}
+.day b{display:block;font-size:18px;color:var(--tx)}
+.day.on{background:var(--ac);color:#fff;border-color:var(--ac)}.day.on b{color:#fff}
+.dot{display:block;height:6px;width:6px;border-radius:3px;margin:3px auto 0}
+.dot.p{background:var(--ac)}.dot.d{background:var(--ok)}.on .dot.p{background:#fff}
+.chip{flex:0 0 auto;padding:8px 14px;border-radius:20px;background:var(--card);border:1px solid var(--bd);color:var(--mut);font-size:14px}
+.chip.on{background:var(--tx);color:var(--bg)}
+.card{display:flex;align-items:center;gap:12px;margin:10px 16px;padding:12px;background:var(--card);border:1px solid var(--bd);border-radius:18px}
+.av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-weight:700;flex:0 0 auto}
+.m{flex:1;min-width:0}.m small{display:block;color:var(--mut);margin-top:3px;font-size:12px}
+.th{width:60px;height:60px;border-radius:12px;object-fit:cover;background:var(--bd)}
+button{border:0;border-radius:12px;padding:10px 14px;background:var(--ac);color:#fff;font-weight:600;font-size:14px}
+button.g{background:var(--card);color:var(--mut);border:1px solid var(--bd)}
+.seg{display:flex;gap:6px;margin-top:8px}
+.seg button{padding:6px 11px;font-size:12px;background:var(--bg);color:var(--mut);border:1px solid var(--bd)}
+.seg .on.later{background:var(--wa);color:#000}.seg .on.pending{background:var(--ac);color:#fff}.seg .on.done{background:var(--ok);color:#000}
+.tag{display:inline-block;margin-top:8px;padding:4px 10px;border-radius:10px;font-size:12px;font-weight:600}
+.tag.later{background:var(--wa);color:#000}.tag.pending{background:var(--ac)}.tag.done{background:var(--ok);color:#000}
+.fab{position:fixed;right:18px;bottom:calc(20px + env(safe-area-inset-bottom));width:58px;height:58px;border-radius:50%;font-size:30px;box-shadow:0 8px 24px #7c5cff66}
+input{width:100%;padding:13px;border-radius:12px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font-size:16px;margin-top:10px}
+.sheet{position:fixed;inset:0;background:#000a;display:none;align-items:flex-end;z-index:5}
+.sheet.show{display:flex}.sheet>div{background:var(--bg);width:100%;padding:20px;border-radius:24px 24px 0 0}
+.login{max-width:380px;margin:10vh auto;padding:20px}
+.empty{text-align:center;color:var(--mut);padding:40px}
+#err{color:#ff6b6b;margin-top:8px;font-size:14px}#big{width:100%;border-radius:16px}
+</style></head><body>
+<div id="app"></div><div class="sheet" id="sh"><div id="shc"></div></div>
+<input id="f" type="file" accept="image/*" capture="environment" hidden>
+<script src="config.js"></script>
+<script>
+if(!window.CFG||/YOUR/.test(CFG.url)){document.body.innerHTML='<p style="padding:30px">Open app-ui/config.js and paste your Supabase URL and key, then rebuild.</p>';throw 0}
+const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let S={};try{S=JSON.parse(localStorage.getItem('chorely2')||'{}')}catch{}
+const save=()=>{try{localStorage.setItem('chorely2',JSON.stringify(S))}catch{}};
+let users=[],chores=[],days={},ph={},who='',pending=null,timer,newStatus='pending',refreshing=null;
+const local=()=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const add=(s,n)=>{const d=new Date(s+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)};
+let date=local();const LBL={later:'Later',pending:'Pending',done:'Done'};
+const fmt=s=>new Date(s).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+const slug=n=>n.trim().toLowerCase().replace(/[^a-z0-9]+/g,'');
+function setSession(j){S.access=j.access_token;S.refresh=j.refresh_token;S.exp=Date.now()+(j.expires_in-60)*1000;S.id=j.user.id;save()}
+function refresh(){if(!refreshing)refreshing=(async()=>{const r=await fetch(`${CFG.url}/auth/v1/token?grant_type=refresh_token`,{method:'POST',headers:{apikey:CFG.key,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:S.refresh})});if(!r.ok)throw 401;setSession(await r.json())})().finally(()=>refreshing=null);return refreshing}
+async function req(path,o={}){if(S.access&&Date.now()>S.exp)await refresh();
+ const go=()=>fetch(CFG.url+path,{method:o.m||'GET',headers:{apikey:CFG.key,...(S.access?{Authorization:'Bearer '+S.access}:{}),...(o.h||{})},body:o.body});
+ let r=await go();if(r.status==401&&S.refresh){await refresh();r=await go()}
+ if(!r.ok)throw {s:r.status,t:await r.text()};return r}
+async function db(path,o={}){const r=await req(path,{m:o.m,h:{'Content-Type':'application/json',Prefer:'return=minimal',...(o.h||{})},body:o.b&&JSON.stringify(o.b)});const t=await r.text();return t?JSON.parse(t):null}
+function loginView(msg=''){clearInterval(timer);$('#app').innerHTML=`<div class=login><h1>Chorely</h1><p style="color:var(--mut);margin-top:6px">Shared chores with photo proof</p>
+<input id=nm placeholder="Your name" value="${esc(S.name||'')}" autocapitalize=words><input id=pw type=password placeholder="Password (6+ characters)">
+<p id=err>${esc(msg)}</p><div style="display:flex;gap:8px;margin-top:14px"><button style="flex:1" onclick="auth('login')">Log in</button><button class=g style="flex:1" onclick="auth('register')">Create account</button></div></div>`}
+async function auth(kind){const name=$('#nm').value.trim(),pw=$('#pw').value;
+ if(!slug(name)||pw.length<6)return $('#err').textContent='Enter a name and a password of 6+ characters';
+ try{const r=await fetch(`${CFG.url}/auth/v1/${kind=='login'?'token?grant_type=password':'signup'}`,{method:'POST',headers:{apikey:CFG.key,'Content-Type':'application/json'},body:JSON.stringify({email:slug(name)+'@chorely.app',password:pw})});
+  const j=await r.json();if(!r.ok)throw {s:r.status,t:j.msg||j.error_description||j.message||''};
+  if(!j.access_token)throw {s:0,t:'confirm'};
+  setSession(j);
+  if(kind=='register'){await db('/rest/v1/profiles',{m:'POST',b:{id:S.id,name}});S.name=name}
+  else{const p=await db(`/rest/v1/profiles?select=name&id=eq.${S.id}`);S.name=(p&&p[0]&&p[0].name)||name}
+  save();start()}
+ catch(e){S.access=null;$('#err').textContent=e.t=='confirm'?'Turn off "Confirm email" in Supabase (see setup steps)':/already|registered/i.test(e.t||'')?'That name is taken':e.s==400&&kind=='login'?'Wrong name or password':e instanceof TypeError?'Cannot reach the internet':'Problem: '+(e.t||e)}}
+function logout(){S={name:S.name};save();ph={};users=[];loginView()}
+function start(){load();clearInterval(timer);timer=setInterval(()=>{if(!document.hidden)load()},20000)}
+async function load(){try{
+ const [u,c,d]=await Promise.all([db('/rest/v1/profiles?select=id,name&order=name'),db(`/rest/v1/chores?select=id,title,owner,status,done_at,photo_path,profiles(name)&due_date=eq.${date}&order=id`),db(`/rest/v1/chores?select=due_date,status&due_date=gte.${add(date,-3)}&due_date=lte.${add(date,10)}`)]);
+ users=u;chores=c;days={};d.forEach(x=>{const k=days[x.due_date]||(days[x.due_date]={total:0,done:0});k.total++;if(x.status=='done')k.done++});render()
+}catch(e){if(e==401||e.s==401)logout();else if(!users.length)$('#app').innerHTML='<div class=empty>Cannot reach the internet. Retrying…</div>'}}
+function render(){
+ if($('#sh').classList.contains('show'))return;
+ const strip=Array.from({length:14},(_,i)=>add(date,i-3)).map(d=>{const x=days[d],c=!x?'':x.done==x.total?'d':'p',w=new Date(d+'T12:00:00Z').toLocaleDateString([], {weekday:'short',timeZone:'UTC'});
+  return `<div class="day ${d==date?'on':''}" onclick="go('${d}')">${w}<b>${+d.slice(8)}</b><i class="dot ${c}"></i></div>`}).join('');
+ const chips=[{id:'',name:'Everyone'},...users].map(u=>`<div class="chip ${who==u.id?'on':''}" onclick="who='${u.id}';render()">${esc(u.id==S.id?'Me':u.name)}</div>`).join('');
+ const cards=chores.filter(c=>!who||c.owner==who).map(c=>{const mine=c.owner==S.id,nm=(c.profiles&&c.profiles.name)||'?';
+  const ctl=mine?`<div class=seg>${['later','pending','done'].map(s=>`<button class="${c.status==s?'on '+s:''}" onclick="setS(${c.id},'${s}')">${LBL[s]}</button>`).join('')}</div>`:`<span class="tag ${c.status}">${LBL[c.status]}</span>`;
+  const hue=parseInt(c.owner.slice(0,6),16)%360;
+  return `<div class=card><div class=av style="background:hsl(${hue} 60% 45%)">${esc(nm[0].toUpperCase())}</div><div class=m><b>${esc(c.title)}</b><small>${esc(nm)}${c.done_at?' · done '+fmt(c.done_at):''}</small>${ctl}</div>${c.photo_path?`<img class=th data-p="${esc(c.photo_path)}" onclick="show(this.dataset.p)">`:''}</div>`}).join('')||'<div class=empty>No chores for this day</div>';
+ $('#app').innerHTML=`<header><h1>Chorely</h1><button class=g onclick="logout()">${esc(S.name||'')} ⎋</button></header><div class=row>${strip}</div><div class=row>${chips}</div>${cards}<button class=fab onclick="addView()">+</button>`;
+ document.querySelectorAll('img[data-p]').forEach(async i=>{try{i.src=await photo(i.dataset.p)}catch{}})}
+async function photo(p){if(!ph[p])ph[p]=URL.createObjectURL(await(await req('/storage/v1/object/authenticated/proof/'+p)).blob());return ph[p]}
+function go(d){date=d;load()}
+async function show(p){$('#shc').innerHTML=`<img id=big src="${await photo(p)}"><button class=g style="width:100%;margin-top:12px" onclick="closeSh()">Close</button>`;$('#sh').classList.add('show')}
+function closeSh(){$('#sh').classList.remove('show');render()}
+async function setS(id,s){const c=chores.find(x=>x.id==id);if(c.status==s)return;if(s=='done'){pending=id;$('#f').click();return}try{await db(`/rest/v1/chores?id=eq.${id}`,{m:'PATCH',b:{status:s}})}catch{alert('Could not save, try again')}load()}
+$('#f').onchange=async e=>{const f=e.target.files[0];if(!f)return;const b=await createImageBitmap(f),k=Math.min(1,1024/Math.max(b.width,b.height)),c=document.createElement('canvas');c.width=b.width*k;c.height=b.height*k;c.getContext('2d').drawImage(b,0,0,c.width,c.height);
+ const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',.7)),path=`${S.id}/${pending}-${Date.now()}.jpg`;e.target.value='';
+ try{await req('/storage/v1/object/proof/'+path,{m:'POST',h:{'Content-Type':'image/jpeg'},body:blob});await db(`/rest/v1/chores?id=eq.${pending}`,{m:'PATCH',b:{status:'done',photo_path:path}})}catch{alert('Could not save, try again')}load()};
+function addView(){$('#shc').innerHTML=`<h2>New chore</h2><input id=t placeholder="What needs doing?"><input id=d type=date value="${date}"><div class=seg id=ns style="margin-top:14px"></div>
+ <div style="display:flex;gap:8px;margin-top:16px"><button class=g style="flex:1" onclick="closeSh()">Cancel</button><button style="flex:1" onclick="saveChore()">Add</button></div>`;pickS('pending');$('#sh').classList.add('show')}
+function pickS(s){newStatus=s;$('#ns').innerHTML=['later','pending'].map(x=>`<button class="${x==s?'on '+x:''}" onclick="pickS('${x}')">${LBL[x]}</button>`).join('')}
+async function saveChore(){const title=$('#t').value.trim();if(!title)return;date=$('#d').value||date;try{await db('/rest/v1/chores',{m:'POST',b:{title,due_date:date,status:newStatus}})}catch{alert('Could not save, try again')}closeSh();load()}
+S.access?start():loginView();
+</script></body></html>
