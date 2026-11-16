@@ -232,13 +232,13 @@ async function profile(id){const w=W[id]||{credits:0,screen_seconds:0};let r=[];
  const t=new Date();t.setHours(0,0,0,0);const wk=new Date(t);wk.setDate(wk.getDate()-6);const mo=new Date(t);mo.setDate(1);
  const n=d=>r.filter(x=>new Date(x.done_at)>=d).length;
  $('#shc').innerHTML=`<div style="text-align:center"><div style="display:flex;justify-content:center">${av(id,84)}</div><h2 style="margin-top:8px">${esc(nmOf(id))}</h2><small style="color:var(--mut)">${online(id)?'🟢 Online':'⚪ Offline'}</small></div>
- <div class=st><div><b>👛 ${w.credits}</b>credits</div><div><b>₱${(w.credits/75).toFixed(2)}</b>money value</div><div style="grid-column:span 2"><b data-cd="${id}">${fmtDur(leftSec(w))}</b>screen time left${leftSec(w)?' · ends '+fmt(w.screen_until):''}</div>
+ <div class=st><div><b>👛 ${w.credits}</b>credits</div><div><b>₱${(w.credits/15).toFixed(2)}</b>money value</div><div style="grid-column:span 2"><b data-cd="${id}">${fmtDur(leftSec(w))}</b>screen time left${leftSec(w)?' · ends '+fmt(w.screen_until):''}</div>
  <div><b>${n(t)}</b>today</div><div><b>${n(wk)}</b>last 7 days</div><div><b>${n(mo)}</b>this month</div><div><b>${r.length}</b>all time</div></div>
  <div style="display:flex;gap:8px;margin-top:16px"><button class=g style="flex:1" onclick="closeSh()">Close</button>${id!=S.id?`<button style="flex:1" onclick="dm('${id}')">💬 Message</button>`:''}</div>`;$('#sh').classList.add('show');loadImgs()}
 function walletView(){const w=W[S.id]||{credits:0,screen_seconds:0};
  $('#shc').innerHTML=`<h2>👛 My wallet</h2><div class=set style="margin:10px 0"><h3>${w.credits} credits</h3><small>≈ ₱${(w.credits/15).toFixed(2)} (15 credits = ₱1). Your credits never reset.</small></div>
  <div class=set style="margin:10px 0"><h3>⏳ Screen time: <span data-cd="${S.id}">${fmtDur(leftSec(w))}</span></h3><small>${leftSec(w)?'Ends '+fmt(w.screen_until):'No active screen time'} · counts down automatically</small></div>
- <h3 style="margin-top:12px">Cash out</h3><small style="color:var(--mut)">60 credits = 1h 45m screen time · 75 credits = ₱1</small>
+ <h3 style="margin-top:12px">Cash out</h3><small style="color:var(--mut)">60 credits = 1h 45m screen time · 15 credits = ₱1</small>
  <input id=ca type=number min=1 placeholder="Credits to cash out"><div class=seg><button class=g onclick="$('#ca').value=${w.credits}">All</button></div>
  <div style="display:flex;gap:8px;margin-top:12px"><button style="flex:1" onclick="cash('screen')">Screen time</button><button style="flex:1;background:var(--ok);color:#000" onclick="cash('money')">Money (₱)</button></div>
  <button class=g style="width:100%;margin-top:12px" onclick="closeSh()">Close</button>`;$('#sh').classList.add('show')}
