@@ -1,5 +1,8 @@
 name: Build APK
-on: [push, workflow_dispatch]
+on:
+  push:
+    paths: ['src-tauri/**', '.github/workflows/build.yml']
+  workflow_dispatch:
 jobs:
   apk:
     runs-on: ubuntu-latest
@@ -8,14 +11,14 @@ jobs:
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: 17 }
       - uses: dtolnay/rust-toolchain@stable
-        with: { targets: aarch64-linux-android, armv7-linux-androideabi }
+        with: { targets: aarch64-linux-android,armv7-linux-androideabi }
       - run: cargo install tauri-cli --version "^2" --locked
       - name: Build APK
         run: |
           export NDK_HOME=$ANDROID_NDK_LATEST_HOME
           cargo tauri icon src-tauri/app-icon.png
           cargo tauri android init
-          sed -i 's|<application|<uses-permission android:name="android.permission.CAMERA" />\n<application|' src-tauri/gen/android/app/src/main/AndroidManifest.xml
+          sed -i 's|<application|<uses-permission android:name="android.permission.CAMERA" /><uses-permission android:name="android.permission.RECORD_AUDIO" /><uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />\n<application|' src-tauri/gen/android/app/src/main/AndroidManifest.xml
           cargo tauri android build --apk --debug --target aarch64 --target armv7
       - uses: actions/upload-artifact@v4
         with: { name: chorely-apk, path: "src-tauri/gen/android/app/build/outputs/apk/**/*.apk" }
