@@ -592,7 +592,7 @@ function fitVideoToOrientation(video,tile){
   const w=video.videoWidth,h=video.videoHeight;
   if(!w||!h)return;
   const portrait=h>w;
-  tile.classList.toggle('portrait',portrait);
+  tile.classList.toggle('portrait',!portrait);
   tile.classList.toggle('landscape',!portrait);
   video.style.objectFit='contain';
   video.style.objectPosition='center center';
