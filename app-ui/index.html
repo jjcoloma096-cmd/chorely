@@ -243,6 +243,7 @@ async function saveEdit(id){const t=$('#et').value.trim(),d=$('#ed').value;if(!t
 const REPO='jjcoloma096-cmd/chorely',APP_VERSION=10;let upd=null;
 const MR=15,MB=1048576,rpc=(f,b)=>db('/rest/v1/rpc/'+f,{m:'POST',b,h:{Prefer:'return=representation'}});
 const fmtDur=s=>`${Math.floor(s/3600)}h ${Math.floor(s%3600/60)}m ${Math.floor(s%60)}s`;
+const fmtCallTime=ms=>{const s=Math.floor(ms/1000);const m=Math.floor(s/60);const h=Math.floor(m/60);const ss=String(s%60).padStart(2,'0');const mm=String(m%60).padStart(2,'0');return h?`${h}:${mm}:${ss}`:`${m}:${ss}`};
 const leftSec=w=>w.screen_until?Math.max(0,Math.floor((new Date(w.screen_until)-Date.now())/1000)):0;
 const nmOf=id=>(users.find(u=>u.id==id)||{}).name||'?';
 const pct=()=>usage?Math.max(usage.files/(1024*MB),usage.db/(500*MB)):0;
@@ -359,7 +360,7 @@ async function checkUpdate(){try{const r=await fetch(`https://api.github.com/rep
 const updBanner=()=>upd?`<div class=warn style="background:#7c5cff22;border-color:var(--ac)">⬆ Update v${upd.v} is ready.<br><button style="margin-top:8px" onclick="window.open('${esc(upd.url)}','_blank')">Download update</button><br><small style="color:var(--mut)">If nothing opens, visit github.com/${REPO}/releases/latest in your browser.</small></div>`:'';
 const pushTest=()=>rpc('push_test',{}).then(()=>alert('Sent! It should pop up in ntfy in a few seconds.')).catch(()=>alert('Could not send the test'));
 const ICE=[{urls:'stun:stun.l.google.com:19302'},...(CFG.turn||[])];
-let call=null,incoming=null,activeCall=null,pcs={},icePend={},remoteStreams={},makingOffer={},ignoreOffer={},callPoll=null;
+let call=null,incoming=null,activeCall=null,pcs={},icePend={},remoteStreams={},makingOffer={},ignoreOffer={},callPoll=null,callTimer=null;
 const dismissedCallKey=()=>`chorely_dismissed_calls_${S.id||'guest'}`;
 function dismissedCalls(){try{return new Set(JSON.parse(localStorage.getItem(dismissedCallKey())||'[]'))}catch{return new Set()}}
 function rememberDismissedCall(id){const x=dismissedCalls();x.add(id);localStorage.setItem(dismissedCallKey(),JSON.stringify([...x].slice(-50)))}
@@ -493,9 +494,14 @@ async function toggleCamera(){
  if(!call)return;
  try{
   if(!call.camera){
-   const v=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false}),track=v.getVideoTracks()[0];
+   const facing=call.cameraFacing||'user';
+   let v;
+   try{v=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:facing}},audio:false})}
+   catch{v=await navigator.mediaDevices.getUserMedia({video:true,audio:false})}
+   const track=v.getVideoTracks()[0];
    call.stream.addTrack(track);call.cameraStream=v;call.camera=true;
-   try{call.cameraDevices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');call.cameraSwitchAvailable=call.cameraDevices.length>1;const current=call.cameraDevices.findIndex(d=>d.deviceId===track.getSettings().deviceId);if(current>=0)call.cameraDeviceIndex=current;}catch{call.cameraSwitchAvailable=false}
+   call.cameraFacing=(track.getSettings&&track.getSettings().facingMode)||facing;
+   try{call.cameraDevices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');call.cameraSwitchAvailable=call.cameraDevices.length>1;const current=call.cameraDevices.findIndex(d=>d.deviceId===track.getSettings().deviceId);if(current>=0)call.cameraDeviceIndex=current;}catch{call.cameraSwitchAvailable=true}
    Object.keys(pcs).forEach(f=>{const pc=pcs[f];const sender=pc.getSenders().find(x=>x.track&&x.track.kind==='video');if(sender)sender.replaceTrack(track);else pc.addTrack(track,call.stream)});
   }else{
    call.stream.getVideoTracks().forEach(t=>{call.stream.removeTrack(t);t.stop()});
@@ -510,43 +516,55 @@ async function switchCamera(){
  let nextStream=null;
  try{
   const oldTrack=call.stream.getVideoTracks()[0];
-  const oldFacing=oldTrack?.getSettings().facingMode||call.cameraFacing||'user';
+  const oldFacing=(oldTrack&&oldTrack.getSettings&&oldTrack.getSettings().facingMode)||call.cameraFacing||'user';
   const nextFacing=oldFacing==='environment'?'user':'environment';
-  // Prefer facingMode on phones; deviceId is a fallback for browsers that expose camera IDs.
-  try{
-   nextStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:nextFacing}},audio:false});
-  }catch{
+  // Phones: try ideal first (exact often fails). Then cycle deviceId.
+  const attempts=[
+   {video:{facingMode:{ideal:nextFacing}},audio:false},
+   {video:{facingMode:nextFacing},audio:false}
+  ];
+  let lastErr=null;
+  for(const constraints of attempts){
+   try{nextStream=await navigator.mediaDevices.getUserMedia(constraints);break}catch(e){lastErr=e}
+  }
+  if(!nextStream){
    const devices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
-   if(devices.length<2)throw new Error('No alternate camera');
-   const currentId=oldTrack?.getSettings().deviceId;
-   const currentIndex=devices.findIndex(d=>d.deviceId===currentId);
-   const next=devices[(currentIndex<0?0:currentIndex+1)%devices.length];
+   if(devices.length<2)throw lastErr||new Error('No alternate camera');
+   const currentId=oldTrack&&oldTrack.getSettings?oldTrack.getSettings().deviceId:null;
+   const currentIndex=Math.max(0,devices.findIndex(d=>d.deviceId===currentId));
+   const next=devices[(currentIndex+1)%devices.length];
    nextStream=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:next.deviceId}},audio:false});
   }
   const newTrack=nextStream.getVideoTracks()[0];
   if(!newTrack)throw new Error('No video track');
-  // Replace the video sender even if its current track is null.
+  // Replace sender track on every peer connection
   for(const pc of Object.values(pcs)){
-   let trans=pc.getTransceivers().find(t=>t.receiver?.track?.kind==='video'||t.sender?.track?.kind==='video');
-   if(trans)await trans.sender.replaceTrack(newTrack);
-   else pc.addTrack(newTrack,new MediaStream([newTrack]));
+   const sender=pc.getSenders().find(s=>s.track&&s.track.kind==='video')||pc.getSenders().find(s=>!s.track);
+   if(sender)await sender.replaceTrack(newTrack);
+   else pc.addTrack(newTrack,call.stream);
   }
-  if(oldTrack){call.stream.removeTrack(oldTrack);oldTrack.stop()}
+  if(oldTrack){call.stream.removeTrack(oldTrack);try{oldTrack.stop()}catch{}}
   call.stream.addTrack(newTrack);
-  if(call.cameraStream)call.cameraStream.getTracks().forEach(t=>{if(t!==newTrack)t.stop()});
+  if(call.cameraStream)call.cameraStream.getTracks().forEach(t=>{if(t!==newTrack)try{t.stop()}catch{}});
   call.cameraStream=nextStream;
   call.cameraFacing=newTrack.getSettings().facingMode||nextFacing;
-  call.cameraDevices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
-  call.cameraSwitchAvailable=call.cameraDevices.length>1;
+  try{
+   call.cameraDevices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
+   call.cameraSwitchAvailable=call.cameraDevices.length>1;
+  }catch{call.cameraSwitchAvailable=true}
+  // Refresh local preview without full callUI rebuild so peers stay
+  const localVid=document.querySelector('#tile-local video');
+  if(localVid){localVid.srcObject=call.stream;fitVideoToOrientation(localVid,document.getElementById('tile-local'))}
   callUI();
  }catch(e){
-  if(nextStream)nextStream.getTracks().forEach(t=>t.stop());
+  if(nextStream)nextStream.getTracks().forEach(t=>{try{t.stop()}catch{}});
+  console.warn('switchCamera',e);
   toast('Could not switch camera. Your device or browser may not expose another camera.');
  }
 }
 function muteCall(){call.muted=!call.muted;call.stream.getAudioTracks().forEach(t=>t.enabled=!call.muted);callUI()}
 async function endCall(){
- if(!call)return;const c=call;call=null;
+ if(!call)return;const c=call;call=null;clearInterval(callTimer);callTimer=null;
  Object.keys(pcs).forEach(closePc);c.stream.getTracks().forEach(t=>t.stop());c.cameraStream&&c.cameraStream.getTracks().forEach(t=>t.stop());
  await rpc('leave_call',{p_call_id:c.id}).catch(()=>{});
  c.peers.forEach(u=>db('/rest/v1/signals',{m:'POST',b:{call_id:c.id,to_user:u,kind:'leave',data:null}}).catch(()=>{}));
@@ -556,20 +574,22 @@ async function checkCallEnded(){
  if(!call)return;
  try{
   const rows=await db(`/rest/v1/calls?select=ended_at&id=eq.${call.id}`);
-  if(!rows.length||rows[0].ended_at){const c=call;call=null;Object.keys(pcs).forEach(closePc);c.stream.getTracks().forEach(t=>t.stop());c.cameraStream&&c.cameraStream.getTracks().forEach(t=>t.stop());callUI();toast('The call has ended.')}
+  if(!rows.length||rows[0].ended_at){const c=call;call=null;clearInterval(callTimer);callTimer=null;Object.keys(pcs).forEach(closePc);c.stream.getTracks().forEach(t=>t.stop());c.cameraStream&&c.cameraStream.getTracks().forEach(t=>t.stop());callUI();toast('The call has ended.')}
  }catch{}
 }
 function callUI(){
  const el=$('#call');
- if(!call&&!incoming){el.className='';el.innerHTML='';return}
+ if(!call&&!incoming){clearInterval(callTimer);callTimer=null;el.className='';el.innerHTML='';return}
  el.className='show';
  if(!call){el.innerHTML=`<div style="font-size:60px">📞</div><h2>${esc(nmOf(incoming.from)==='?'?'Someone':nmOf(incoming.from))} is calling…</h2><div style="display:flex;gap:16px"><button style="background:#e5484d;padding:16px 24px" onclick="declineCall()">Decline</button><button class=join-call style="padding:16px 24px" onclick="acceptCall()">📞 Accept</button></div>`;return}
  const peers=call.peers.length,tiles=1+(Object.keys(remoteStreams).length);
- el.innerHTML=`<h2>Chorely call</h2><div id="call-status">${peers?peers+' other participant(s)':'Waiting for others to join…'}</div><div id="call-grid" class="call-grid"></div><div id="ct" style="font-size:24px">0:00</div><div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button class=g onclick="muteCall()">${call.muted?'🔇 Unmute':'🎤 Mute'}</button><button class=g onclick="toggleCamera()">${call.camera?'📷 Camera off':'📷 Camera on'}</button>${call.camera&&call.cameraSwitchAvailable?'<button class=g onclick="switchCamera()">🔄 Switch camera</button>':''}<button style="background:#e5484d" onclick="endCall()">Hang up</button></div>`;
+ el.innerHTML=`<h2>Chorely call</h2><div id="call-status">${peers?peers+' other participant(s)':'Waiting for others to join…'}</div><div id="call-grid" class="call-grid"></div><div id="ct" style="font-size:24px">${fmtCallTime(Date.now()-(call.t0||Date.now()))}</div><div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button class=g onclick="muteCall()">${call.muted?'🔇 Unmute':'🎤 Mute'}</button><button class=g onclick="toggleCamera()">${call.camera?'📷 Camera off':'📷 Camera on'}</button>${call.camera&&call.cameraSwitchAvailable?'<button class=g onclick="switchCamera()">🔄 Switch camera</button>':''}<button style="background:#e5484d" onclick="endCall()">Hang up</button></div>`;
  const grid=$('#call-grid');
  if(call.camera){const tile=document.createElement('div');tile.id='tile-local';tile.className='call-tile';const v=document.createElement('video');v.autoplay=true;v.muted=true;v.playsInline=true;v.srcObject=call.stream;tile.appendChild(v);fitVideoToOrientation(v,tile);const cap=document.createElement('small');cap.textContent='You';tile.appendChild(cap);grid.appendChild(tile)}
  Object.entries(remoteStreams).forEach(([id,stream])=>ensureRemoteTile(id,stream));
  layoutCallGrid();
+ clearInterval(callTimer);
+ callTimer=setInterval(()=>{const el=$('#ct');if(el&&call)el.textContent=fmtCallTime(Date.now()-(call.t0||Date.now()));else clearInterval(callTimer)},1000);
 }
 callPoll=setInterval(()=>{pollIncomingCalls();checkCallEnded();if(call)rpc('touch_call',{p_call_id:call.id}).catch(()=>{})},5000);
 let beatT;const beat=()=>{if(S.access&&!document.hidden)rpc('touch',{}).catch(()=>{})};
