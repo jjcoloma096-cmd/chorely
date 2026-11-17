@@ -5,17 +5,14 @@
 <style>
 :root{--bg:#0f1115;--card:#181b22;--tx:#eef0f4;--mut:#8a91a0;--ac:#7c5cff;--ok:#2fd08a;--wa:#f5a524;--bd:#262a33}
 body.light{--bg:#f4f5f9;--card:#fff;--tx:#14161b;--mut:#6b7280;--bd:#e2e4ec}
-header{position:sticky;top:0;z-index:8;background:var(--bg);padding-top:calc(12px + env(safe-area-inset-top))}
-.chat-area{background:var(--bg);min-height:calc(100vh - 150px);padding:8px 16px 90px}
-#call{overflow:auto;justify-content:flex-start;padding-top:5vh}#call video{display:block;width:100%;height:100%;min-height:0;max-height:none;border-radius:14px;background:#111;object-fit:contain}.call-grid{width:min(100%,1000px);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}.call-tile{min-width:0;min-height:0;aspect-ratio:16/9;position:relative;background:#171a20;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;justify-content:center}.call-tile.portrait{aspect-ratio:3/4}.call-tile.landscape{aspect-ratio:16/9}.call-tile video{width:100%;height:100%;object-fit:contain}.call-tile small{display:block;flex:0 0 auto;padding:5px;color:#fff}
-.join-call{background:#25c779!important;color:#062b18!important;font-weight:800}
 *{box-sizing:border-box;margin:0;font-family:system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
 body{background:var(--bg);color:var(--tx);padding:env(safe-area-inset-top) 0 150px}
-header{padding:18px 150px 6px 16px;display:flex;justify-content:space-between;align-items:center}h1{font-size:24px}
+header{position:sticky;top:0;z-index:8;background:var(--bg);padding:18px 16px 6px;display:flex;justify-content:space-between;align-items:center}
+h1{font-size:24px}
 .row{display:flex;gap:8px;overflow-x:auto;padding:6px 16px;scrollbar-width:none}
-.mo{display:flex;align-items:center;justify-content:space-between;padding:4px 16px}.mo b{font-size:17px}.mo button{padding:6px 14px;font-size:18px}
+.mo{display:flex;align-items:center;justify-content:space-between;padding:4px 16px}.mo b{font-size:17px}
 .day{flex:0 0 52px;text-align:center;padding:8px 0;border-radius:14px;background:var(--card);border:1px solid var(--bd);color:var(--mut);font-size:12px}
-.day b{display:block;font-size:18px;color:var(--tx)}.day.on{background:var(--ac);color:#fff;border-color:var(--ac)}.day.on b{color:#fff}
+.day b{display:block;font-size:18px;color:var(--tx)}.day.on{background:var(--ac);color:#fff;border-color:var(--ac)}
 .dot{display:block;height:6px;width:6px;border-radius:3px;margin:3px auto 0}.dot.p{background:var(--ac)}.dot.d{background:var(--ok)}.on .dot.p{background:#fff}
 .chip{flex:0 0 auto;padding:7px 14px;border-radius:20px;background:var(--card);border:1px solid var(--bd);color:var(--mut);font-size:14px}.chip.on{background:var(--tx);color:var(--bg)}
 .card{margin:10px 16px;padding:12px;background:var(--card);border:1px solid var(--bd);border-radius:18px}
@@ -42,38 +39,29 @@ input{width:100%;padding:13px;border-radius:12px;border:1px solid var(--bd);back
 .sheet{position:fixed;inset:0;background:#000a;display:none;align-items:flex-end;z-index:5}.sheet.show{display:flex}.sheet>div{background:var(--bg);width:100%;padding:20px;border-radius:24px 24px 0 0;max-height:90vh;overflow:auto}
 .pk{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.pk button{background:var(--card);color:var(--tx);border:1px solid var(--bd);font-weight:500}.pk .on{background:var(--ac);color:#fff;border-color:var(--ac)}
 #wal{position:fixed;top:calc(10px + env(safe-area-inset-top));right:12px;z-index:6;background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:8px 12px;font-weight:700;font-size:14px}#wal:empty{display:none}
+/* CHAT */
 .msg-row{display:flex;align-items:flex-end;gap:8px;margin:12px 0}.msg-row.me{justify-content:flex-end}
 .msg-col{display:flex;flex-direction:column;max-width:80%;min-width:0}.msg-row.me .msg-col{align-items:flex-end}
-.msg-name{font-size:12px;font-weight:800;color:#fff;margin:0 0 3px 4px;background:none;-webkit-text-stroke:0.7px #000;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 1px 2px #000}
+.msg-name{font-size:12px;font-weight:800;color:var(--tx);margin:0 0 3px 4px}
 .bub{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:8px 12px;margin:0;max-width:100%;cursor:pointer}.bub.me{background:var(--ac);color:#fff}.bub small{display:block;font-size:11px;opacity:.75;margin-top:3px}.bub a{font-size:12px;cursor:pointer;margin-right:10px;display:inline-block;margin-top:4px}
 .reply-quote{background:#0003;border-left:3px solid var(--ok);padding:4px 8px;border-radius:6px;margin-bottom:6px;font-size:12px;opacity:.9}
-.bub:not(.me) .reply-quote{background:var(--bg);border-left-color:var(--ac)}
 .reply-bar{position:fixed;left:0;right:0;bottom:calc(118px + env(safe-area-inset-bottom));padding:6px 16px;background:var(--card);border-top:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;gap:8px;z-index:3;font-size:12px}
 .msg-receipt{font-size:11px;color:var(--mut);margin-top:4px;padding-top:4px;border-top:1px solid #ffffff22}
-.bub:not(.me) .msg-receipt{border-top-color:var(--bd)}
 .earn-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .earn-chk{width:20px;height:20px;margin:0;accent-color:var(--ac);cursor:pointer;flex:0 0 auto}
-/* Messenger-style message reactions */
-.msg-col{position:relative}
-.bub-wrap{position:relative;display:inline-block;max-width:100%}
-.react-row{position:absolute;bottom:calc(100% + 6px);left:0;z-index:15;display:flex;align-items:center;gap:4px;background:#262930;border:1px solid #3a3f4b;border-radius:999px;padding:6px 10px;box-shadow:0 8px 24px #000a;user-select:none;animation:popIn .14s ease-out}
+.mention-popup{position:fixed;bottom:calc(120px + env(safe-area-inset-bottom));left:16px;right:16px;background:var(--card);border:1px solid var(--bd);border-radius:14px;box-shadow:0 8px 24px #0008;z-index:16;max-height:200px;overflow-y:auto;display:none}
+.mention-popup.show{display:block}
+.mention-item{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--bd)}
+.msg-col{position:relative}.bub-wrap{position:relative;display:inline-block;max-width:100%}
+.react-row{position:absolute;bottom:calc(100% + 6px);left:0;z-index:15;display:flex;align-items:center;gap:4px;background:#262930;border:1px solid #3a3f4b;border-radius:999px;padding:6px 10px;box-shadow:0 8px 24px #000a;user-select:none}
 .msg-row.me .react-row{left:auto;right:0}
-body.light .react-row{background:#fff;border-color:#d8dce6;box-shadow:0 8px 24px #0003}
-@keyframes popIn{from{opacity:0;transform:scale(.85) translateY(4px)}to{opacity:1;transform:scale(1) translateY(0)}}
-.react-em{background:none;border:0;padding:2px 4px;font-size:24px;line-height:1;cursor:pointer;transition:transform .14s cubic-bezier(.2,1.6,.4,1);border-radius:50%;margin:0}
-.react-em:hover,.react-em:focus{transform:scale(1.38) translateY(-3px)}
+.react-em{background:none;border:0;padding:2px 4px;font-size:24px;line-height:1;cursor:pointer;border-radius:50%;margin:0}
 .react-em.picked{background:#ffffff22;box-shadow:0 0 0 2px var(--ac)}
-body.light .react-em.picked{background:#7c5cff22}
-.react-plus{width:32px;height:32px;border-radius:50%;background:#3a3e47;color:#eef0f4;border:0;padding:0;font-size:20px;font-weight:700;display:grid;place-items:center;cursor:pointer;transition:transform .14s ease,background .14s ease;margin:0 0 0 2px;flex:0 0 auto}
-body.light .react-plus{background:#e5e7eb;color:#14161b}
-.react-plus:hover{transform:scale(1.18);background:var(--ac);color:#fff}
+.react-plus{width:32px;height:32px;border-radius:50%;background:#3a3e47;color:#eef0f4;border:0;padding:0;font-size:20px;font-weight:700;display:grid;place-items:center;cursor:pointer;margin:0 0 0 2px;flex:0 0 auto}
 .react-pill{position:relative;display:inline-flex;align-items:center;gap:3px;background:#242730;border:2px solid var(--bg);border-radius:999px;padding:2px 7px;font-size:13px;line-height:1.2;margin-top:-8px;margin-left:auto;margin-right:6px;z-index:2;cursor:pointer;box-shadow:0 2px 6px #0005;color:var(--tx);font-weight:700;float:right}
-body.light .react-pill{background:#fff;border-color:var(--bg)}
 .react-pill span.cnt-r{font-size:11px;color:var(--mut);margin-left:1px}
 .emoji-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:12px}
-.emoji-grid button{background:var(--card);border:1px solid var(--bd);font-size:24px;padding:8px 0;border-radius:12px;margin:0;transition:transform .12s}
-.emoji-grid button:hover{transform:scale(1.2);border-color:var(--ac)}
-
+.emoji-grid button{background:var(--card);border:1px solid var(--bd);font-size:24px;padding:8px 0;border-radius:12px;margin:0}
 .pp{flex:0 0 auto;text-align:center;font-size:11px;color:var(--mut)}.pp .aw{margin:0 auto 4px}.aw{position:relative;flex:0 0 auto}.pd{position:absolute;right:0;bottom:0;width:12px;height:12px;border-radius:50%;border:2px solid var(--card);background:#8a91a0}.pd.on{background:#2fd08a}
 .warn{margin:8px 16px;padding:12px;border-radius:14px;background:#e5484d22;border:1px solid #e5484d;font-size:14px}
 .st{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.st div{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px;text-align:center;font-size:12px;color:var(--mut)}.st b{display:block;font-size:20px;color:var(--tx)}
@@ -81,15 +69,42 @@ body.light .react-pill{background:#fff;border-color:var(--bg)}
 .toast{position:fixed;top:calc(60px + env(safe-area-inset-top));left:12px;right:12px;z-index:9;background:var(--tx);color:var(--bg);padding:12px;border-radius:14px;font-size:14px}.nf{padding:10px 0;border-bottom:1px solid var(--bd);font-size:14px}.nf.un{font-weight:700}
 #call{position:fixed;inset:0;background:#000e;z-index:20;display:none;align-items:center;justify-content:center;flex-direction:column;color:#fff;text-align:center;gap:16px;padding:20px}#call.show{display:flex}
 .login{max-width:380px;margin:10vh auto;padding:20px}.empty{text-align:center;color:var(--mut);padding:40px}#err{color:#ff6b6b;margin-top:8px;font-size:14px}#big{width:100%;border-radius:16px}
-
-/* map / location */
 #mapBox{height:min(62vh,480px);width:100%;border-radius:14px;overflow:hidden;background:var(--bd);margin-top:10px;z-index:0}
 .loc-marker{width:44px;height:44px;border-radius:50%;border:3px solid #7c5cff;box-shadow:0 2px 10px #0008;overflow:hidden;background:#333;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:16px}
-.loc-marker img{width:100%;height:100%;object-fit:cover}
-.loc-marker.me{border-color:#2fd08a}
-.loc-pin{display:inline-block;margin-left:2px;font-size:12px}
-</style><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+.loc-marker img{width:100%;height:100%;object-fit:cover}.loc-marker.me{border-color:#2fd08a}.loc-pin{display:inline-block;margin-left:2px;font-size:12px}
+/* ===== NEW: TYPING INDICATOR ===== */
+.typing-row{display:flex;align-items:flex-end;gap:8px;margin:12px 0}
+.typing-label{font-size:12px;font-weight:700;color:var(--mut);margin:0 0 3px 4px}
+.typing-bub{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px 14px;display:inline-flex;align-items:center;gap:5px}
+.typing-bub i{width:7px;height:7px;border-radius:50%;background:var(--mut);display:block;animation:tb 1.2s infinite}
+.typing-bub i:nth-child(2){animation-delay:.15s}.typing-bub i:nth-child(3){animation-delay:.3s}
+@keyframes tb{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1}}
+.ai-badge{font-size:11px;background:var(--ac);color:#fff;padding:2px 7px;border-radius:999px;font-weight:700;margin-left:6px}
+
+/* ===== V2: Before/After slider, pinned, search, typing-human ===== */
+.ba-wrap{position:relative;width:100%;height:180px;border-radius:12px;overflow:hidden;background:var(--bd);margin-top:10px;touch-action:none;user-select:none}
+.ba-wrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
+.ba-after{clip-path:inset(0 0 0 50%)}
+.ba-handle{position:absolute;top:0;bottom:0;left:50%;width:3px;background:#fff;box-shadow:0 0 0 1px #0005;z-index:2}
+.ba-knob{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:36px;height:36px;border-radius:50%;background:#fff;color:#111;display:grid;place-items:center;font-size:16px;font-weight:800;box-shadow:0 4px 14px #0008;z-index:3;cursor:ew-resize}
+.ba-lab{position:absolute;top:8px;padding:3px 8px;border-radius:999px;background:#000a;color:#fff;font-size:11px;font-weight:700;z-index:2}
+.ba-lab.l{left:8px}.ba-lab.r{right:8px}
+.pinned-bar{background:#7c5cff22;border:1px solid var(--ac);border-radius:12px;padding:8px 10px;margin:0 0 10px;font-size:13px;display:flex;gap:8px;align-items:center;justify-content:space-between}
+.pinned-bar b{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-search{position:sticky;top:54px;z-index:5;background:var(--bg);padding:6px 0}
+.chat-search input{margin:0}
+.search-hit{background:#7c5cff33;border-radius:4px;padding:0 2px}
+.online-dot{width:9px;height:9px;border-radius:50%;background:#2fd08a;display:inline-block;margin-right:4px;box-shadow:0 0 0 2px var(--bg)}
+.human-typing{font-size:12px;color:var(--mut);font-weight:600}
+
+/* V2 FIX: keep photos inside bubble */
+.bub-wrap{max-width:100%}
+.bub{overflow:hidden;word-break:break-word}
+.bub .pics{max-width:280px}
+.bub .pics figure{flex:1 1 0;min-width:0}
+.bub .th{width:100%;height:110px;max-width:280px;display:block}
+.msg-col{min-width:0}
+</style><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head><body>
 <div id="app"></div><div id="call"></div><div id="wal" onclick="walletView()"></div><nav id="nav"></nav><div class="sheet" id="sh"><div id="shc"></div></div>
 <input id="f" type="file" accept="image/*" capture="environment" hidden>
@@ -102,7 +117,12 @@ let S={};try{S=JSON.parse(localStorage.getItem('chorely2')||'{}')}catch{}
 const save=()=>{try{localStorage.setItem('chorely2',JSON.stringify(S))}catch{}};
 let CS={theme:'dark',h24:false,def:'pending',sec:20,wallpaper:null,shareLoc:false};try{Object.assign(CS,JSON.parse(localStorage.getItem('chorely_set')||'{}'))}catch{}
 const saveCS=()=>{try{localStorage.setItem('chorely_set',JSON.stringify(CS))}catch{}document.body.classList.toggle('light',CS.theme=='light');if(CS.wallpaper)document.body.style.setProperty('--bg',CS.wallpaper);else document.body.style.removeProperty('--bg')};saveCS();
-let pushTopic='',earn=[],earnSel=new Set(),seenN=0,notifs=[],lastUn=null,tasks=[],pend=[],tSel=new Set(),schedOn=false,W={},convs=[],lastM={},chat=null,chatMsgs=[],replyTo=null,openMsgId=null,reactMenuId=null,holdTimer=null,holdTriggered=false,alertsL=[],usage=null,tab='chores',users=[],chores=[],days={},hearts={},cms={},openC={},ph={},who='',flt='all',range='today',leaders=[],mode=null,target=null,timer,newStatus='pending',newBlob=null,refreshing=null,locs={},shareLoc=!!CS.shareLoc,mapInst=null,locWatch=null,mapMarkers={};
+let pushTopic='',earn=[],earnSel=new Set(),seenN=0,notifs=[],lastUn=null,tasks=[],pend=[],tSel=new Set(),schedOn=false,W={},convs=[],lastM={},chat=null,chatMsgs=[],replyTo=null,openMsgId=null,reactMenuId=null,holdTimer=null,holdTriggered=false,alertsL=[],usage=null,tab='chores',users=[],chores={},days={},hearts={},cms={},openC={},ph={},who='',flt='all',range='today',leaders=[],mode=null,target=null,timer,newStatus='pending',newBlob=null,refreshing=null,locs={},shareLoc=!!CS.shareLoc,mapInst=null,locWatch=null,mapMarkers={};
+// NEW: AI DM + typing state
+let aiTyping=false, aiTypingName='Groq AI';
+let humanTyping={}, humanTypingTimer=null, pinnedMsgs=[], chatSearch='', chatSearchIdx=0;
+let editMsgId=null;
+const AI_ID='ai-dm', AI_SENDER='ai-groq';
 const local=()=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
 const add=(s,n)=>{const d=new Date(s+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)};
 let date=local();const LBL={later:'Later',pending:'Pending',done:'Done'};
@@ -110,960 +130,345 @@ const fmt=s=>new Date(s).toLocaleString([], {month:'short',day:'numeric',hour:'n
 const slug=n=>n.trim().toLowerCase().replace(/[^a-z0-9]+/g,'');
 function setSession(j){if(typeof ws!='undefined'&&ws&&ws.readyState==1)ws.send(JSON.stringify({topic:'realtime:chorely',event:'access_token',payload:{access_token:j.access_token},ref:'t'}));S.access=j.access_token;S.refresh=j.refresh_token;S.exp=Date.now()+(j.expires_in-60)*1000;S.id=j.user.id;save()}
 function refresh(){if(!refreshing)refreshing=(async()=>{const r=await fetch(`${CFG.url}/auth/v1/token?grant_type=refresh_token`,{method:'POST',headers:{apikey:CFG.key,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:S.refresh})});if(!r.ok)throw 401;setSession(await r.json())})().finally(()=>refreshing=null);return refreshing}
-async function req(path,o={}){if(S.access&&Date.now()>S.exp)await refresh();
- const go=()=>fetch(CFG.url+path,{method:o.m||'GET',headers:{apikey:CFG.key,...(S.access?{Authorization:'Bearer '+S.access}:{}),...(o.h||{})},body:o.body});
- let r=await go();if(r.status==401&&S.refresh){await refresh();r=await go()}
- if(!r.ok)throw {s:r.status,t:await r.text()};return r}
+async function req(path,o={}){if(S.access&&Date.now()>S.exp)await refresh();const go=()=>fetch(CFG.url+path,{method:o.m||'GET',headers:{apikey:CFG.key,...(S.access?{Authorization:'Bearer '+S.access}:{}),...(o.h||{})},body:o.body});let r=await go();if(r.status==401&&S.refresh){await refresh();r=await go()}if(!r.ok)throw {s:r.status,t:await r.text()};return r}
 async function db(path,o={}){const r=await req(path,{m:o.m,h:{'Content-Type':'application/json',Prefer:'return=minimal',...(o.h||{})},body:o.b&&JSON.stringify(o.b)});const t=await r.text();return t?JSON.parse(t):null}
-function loginView(msg=''){try{ws&&(ws.onclose=null,ws.close())}catch{}clearInterval(timer);clearInterval(beatT);$('#wal').innerHTML='';$('#nav').innerHTML='';$('#app').innerHTML=`<div class=login><h1>Chorely</h1><p style="color:var(--mut);margin-top:6px">Shared chores with photo proof</p>
-<input id=nm placeholder="Your name" value="${esc(S.name||'')}" autocapitalize=words><input id=pw type=password placeholder="Password (6+ characters)">
-<p id=err>${esc(msg)}</p><div style="display:flex;gap:8px;margin-top:14px"><button style="flex:1" onclick="auth('login')">Log in</button><button class=g style="flex:1" onclick="auth('register')">Create account</button></div></div>`}
-async function auth(kind){const name=$('#nm').value.trim(),pw=$('#pw').value;
- if(!slug(name)||pw.length<6)return $('#err').textContent='Enter a name and a password of 6+ characters';
- try{const r=await fetch(`${CFG.url}/auth/v1/${kind=='login'?'token?grant_type=password':'signup'}`,{method:'POST',headers:{apikey:CFG.key,'Content-Type':'application/json'},body:JSON.stringify({email:slug(name)+'@chorely.app',password:pw})});
-  const j=await r.json();if(!r.ok)throw {s:r.status,t:j.msg||j.error_description||j.message||''};
-  if(!j.access_token)throw {s:0,t:'confirm'};
-  setSession(j);
-  if(kind=='register'){await db('/rest/v1/profiles',{m:'POST',b:{id:S.id,name}});S.name=name}
-  else{const p=await db(`/rest/v1/profiles?select=name&id=eq.${S.id}`);S.name=(p&&p[0]&&p[0].name)||name}
-  save();start()}
- catch(e){S.access=null;$('#err').textContent=e.t=='confirm'?'Turn off "Confirm email" in Supabase':/already|registered/i.test(e.t||'')?'That name is taken':e.s==400&&kind=='login'?'Wrong name or password':e instanceof TypeError?'Cannot reach the internet':'Problem: '+(e.t||e)}}
+function loginView(msg=''){try{ws&&(ws.onclose=null,ws.close())}catch{}clearInterval(timer);clearInterval(beatT);$('#wal').innerHTML='';$('#nav').innerHTML='';$('#app').innerHTML=`<div class=login><h1>Chorely</h1><p style="color:var(--mut);margin-top:6px">Shared chores with photo proof</p><input id=nm placeholder="Your name" value="${esc(S.name||'')}" autocapitalize=words><input id=pw type=password placeholder="Password (6+ characters)"><p id=err>${esc(msg)}</p><div style="display:flex;gap:8px;margin-top:14px"><button style="flex:1" onclick="auth('login')">Log in</button><button class=g style="flex:1" onclick="auth('register')">Create account</button></div></div>`}
+async function auth(kind){const name=$('#nm').value.trim(),pw=$('#pw').value;if(!slug(name)||pw.length<6)return $('#err').textContent='Enter a name and a password of 6+ characters';try{const r=await fetch(`${CFG.url}/auth/v1/${kind=='login'?'token?grant_type=password':'signup'}`,{method:'POST',headers:{apikey:CFG.key,'Content-Type':'application/json'},body:JSON.stringify({email:slug(name)+'@chorely.app',password:pw})});const j=await r.json();if(!r.ok)throw {s:r.status,t:j.msg||j.error_description||j.message||''};if(!j.access_token)throw {s:0,t:'confirm'};setSession(j);if(kind=='register'){await db('/rest/v1/profiles',{m:'POST',b:{id:S.id,name}});S.name=name}else{const p=await db(`/rest/v1/profiles?select=name&id=eq.${S.id}`);S.name=(p&&p[0]&&p[0].name)||name}save();start()}catch(e){S.access=null;$('#err').textContent=e.t=='confirm'?'Turn off "Confirm email" in Supabase':/already|registered/i.test(e.t||'')?'That name is taken':e.s==400&&kind=='login'?'Wrong name or password':e instanceof TypeError?'Cannot reach the internet':'Problem: '+(e.t||e)}}
 function logout(){endCall();S={name:S.name};save();ph={};users=[];tab='chores';loginView()}
 let ws,wsT;
-function rtConnect(){
- if(!S.access)return;
- try{if(ws){ws.onclose=null;ws.close()}}catch{}
- try{
-  ws=new WebSocket(CFG.url.replace(/^http/,'ws')+'/realtime/v1/websocket?apikey='+CFG.key+'&vsn=1.0.0');
-  ws.onopen=()=>{
-   ws.send(JSON.stringify({topic:'realtime:chorely',event:'phx_join',ref:'1',payload:{config:{broadcast:{self:false},presence:{key:''},postgres_changes:['chores','comments','hearts','msgs','tasks','notifs','alerts','wallets','members','calls','signals','call_participants','locations'].map(table=>({event:'*',schema:'public',table}))},access_token:S.access}}));
-   clearInterval(wsT);
-   wsT=setInterval(()=>{if(ws&&ws.readyState===1)ws.send(JSON.stringify({topic:'phoenix',event:'heartbeat',payload:{},ref:'hb'}))},25000);
-  };
-  let t;
-  ws.onmessage=e=>{
-   let m;try{m=JSON.parse(e.data)}catch{return}
-   if(m.event==='broadcast'&&m.payload){
-    const ev=m.payload.event,pl=m.payload.payload||{};
-    if(ev==='seen'&&pl.conv_id&&pl.user_id&&pl.msg_id){
-     const sm=getSeenMap(pl.conv_id);
-     if(!sm[pl.user_id]||sm[pl.user_id]<pl.msg_id){sm[pl.user_id]=pl.msg_id;setSeenMap(pl.conv_id,sm);if(tab==='msgs'&&chat==pl.conv_id)render()}
-    }
-    if(ev==='react'&&pl.conv_id==chat&&pl.msg_id&&pl.user_id){
-     const targetMsg=chatMsgs.find(x=>x.id==pl.msg_id);
-     if(targetMsg){
-      const p=parseMsgBody(targetMsg.body);
-      const r={...p.reacts};
-      if(pl.emoji)r[pl.user_id]=pl.emoji;else delete r[pl.user_id];
-      targetMsg.body=buildMsgBody(p.reply,p.text,r);
-      render();
-     }
-    }
-    return;
-   }
-   if(m.event!=='postgres_changes')return;
-   const d=m.payload&&m.payload.data;if(!d)return;
-   if(d.table==='signals'){if(d.type==='INSERT')onSignal(d.record);return}
-   if(d.table==='calls'){
-    if(d.type==='INSERT')onIncoming(d.record);
-    if(d.type==='UPDATE'&&call&&d.record.id===call.id&&d.record.ended_at)checkCallEnded();
-   }
-   if(d.table==='call_participants'&&call&&d.record.call_id===call.id){
-    if(d.type==='INSERT'&&d.record.user_id!==S.id&&!call.peers.includes(d.record.user_id)){call.peers.push(d.record.user_id);callUI()}
-    if(d.type==='UPDATE'&&d.record.left_at){closePc(d.record.user_id);call.peers=call.peers.filter(x=>x!==d.record.user_id);callUI()}
-   }
-   clearTimeout(t);t=setTimeout(load,250);
-  };
-  ws.onclose=()=>{clearInterval(wsT);if(S.access)setTimeout(rtConnect,5000)};
- }catch(e){setTimeout(rtConnect,5000)}
-}
+function rtConnect(){if(!S.access)return;try{if(ws){ws.onclose=null;ws.close()}}catch{}try{ws=new WebSocket(CFG.url.replace(/^http/,'ws')+'/realtime/v1/websocket?apikey='+CFG.key+'&vsn=1.0.0');ws.onopen=()=>{ws.send(JSON.stringify({topic:'realtime:chorely',event:'phx_join',ref:'1',payload:{config:{broadcast:{self:false},presence:{key:''},postgres_changes:['chores','comments','hearts','msgs','tasks','notifs','alerts','wallets','members','calls','signals','call_participants','locations'].map(table=>({event:'*',schema:'public',table}))},access_token:S.access}}));clearInterval(wsT);wsT=setInterval(()=>{if(ws&&ws.readyState===1)ws.send(JSON.stringify({topic:'phoenix',event:'heartbeat',payload:{},ref:'hb'}))},25000)};let t;ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch{return}if(m.event==='broadcast'&&m.payload){const ev=m.payload.event,pl=m.payload.payload||{};if(ev==='seen'&&pl.conv_id&&pl.user_id&&pl.msg_id){const sm=getSeenMap(pl.conv_id);if(!sm[pl.user_id]||sm[pl.user_id]<pl.msg_id){sm[pl.user_id]=pl.msg_id;setSeenMap(pl.conv_id,sm);if(tab==='msgs'&&chat==pl.conv_id)render()}}if(ev==='typing'&&pl.conv_id==chat&&pl.user_id!==S.id){ humanTyping[pl.user_id]={conv_id:pl.conv_id,name:pl.name||'Someone',at:Date.now()}; render(); }
+    if(ev==='react'&&pl.conv_id==chat&&pl.msg_id&&pl.user_id){const targetMsg=chatMsgs.find(x=>x.id==pl.msg_id);if(targetMsg){const p=parseMsgBody(targetMsg.body);const r={...p.reacts};if(pl.emoji)r[pl.user_id]=pl.emoji;else delete r[pl.user_id];targetMsg.body=buildMsgBody(p.reply,p.text,r);render()}}return}if(m.event!=='postgres_changes')return;const d=m.payload&&m.payload.data;if(!d)return;if(d.table==='signals'){if(d.type==='INSERT')onSignal(d.record);return}if(d.table==='calls'){if(d.type==='INSERT')onIncoming(d.record);if(d.type==='UPDATE'&&call&&d.record.id===call.id&&d.record.ended_at)checkCallEnded()}if(d.table==='call_participants'&&call&&d.record.call_id===call.id){if(d.type==='INSERT'&&d.record.user_id!==S.id&&!call.peers.includes(d.record.user_id)){call.peers.push(d.record.user_id);callUI()}if(d.type==='UPDATE'&&d.record.left_at){closePc(d.record.user_id);call.peers=call.peers.filter(x=>x!==d.record.user_id);callUI()}}clearTimeout(t);t=setTimeout(load,250)};ws.onclose=()=>{clearInterval(wsT);if(S.access)setTimeout(rtConnect,5000)}}catch(e){setTimeout(rtConnect,5000)}}
 function start(){rtConnect();checkUpdate().then(()=>render());checkStorage();purgeTasks();purgeOldEarnings();load().then(()=>{handleCallRoute();pollIncomingCalls();resumeLocShare()});clearInterval(beatT);beatT=setInterval(beat,30000);beat();clearInterval(timer);timer=setInterval(()=>{if(!document.hidden)load()},CS.sec*1000)}
 let busy=false,again=false;
 async function load(){if(busy){again=true;return}busy=true;try{await load0()}finally{busy=false;if(again){again=false;load()}}}
-async function load0(){try{
- const [u,c,d]=await Promise.all([db('/rest/v1/profiles?select=id,name,avatar_path,last_seen&order=name'),
-  db(`/rest/v1/chores?select=id,title,owner,status,created_at,done_at,before_path,photo_path,credits&due_date=eq.${date}&order=created_at.desc,id.desc`),
-  db(`/rest/v1/chores?select=due_date,status&due_date=gte.${add(date,-3)}&due_date=lte.${add(date,10)}`),loadExtra()]);
- const h={},m={},dy={};
- d.forEach(x=>{const k=dy[x.due_date]||(dy[x.due_date]={total:0,done:0});k.total++;if(x.status=='done')k.done++});
- if(c.length){const ids=c.map(x=>x.id).join(',');
-  const [hh,mm]=await Promise.all([db(`/rest/v1/hearts?select=chore_id,user_id&chore_id=in.(${ids})`),db(`/rest/v1/comments?select=id,chore_id,author,body,created_at&chore_id=in.(${ids})&order=created_at`)]);
-  hh.forEach(x=>{const k=h[x.chore_id]||(h[x.chore_id]={n:0,mine:false});k.n++;if(x.user_id==S.id)k.mine=true});
-  mm.forEach(x=>(m[x.chore_id]||(m[x.chore_id]=[])).push(x))}
- users=u;chores=c;days=dy;hearts=h;cms=m;
- if(tab=='leaders')await loadLeaders();
- render()
-}catch(e){if(e==401||e.s==401)logout();else if(e.s)$('#app').innerHTML='<div class=empty>Problem: '+esc(e.t||e.s)+'<br><br>Did you run ALL the .sql update files in Supabase? (update4.sql is the newest)</div>';else if(!users.length)$('#app').innerHTML='<div class=empty>Cannot reach the internet. Retrying…</div>'}}
+async function load0(){try{const [u,c,d]=await Promise.all([db('/rest/v1/profiles?select=id,name,avatar_path,last_seen&order=name'),db(`/rest/v1/chores?select=id,title,owner,status,created_at,done_at,before_path,photo_path,credits&due_date=eq.${date}&order=created_at.desc,id.desc`),db(`/rest/v1/chores?select=due_date,status&due_date=gte.${add(date,-3)}&due_date=lte.${add(date,10)}`),loadExtra()]);const h={},m={},dy={};d.forEach(x=>{const k=dy[x.due_date]||(dy[x.due_date]={total:0,done:0});k.total++;if(x.status=='done')k.done++});if(c.length){const ids=c.map(x=>x.id).join(',');const [hh,mm]=await Promise.all([db(`/rest/v1/hearts?select=chore_id,user_id&chore_id=in.(${ids})`),db(`/rest/v1/comments?select=id,chore_id,author,body,created_at&chore_id=in.(${ids})&order=created_at`)]);hh.forEach(x=>{const k=h[x.chore_id]||(h[x.chore_id]={n:0,mine:false});k.n++;if(x.user_id==S.id)k.mine=true});mm.forEach(x=>(m[x.chore_id]||(m[x.chore_id]=[])).push(x))}users=u;chores=Array.isArray(c)?c:[];days=dy;hearts=h;cms=m;if(tab=='leaders')await loadLeaders();render()}catch(e){if(e==401||e.s==401)logout();else if(e.s)$('#app').innerHTML='<div class=empty>Problem: '+esc(e.t||e.s)+'<br><br>Did you run ALL the .sql update files in Supabase?</div>';else if(!users.length)$('#app').innerHTML='<div class=empty>Cannot reach the internet. Retrying…</div>'}}
 const ld=t=>new Date(new Date(t).getTime()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
-async function loadLeaders(){const d=new Date();d.setHours(0,0,0,0);if(range=='week')d.setDate(d.getDate()-6);if(range=='month')d.setDate(1);if(range=='all')d.setTime(0);
- const old=new Date();old.setDate(old.getDate()-60);
- const [r,sr]=await Promise.all([db(`/rest/v1/chores?select=owner&status=eq.done&done_at=gte.${encodeURIComponent(d.toISOString())}`),db(`/rest/v1/chores?select=owner,done_at&status=eq.done&done_at=gte.${encodeURIComponent(old.toISOString())}`)]),n={},ds={};
- r.forEach(x=>n[x.owner]=(n[x.owner]||0)+1);sr.forEach(x=>(ds[x.owner]||(ds[x.owner]=new Set())).add(ld(x.done_at)));
- const streak=id=>{const st=ds[id];if(!st)return 0;let k=0,day=local();if(!st.has(day))day=add(day,-1);while(st.has(day)){k++;day=add(day,-1)}return k};
- leaders=users.map(u=>({...u,n:n[u.id]||0,s:streak(u.id)})).sort((a,b)=>b.n-a.n||a.name.localeCompare(b.name))}
-function render(){
- const ae=document.activeElement,keep=ae&&ae.tagName=='INPUT'?{id:ae.id,v:ae.value}:null,inChat=tab=='msgs'&&chat;
- if($('#sh').classList.contains('show')||(keep&&!(inChat&&keep.id=='mi')))return;
- $('#app').innerHTML=updBanner()+(tab=='chores'?vChores():tab=='msgs'?vMsgs():tab=='tasks'?vTasks():tab=='credit'?vCredit():tab=='leaders'?vLeaders():vSettings());{const un=notifs.filter(n=>!n.read).length;$('#wal').innerHTML=`<span onclick="event.stopPropagation();bellView()">🔔${un?` <b style="color:#ff5d7a">${un}</b>`:''}</span>   👛 ${(W[S.id]||{credits:0}).credits}`}
- $('#nav').innerHTML=[['chores','📋','Chores'],['msgs','💬','Messages'],['tasks','✅','Tasks'],['credit','👛','Credit'],['leaders','🏆','Leaders'],['settings','⚙️','Settings']].map(([t,i,l])=>`<button class="${tab==t?'on':''}" onclick="tab='${t}';load()">${i}<span>${l}</span></button>`).join('');
- loadImgs();if(keep&&keep.id=='mi'){const n=$('#mi');if(n){n.value=keep.v;n.focus()}}if(inChat&&chatMsgs.length!=seenN){seenN=chatMsgs.length;window.scrollTo(0,document.body.scrollHeight)}}
+async function loadLeaders(){const d=new Date();d.setHours(0,0,0,0);if(range=='week')d.setDate(d.getDate()-6);if(range=='month')d.setDate(1);if(range=='all')d.setTime(0);const old=new Date();old.setDate(old.getDate()-60);const [r,sr]=await Promise.all([db(`/rest/v1/chores?select=owner&status=eq.done&done_at=gte.${encodeURIComponent(d.toISOString())}`),db(`/rest/v1/chores?select=owner,done_at&status=eq.done&done_at=gte.${encodeURIComponent(old.toISOString())}`)]),n={},ds={};r.forEach(x=>n[x.owner]=(n[x.owner]||0)+1);sr.forEach(x=>(ds[x.owner]||(ds[x.owner]=new Set())).add(ld(x.done_at)));const streak=id=>{const st=ds[id];if(!st)return 0;let k=0,day=local();if(!st.has(day))day=add(day,-1);while(st.has(day)){k++;day=add(day,-1)}return k};leaders=users.map(u=>({...u,n:n[u.id]||0,s:streak(u.id)})).sort((a,b)=>b.n-a.n||a.name.localeCompare(b.name))}
+function render(){const ae=document.activeElement,keep=ae&&ae.tagName=='INPUT'?{id:ae.id,v:ae.value}:null,inChat=tab=='msgs'&&chat;if($('#sh').classList.contains('show')||(keep&&!(inChat&&keep.id=='mi')))return;$('#app').innerHTML=updBanner()+(tab=='chores'?vChores():tab=='msgs'?vMsgs():tab=='tasks'?vTasks():tab=='credit'?vCredit():tab=='leaders'?vLeaders():vSettings());{const un=notifs.filter(n=>!n.read).length;$('#wal').innerHTML=`<span onclick="event.stopPropagation();bellView()">🔔${un?` <b style="color:#ff5d7a">${un}</b>`:''}</span>   👛 ${(W[S.id]||{credits:0}).credits}`} $('#nav').innerHTML=[['chores','📋','Chores'],['msgs','💬','Messages'],['tasks','✅','Tasks'],['credit','👛','Credit'],['leaders','🏆','Leaders'],['settings','⚙','Settings']].map(([t,i,l])=>`<button class="${tab==t?'on':''}" onclick="tab='${t}';load()">${i}<span>${l}</span></button>`).join('');loadImgs();baInitAll();if(keep&&keep.id=='mi'){const n=$('#mi');if(n){n.value=keep.v;n.focus()}}if(inChat&&chatMsgs.length!=seenN){seenN=chatMsgs.length;window.scrollTo(0,document.body.scrollHeight)}}
 function loadImgs(){document.querySelectorAll('img[data-p]').forEach(async i=>{try{i.src=await photo(i.dataset.p)}catch{}})}
-function vChores(){const t=local(),mo=new Date(date+'T12:00:00Z').toLocaleDateString([], {month:'long',year:'numeric',timeZone:'UTC'});
- const strip=Array.from({length:14},(_,i)=>add(date,i-3)).map(d=>{const x=days[d],c=!x?'':x.done==x.total?'d':'p',w=new Date(d+'T12:00:00Z').toLocaleDateString([], {weekday:'short',timeZone:'UTC'});
-  return `<div class="day ${d==date?'on':''}" onclick="go('${d}')">${w}<b>${+d.slice(8)}</b><i class="dot ${c}"></i></div>`}).join('');
- const chips=[{id:'',name:'Everyone'},...users].map(u=>`<div class="chip ${who==u.id?'on':''}" onclick="who='${u.id}';render()">${esc(u.id==S.id?'Me':u.name)}</div>`).join('');
- const fl=['all','later','pending','done'].map(s=>`<div class="chip ${flt==s?'on':''}" onclick="flt='${s}';render()">${s=='all'?'All':LBL[s]}</div>`).join('');
- const tot=chores.length,dn=chores.filter(c=>c.status=='done').length;
- const prog=tot?`<div class=prog><div class=pb><i style="width:${dn/tot*100}%"></i></div><small style="color:var(--mut)">${dn} of ${tot} done</small></div>`:'';
- const cards=chores.filter(c=>(!who||c.owner==who)&&(flt=='all'||c.status==flt)).map(card).join('')||'<div class=empty>No chores here</div>';
- return `<header><h1>Chorely</h1>${date!=t?`<button class=g onclick="go('${t}')">Today</button>`:''}</header>
- <div class=mo><button class=g onclick="shiftMonth(-1)">‹</button><b>${mo}</b><button class=g onclick="shiftMonth(1)">›</button></div>
- <div class=row>${strip}</div><div class=row>${chips}</div><div class=row>${fl}</div>${warn()}${prog}${cards}<button class=fab onclick="addView()">+</button>`}
-function card(c){const mine=c.owner==S.id,nm=nmOf(c.owner),hue=parseInt(c.owner.slice(0,6),16)%360,h=hearts[c.id]||{n:0,mine:false},cl=cms[c.id]||[];
- const ctl=c.status=='done'?`<span class="tag done">✓ Done · Completed</span>`:mine?`<div class=seg>${['later','pending','done'].map(s=>`<button class="${c.status==s?'on '+s:''}" onclick="setS(${c.id},'${s}')">${LBL[s]}</button>`).join('')}</div>${!c.before_path?`<button class="g sm" onclick="pickPhoto('before',${c.id})">📷 Add before photo</button>`:''}`:`<span class="tag ${c.status}">${LBL[c.status]}</span>`;
- const pics=(c.before_path||c.photo_path)?`<div class=pics>${[['Before',c.before_path],['After',c.photo_path]].filter(x=>x[1]).map(([l,p])=>`<figure><img class=th data-p="${esc(p)}" onclick="show(this.dataset.p)"><figcaption>${l}</figcaption></figure>`).join('')}</div>`:'';
- const cmHtml=openC[c.id]?`<div class=cms>${cl.map(m=>`<div class=cm><b>${esc(nmOf(m.author))}</b> <small>${fmt(m.created_at)}</small>${m.author==S.id?`<a onclick="delC(${m.id})">✕</a>`:''}<div>${esc(m.body)}</div></div>`).join('')||'<small style="color:var(--mut)">No comments yet</small>'}<div class=cin style="margin-top:8px"><input id="c${c.id}" placeholder="Write a comment…" maxlength=500><button onclick="send(${c.id})">Send</button></div></div>`:'';
- return `<div class=card><div class=top>${av(c.owner)}<div class=m><span class=ct>Created ${fmt(c.created_at)}${c.status!='done'&&date<local()?' · ⚠ Overdue':''}</span><b>${esc(c.title)}</b><small>${esc(nm)}${c.done_at?' · ✓ done '+fmt(c.done_at)+(c.credits?' · +'+c.credits+' 👛':''):''}</small></div>${mine?`<button class=ic onclick="editView(${c.id})">✏️</button><button class=ic onclick="del(${c.id})">🗑️</button>`:''}</div>${ctl}${pics}
- <div class=act><button class="g ${h.mine?'on':''}" onclick="heart(${c.id})">${h.mine?'❤️':'🤍'} ${h.n}</button><button class=g onclick="openC[${c.id}]=!openC[${c.id}];render()">💬 ${cl.length}</button></div>${cmHtml}</div>`}
+function vChores(){const t=local(),mo=new Date(date+'T12:00:00Z').toLocaleDateString([], {month:'long',year:'numeric',timeZone:'UTC'});const strip=Array.from({length:14},(_,i)=>add(date,i-3)).map(d=>{const x=days[d],c=!x?'':x.done==x.total?'d':'p',w=new Date(d+'T12:00:00Z').toLocaleDateString([], {weekday:'short',timeZone:'UTC'});return `<div class="day ${d==date?'on':''}" onclick="go('${d}')">${w}<b>${+d.slice(8)}</b><i class="dot ${c}"></i></div>`}).join('');const chips=[{id:'',name:'Everyone'},...users].map(u=>`<div class="chip ${who==u.id?'on':''}" onclick="who='${u.id}';render()">${esc(u.id==S.id?'Me':u.name)}</div>`).join('');const fl=['all','later','pending','done'].map(s=>`<div class="chip ${flt==s?'on':''}" onclick="flt='${s}';render()">${s=='all'?'All':LBL[s]}</div>`).join('');const tot=chores.length,dn=chores.filter(c=>c.status=='done').length;const prog=tot?`<div class=prog><div class=pb><i style="width:${dn/tot*100}%"></i></div><small style="color:var(--mut)">${dn} of ${tot} done</small></div>`:'';
+const cards=chores.filter(c=>(!who||c.owner==who)&&(flt=='all'||c.status==flt)).map(card).join('')||'<div class=empty>No chores here</div>';
+return `<header><h1>Chorely</h1>${date!=t?`<button class=g onclick="go('${t}')">Today</button>`:''}</header><div class=mo><button class=g onclick="shiftMonth(-1)">‹</button><b>${mo}</b><button class=g onclick="shiftMonth(1)">›</button></div><div class=row>${strip}</div><div class=row>${chips}</div><div class=row>${fl}</div>${warn()}${prog}${cards}<button class=fab onclick="addView()">+</button>`}
+function card(c){const mine=c.owner==S.id,nm=nmOf(c.owner),h=hearts[c.id]||{n:0,mine:false},cl=cms[c.id]||[];const ctl=c.status=='done'?`<span class="tag done">✓ Done · Completed</span>`:mine?`<div class=seg>${['later','pending','done'].map(s=>`<button class="${c.status==s?'on '+s:''}" onclick="setS(${c.id},'${s}')">${LBL[s]}</button>`).join('')}</div>${!c.before_path?`<button class="g sm" onclick="pickPhoto('before',${c.id})">📷 Add before photo</button>`:''}`:`<span class="tag ${c.status}">${LBL[c.status]}</span>`;const pics=(c.before_path||c.photo_path)?`<div class=pics>${[['Before',c.before_path],['After',c.photo_path]].filter(x=>x[1]).map(([l,p])=>`<figure><img class=th data-p="${esc(p)}" onclick="show(this.dataset.p)"><figcaption>${l}</figcaption></figure>`).join('')}</div>`:'';
+const cmHtml=openC[c.id]?`<div class=cms>${cl.map(m=>`<div class=cm><b>${esc(nmOf(m.author))}</b> <small>${fmt(m.created_at)}</small>${m.author==S.id?`<a onclick="delC(${m.id})">✕</a>`:''}<div>${esc(m.body)}</div></div>`).join('')||'<small style="color:var(--mut)">No comments yet</small>'}<div class=cin style="margin-top:8px"><input id="c${c.id}" placeholder="Write a comment…" maxlength=500><button onclick="send(${c.id})">Send</button></div></div>`:'';
+return `<div class=card><div class=top>${av(c.owner)}<div class=m><span class=ct>Created ${fmt(c.created_at)}${c.status!='done'&&date<local()?' · ⚠ Overdue':''}</span><b>${esc(c.title)}</b><small>${esc(nm)}${c.done_at?' · ✓ done '+fmt(c.done_at)+(c.credits?' · +'+c.credits+' 👛':''):''}</small></div>${mine?`<button class=ic onclick="editView(${c.id})">✏</button><button class=ic onclick="del(${c.id})">🗑</button>`:''}</div>${ctl}${pics}<div class=act><button class="g ${h.mine?'on':''}" onclick="heart(${c.id})">${h.mine?'❤':'🤍'} ${h.n}</button><button class=g onclick="openC[${c.id}]=!openC[${c.id}];render()">💬 ${cl.length}</button></div>${cmHtml}</div>`}
 const monthStartISO=()=>{const d=new Date();d.setDate(1);d.setHours(0,0,0,0);return d.toISOString()};
-async function purgeOldEarnings(){
- try{
-  const cut=monthStartISO();
-  const old=await db(`/rest/v1/chores?select=id,before_path,photo_path&owner=eq.${S.id}&status=eq.done&credits=gt.0&done_at=lt.${encodeURIComponent(cut)}`);
-  if(old&&old.length){
-   const paths=old.flatMap(x=>[x.before_path,x.photo_path]).filter(Boolean);
-   if(paths.length)rmFiles(paths);
-   await db(`/rest/v1/chores?owner=eq.${S.id}&status=eq.done&credits=gt.0&done_at=lt.${encodeURIComponent(cut)}`,{m:'DELETE'});
-  }
- }catch{}
-}
+async function purgeOldEarnings(){try{const cut=monthStartISO();const old=await db(`/rest/v1/chores?select=id,before_path,photo_path&owner=eq.${S.id}&status=eq.done&credits=gt.0&done_at.lt.${encodeURIComponent(cut)}`);if(old&&old.length){const paths=old.flatMap(x=>[x.before_path,x.photo_path]).filter(Boolean);if(paths.length)rmFiles(paths);await db(`/rest/v1/chores?owner=eq.${S.id}&status=eq.done&credits=gt.0&done_at.lt.${encodeURIComponent(cut)}`,{m:'DELETE'})}}catch{}}
 function toggleEarnSel(id,checked){if(checked)earnSel.add(id);else earnSel.delete(id);render()}
-async function delSelectedEarn(){
- if(!earnSel.size)return alert('Select at least one earning to delete.');
- if(!confirm(`Delete ${earnSel.size} selected earning record(s)? Your wallet credits will NOT change.`))return;
- const ids=[...earnSel];
- try{
-  const rows=earn.filter(x=>earnSel.has(x.id));
-  const paths=rows.flatMap(x=>[x.before_path,x.photo_path]).filter(Boolean);
-  if(paths.length)rmFiles(paths);
-  await db(`/rest/v1/chores?id=in.(${ids.join(',')})&owner=eq.${S.id}`,{m:'DELETE'});
-  earnSel.clear();
-  toast('Selected earnings deleted');
-  load();
- }catch{alert('Could not delete selected earnings')}
-}
-function vCredit(){const w=W[S.id]||{credits:0},left=leftSec(w);
- const t0=new Date();t0.setHours(0,0,0,0);const wk=new Date(t0);wk.setDate(wk.getDate()-6);const mo=new Date(t0);mo.setDate(1);
- const monthEarn=earn.filter(x=>new Date(x.done_at)>=mo);
- const sum=d=>monthEarn.filter(x=>new Date(x.done_at)>=d).reduce((a,x)=>a+x.credits,0);
- const all=Object.values(W).sort((a,b)=>b.credits-a.credits);
- return `<header><h1>Credits</h1></header>
- <div class=set><h3 style="font-size:24px">👛 ${w.credits} credits</h3><small>≈ ₱${(w.credits/MR).toFixed(2)} · ${MR} credits = ₱1 · your credits never reset</small></div>
- <div class=set><h3>⏳ Screen time left</h3><b data-cd="${S.id}" style="font-size:24px">${fmtDur(left)}</b><br><small>${left?'Ends '+fmt(w.screen_until):'No active screen time'} · counts down automatically</small></div>
- <div class=set><h3>Cash out</h3><small>60 credits = 1h 45m screen time · ${MR} credits = ₱1. Meriam gets an alert.</small>
-  <input id=ca type=number min=1 placeholder="Credits to cash out"><div class=seg><button class=g onclick="$('#ca').value=${w.credits}">All</button></div>
-  <div style="display:flex;gap:8px;margin-top:12px"><button style="flex:1" onclick="cash('screen')">⏳ Screen time</button><button style="flex:1;background:var(--ok);color:#000" onclick="cash('money')">💵 Money (₱)</button></div></div>
- <div class=set><h3>Earned</h3><div class=st><div><b>${sum(t0)}</b>today</div><div><b>${sum(wk)}</b>last 7 days</div><div><b>${sum(mo)}</b>this month</div><div><b>${monthEarn.length}</b>paid chores</div></div><small>Each chore pays 25 to 30 credits, once, when it is first marked Done.</small></div>
- <div class=set><h3>Everyone's credits</h3>${all.map(x=>`<div class=top style="margin-top:10px">${av(x.user_id,38)}<div class=m><b>${esc(nmOf(x.user_id))}${x.user_id==S.id?' (you)':''}</b><small>₱${(x.credits/MR).toFixed(2)} · ⏳ <span data-cd="${x.user_id}">${fmtDur(leftSec(x))}</span></small></div><b class=cnt>${x.credits}</b></div>`).join('')||'<small>No wallets yet</small>'}</div>
- <div class=set><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><h3>Recent earnings (this month)</h3><button class=ic title="Delete selected" style="margin:0;padding:4px 8px;opacity:${earnSel.size?1:.45}" onclick="delSelectedEarn()">🗑️</button></div>${monthEarn.map(x=>`<div class="nf earn-row"><div style="flex:1;min-width:0">${esc(x.title)} <b style="color:var(--ok)">+${x.credits}</b><br><small style="color:var(--mut)">${fmt(x.done_at)}</small></div><input type=checkbox class=earn-chk ${earnSel.has(x.id)?'checked':''} onchange="toggleEarnSel(${x.id},this.checked)"></div>`).join('')||'<small>Finish a chore with before and after photos to earn credits</small>'}</div>`}
-function vLeaders(){const max=Math.max(1,...leaders.map(x=>x.n)),med=['🥇','🥈','🥉'];
- return `<header><h1>Leaderboard</h1></header><div class=row>${[['today','Today'],['week','Last 7 days'],['month','This month'],['all','All time']].map(([r,l])=>`<div class="chip ${range==r?'on':''}" onclick="range='${r}';load()">${l}</div>`).join('')}</div>
- ${leaders.map((u,i)=>`<div class="card top"><div class=rk>${(u.n&&med[i])||i+1}</div><div class=m><b>${esc(u.name)}${u.id==S.id?' (you)':''}${u.s?` 🔥${u.s}`:''}</b><div class=pb><i style="width:${u.n/max*100}%"></i></div></div><b class=cnt>${u.n}</b></div>`).join('')||'<div class=empty>No data yet</div>'}
- <p class=note>Counts chores marked Done in this period. 🔥 = days in a row with at least one chore done.</p>`}
-function vSettings(){const seg=(k,o)=>`<div class=seg>${o.map(([v,l])=>`<button class="${CS[k]===v?'on pending':''}" onclick='setCS("${k}",${JSON.stringify(v)})'>${l}</button>`).join('')}</div>`;
- return `<header><h1>Settings</h1></header>
- <div class=set><h3>Account</h3><small>Signed in as ${esc(S.name||'')}</small><input id=dn value="${esc(S.name||'')}" maxlength=30><button onclick="saveName()">Save name</button><button class=g onclick="pickPhoto('avatar')">🖼 Change picture</button><button class=g onclick="logout()">Log out</button></div>
- <div class=set><h3>Appearance</h3>${seg('theme',[['dark','Dark'],['light','Light']])}<small>App background color (works with either theme)</small><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px"><input type=color value="${esc(CS.wallpaper||(CS.theme=='light'?'#f4f5f9':'#0f1115'))}" onchange="setCS('wallpaper',this.value)" style="height:48px;padding:4px;max-width:100px;margin:0"><button class=g onclick="resetBg()">↺ Reset background</button></div><small>Reset restores the default background for the selected theme.</small></div>
- <div class=set><h3>Time format</h3>${seg('h24',[[false,'12-hour'],[true,'24-hour']])}</div>
- <div class=set><h3>New chores start as</h3>${seg('def',[['later','Later'],['pending','Pending']])}</div>
- <div class=set><h3>Auto-refresh</h3>${seg('sec',[[10,'10 sec'],[20,'20 sec'],[60,'1 min']])}</div>
- <div class=set><h3>📲 Phone notifications</h3><small>Get incoming-call alerts when Chorely is not open. Install the free <b>ntfy</b> app and subscribe to this private topic. Tap the alert to open Chorely, then tap Join. A browser cannot keep camera/microphone calls running after it is closed.</small><input readonly value="${esc(pushTopic||'loading…')}" onclick="this.select()"><br><button onclick="pushTest()">Send test</button><button class=g onclick="location.href='ntfy://ntfy.sh/'+pushTopic">Open in ntfy</button></div>
- <div class=set><h3>Cloud storage</h3><small>${usage?`Photos ${Math.round(usage.files/MB)} of 1024 MB · Database ${Math.round(usage.db/MB)} of 500 MB`:'Checking…'}</small><br><button class=g onclick="cleanupView()">Free up space…</button></div>
- <div class=set><h3>Storage</h3><small>Photos are kept in memory while the app is open.</small><br><button class=g onclick="clearPh()">Clear photo cache</button></div>
- <p class=note>Chorely v10<br>Made by Jayson. LC PHILIPPINES</p>`}
+async function delSelectedEarn(){if(!earnSel.size)return alert('Select at least one earning to delete.');if(!confirm(`Delete ${earnSel.size} selected earning record(s)? Your wallet credits will NOT change.`))return;const ids=[...earnSel];try{const rows=earn.filter(x=>earnSel.has(x.id));const paths=rows.flatMap(x=>[x.before_path,x.photo_path]).filter(Boolean);if(paths.length)rmFiles(paths);await db(`/rest/v1/chores?id=in.(${ids.join(',')})&owner=eq.${S.id}`,{m:'DELETE'});earnSel.clear();toast('Selected earnings deleted');load()}catch{alert('Could not delete selected earnings')}}
+function vCredit(){const w=W[S.id]||{credits:0},left=leftSec(w);const t0=new Date();t0.setHours(0,0,0,0);const wk=new Date(t0);wk.setDate(wk.getDate()-6);const mo=new Date(t0);mo.setDate(1);const monthEarn=earn.filter(x=>new Date(x.done_at)>=mo);const sum=d=>monthEarn.filter(x=>new Date(x.done_at)>=d).reduce((a,x)=>a+x.credits,0);const all=Object.values(W).sort((a,b)=>b.credits-a.credits);return `<header><h1>Credits</h1></header><div class=set><h3 style="font-size:24px">👛 ${w.credits} credits</h3><small>≈ ₱${(w.credits/MR).toFixed(2)} · ${MR} credits = ₱1 · your credits never reset</small></div><div class=set><h3>⏳ Screen time left</h3><b data-cd="${S.id}" style="font-size:24px">${fmtDur(left)}</b><br><small>${left?'Ends '+fmt(w.screen_until):'No active screen time'}</small></div><div class=set><h3>Cash out</h3><small>60 credits = 1h 45m screen time · ${MR} credits = ₱1.</small><input id=ca type=number min=1 placeholder="Credits to cash out"><div class=seg><button class=g onclick="$('#ca').value=${w.credits}">All</button></div><div style="display:flex;gap:8px;margin-top:12px"><button style="flex:1" onclick="cash('screen')">⏳ Screen time</button><button style="flex:1;background:var(--ok);color:#000" onclick="cash('money')">💵 Money (₱)</button></div></div><div class=set><h3>Earned</h3><div class=st><div><b>${sum(t0)}</b>today</div><div><b>${sum(wk)}</b>last 7 days</div><div><b>${sum(mo)}</b>this month</div><div><b>${monthEarn.length}</b>paid chores</div></div></div><div class=set><h3>Everyone's credits</h3>${all.map(x=>`<div class=top style="margin-top:10px">${av(x.user_id,38)}<div class=m><b>${esc(nmOf(x.user_id))}${x.user_id==S.id?' (you)':''}</b><small>₱${(x.credits/MR).toFixed(2)} · ⏳ <span data-cd="${x.user_id}">${fmtDur(leftSec(x))}</span></small></div><b class=cnt>${x.credits}</b></div>`).join('')||'<small>No wallets yet</small>'}</div><div class=set><div style="display:flex;align-items:center;justify-content:space-between"><h3>Recent earnings (this month)</h3><button class=ic onclick="delSelectedEarn()">🗑</button></div>${monthEarn.map(x=>`<div class="nf earn-row"><div style="flex:1">${esc(x.title)} <b style="color:var(--ok)">+${x.credits}</b><br><small style="color:var(--mut)">${fmt(x.done_at)}</small></div><input type=checkbox class=earn-chk ${earnSel.has(x.id)?'checked':''} onchange="toggleEarnSel(${x.id},this.checked)"></div>`).join('')||'<small>Finish a chore with before and after photos to earn credits</small>'}</div>`}
+function vLeaders(){const max=Math.max(1,...leaders.map(x=>x.n)),med=['🥇','🥈','🥉'];return `<header><h1>Leaderboard</h1></header><div class=row>${[['today','Today'],['week','Last 7 days'],['month','This month'],['all','All time']].map(([r,l])=>`<div class="chip ${range==r?'on':''}" onclick="range='${r}';load()">${l}</div>`).join('')}</div>${leaders.map((u,i)=>`<div class="card top"><div class=rk>${(u.n&&med[i])||i+1}</div><div class=m><b>${esc(u.name)}${u.id==S.id?' (you)':''}${u.s?` 🔥${u.s}`:''}</b><div class=pb><i style="width:${u.n/max*100}%"></i></div></div><b class=cnt>${u.n}</b></div>`).join('')||'<div class=empty>No data yet</div>'}`}
+function vSettings(){const seg=(k,o)=>`<div class=seg>${o.map(([v,l])=>`<button class="${CS[k]===v?'on pending':''}" onclick='setCS("${k}",${JSON.stringify(v)})'>${l}</button>`).join('')}</div>`;return `<header><h1>Settings</h1></header><div class=set><h3>Account</h3><small>Signed in as ${esc(S.name||'')}</small><input id=dn value="${esc(S.name||'')}" maxlength=30><button onclick="saveName()">Save name</button><button class=g onclick="pickPhoto('avatar')">🖼 Change picture</button><button class=g onclick="logout()">Log out</button></div><div class=set><h3>Appearance</h3>${seg('theme',[['dark','Dark'],['light','Light']])}<small>App background color</small><div style="display:flex;gap:10px;margin-top:8px"><input type=color value="${esc(CS.wallpaper||'#0f1115')}" onchange="setCS('wallpaper',this.value)" style="height:48px;max-width:100px;margin:0"><button class=g onclick="resetBg()">↺ Reset background</button></div></div><div class=set><h3>Time format</h3>${seg('h24',[[false,'12-hour'],[true,'24-hour']])}</div><div class=set><h3>New chores start as</h3>${seg('def',[['later','Later'],['pending','Pending']])}</div><div class=set><h3>Auto-refresh</h3>${seg('sec',[[10,'10 sec'],[20,'20 sec'],[60,'1 min']])}</div><div class=set><h3>📲 Phone notifications</h3><small>Get incoming-call alerts via ntfy. Install ntfy and subscribe to this private topic.</small><input readonly value="${esc(pushTopic||'loading…')}" onclick="this.select()"><br><button onclick="pushTest()">Send test</button></div><div class=set><h3>Cloud storage</h3><small>${usage?`Photos ${Math.round(usage.files/MB)} of 1024 MB · Database ${Math.round(usage.db/MB)} of 500 MB`:'Checking…'}</small><br><button class=g onclick="cleanupView()">Free up space…</button></div><div class=set><h3>⏰ My AI Reminders</h3><small>Created when you tell Groq AI “remind me to…”</small><div id=remList></div><button class=g onclick="showReminders()">View reminders</button></div><p class=note>Chorely v10 + V2 (Slider / Edit / Pin / Search / Smart AI / Human Typing)<br>Made by Jayson. LC PHILIPPINES</p>`}
 function setCS(k,v){CS[k]=v;saveCS();if(k=='sec')start();render()}
 function resetBg(){CS.wallpaper=null;saveCS();render()}
 function clearPh(){Object.values(ph).forEach(u=>URL.revokeObjectURL(u));ph={};alert('Cache cleared')}
-async function saveName(){const n=$('#dn').value.trim();if(!n)return;try{await db(`/rest/v1/profiles?id=eq.${S.id}`,{m:'PATCH',b:{name:n}});S.name=n;save();document.activeElement.blur();alert('Name saved')}catch{alert('Could not save, try again')}load()}
+async function saveName(){const n=$('#dn').value.trim();if(!n)return;try{await db(`/rest/v1/profiles?id=eq.${S.id}`,{m:'PATCH',b:{name:n}});S.name=n;save();alert('Name saved')}catch{alert('Could not save')}load()}
 async function photo(p){if(!ph[p])ph[p]=URL.createObjectURL(await(await req('/storage/v1/object/authenticated/proof/'+p)).blob());return ph[p]}
 function go(d){date=d;load()}
 function shiftMonth(n){const d=new Date(date+'T12:00:00Z');d.setUTCDate(1);d.setUTCMonth(d.getUTCMonth()+n);const k=d.toISOString().slice(0,10),t=local();date=k.slice(0,7)==t.slice(0,7)?t:k;load()}
 async function show(p){$('#shc').innerHTML=`<img id=big src="${await photo(p)}"><button class=g style="width:100%;margin-top:12px" onclick="closeSh()">Close</button>`;$('#sh').classList.add('show')}
 function closeSh(){$('#sh').classList.remove('show');render()}
 function pickPhoto(m,id){mode=m;target=id;$('#f').click()}
-async function setS(id,s){const c=chores.find(x=>x.id==id);if(!c||c.status=='done'||c.status==s)return;
- if(s=='done'){if(!c.before_path)return alert('Add a BEFORE photo first (tap "Add before photo"), then mark it Done with an AFTER photo.');pickPhoto('after',id);return}
- try{await db(`/rest/v1/chores?id=eq.${id}`,{m:'PATCH',b:{status:s}})}catch{alert('Could not save, try again')}load()}
+async function setS(id,s){const c=chores.find(x=>x.id==id);if(!c||c.status=='done'||c.status==s)return;if(s=='done'){if(!c.before_path)return alert('Add a BEFORE photo first, then mark it Done with an AFTER photo.');pickPhoto('after',id);return}try{await db(`/rest/v1/chores?id=eq.${id}`,{m:'PATCH',b:{status:s}})}catch{alert('Could not save')}load()}
 async function shrink(f,mx=1024){const b=await createImageBitmap(f),k=Math.min(1,mx/Math.max(b.width,b.height)),c=document.createElement('canvas');c.width=b.width*k;c.height=b.height*k;c.getContext('2d').drawImage(b,0,0,c.width,c.height);return new Promise(r=>c.toBlob(r,'image/jpeg',.7))}
 async function upload(blob){const p=`${S.id}/${Date.now()}${Math.random().toString(36).slice(2,6)}.jpg`;await req('/storage/v1/object/proof/'+p,{m:'POST',h:{'Content-Type':'image/jpeg'},body:blob});return p}
-$('#f').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
- try{const blob=await shrink(f,mode=='avatar'?256:1024);if(mode=='new'){newBlob=blob;$('#np').textContent='✓ photo added';return}
-  const p=await upload(blob);await(mode=='avatar'?db(`/rest/v1/profiles?id=eq.${S.id}`,{m:'PATCH',b:{avatar_path:p}}):db(`/rest/v1/chores?id=eq.${target}`,{m:'PATCH',b:mode=='before'?{before_path:p}:{status:'done',photo_path:p}}))}
- catch(x){alert('Could not save: '+(x.t||x.message||'try again'))}load()};
-async function del(id){if(!confirm('Delete this chore, its photos and comments?'))return;const c=chores.find(x=>x.id==id);
- try{await db(`/rest/v1/chores?id=eq.${id}`,{m:'DELETE'});[c.before_path,c.photo_path].filter(Boolean).forEach(p=>req('/storage/v1/object/proof/'+p,{m:'DELETE'}).catch(()=>{}))}catch{alert('Could not delete, try again')}load()}
-async function heart(id){const h=hearts[id]||{n:0,mine:false};hearts[id]={n:h.n+(h.mine?-1:1),mine:!h.mine};render();
- try{h.mine?await db(`/rest/v1/hearts?chore_id=eq.${id}&user_id=eq.${S.id}`,{m:'DELETE'}):await db('/rest/v1/hearts',{m:'POST',b:{chore_id:id}})}catch{}load()}
-async function send(id){const el=$('#c'+id),b=el.value.trim();if(!b)return;el.value='';el.blur();try{await db('/rest/v1/comments',{m:'POST',b:{chore_id:id,body:b}})}catch{alert('Could not send, try again')}load()}
+$('#f').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;try{const blob=await shrink(f,mode=='avatar'?256:1024);if(mode=='new'){newBlob=blob;$('#np').textContent='✓ photo added';return}const p=await upload(blob);await(mode=='avatar'?db(`/rest/v1/profiles?id=eq.${S.id}`,{m:'PATCH',b:{avatar_path:p}}):db(`/rest/v1/chores?id=eq.${target}`,{m:'PATCH',b:mode=='before'?{before_path:p}:{status:'done',photo_path:p}}))}catch(x){alert('Could not save: '+(x.t||''))}load()};
+async function del(id){if(!confirm('Delete this chore, its photos and comments?'))return;const c=chores.find(x=>x.id==id);try{await db(`/rest/v1/chores?id=eq.${id}`,{m:'DELETE'});[c.before_path,c.photo_path].filter(Boolean).forEach(p=>req('/storage/v1/object/proof/'+p,{m:'DELETE'}).catch(()=>{}))}catch{alert('Could not delete')}load()}
+async function heart(id){const h=hearts[id]||{n:0,mine:false};hearts[id]={n:h.n+(h.mine?-1:1),mine:!h.mine};render();try{h.mine?await db(`/rest/v1/hearts?chore_id=eq.${id}&user_id=eq.${S.id}`,{m:'DELETE'}):await db('/rest/v1/hearts',{m:'POST',b:{chore_id:id}})}catch{}load()}
+async function send(id){const el=$('#c'+id),b=el.value.trim();if(!b)return;el.value='';el.blur();try{await db('/rest/v1/comments',{m:'POST',b:{chore_id:id,body:b}})}catch{alert('Could not send')}load()}
 async function delC(id){try{await db(`/rest/v1/comments?id=eq.${id}`,{m:'DELETE'})}catch{}load()}
-const PICKS=[['🍽️','Dishes'],['🧹','Sweeping'],['🧺','Washing Clothes'],['👔','Hanging Clothes'],['🧦','Folding Clothes'],['✏️','Others']];
+const PICKS=[['🍽','Dishes'],['🧹','Sweeping'],['🧺','Washing Clothes'],['👔','Hanging Clothes'],['🧦','Folding Clothes'],['✏','Others']];
 let pickIdx=-1,rep='once';
-function addView(){newBlob=null;newStatus=CS.def;pickIdx=-1;rep='once';const t=local();
- $('#shc').innerHTML=`<h2>New chore</h2><div class=pk id=pk></div><input id=t placeholder="Type the chore…" maxlength=100 style="display:none">
- <input id=d type=date min="${t}" value="${date<t?t:date}"><div class=seg id=ns style="margin-top:14px"></div><small style="color:var(--mut)">Repeat</small><div class=seg id=rp style="margin-top:4px"></div>
- <button class=g style="margin-top:12px" onclick="pickPhoto('new')">📷 Add before photo (optional)</button> <small id=np style="color:var(--ok)"></small>
- <div style="display:flex;gap:8px;margin-top:16px"><button class=g style="flex:1" onclick="closeSh()">Cancel</button><button style="flex:1" onclick="saveChore()">Add</button></div>`;
- pickC(-1);pickS(newStatus);pickR('once');$('#sh').classList.add('show')}
+function addView(){newBlob=null;newStatus=CS.def;pickIdx=-1;rep='once';const t=local();$('#shc').innerHTML=`<h2>New chore</h2><div class=pk id=pk></div><input id=t placeholder="Type the chore…" maxlength=100 style="display:none"><input id=d type=date min="${t}" value="${date<t?t:date}"><div class=seg id=ns style="margin-top:14px"></div><small style="color:var(--mut)">Repeat</small><div class=seg id=rp style="margin-top:4px"></div><button class=g style="margin-top:12px" onclick="pickPhoto('new')">📷 Add before photo (optional)</button> <small id=np style="color:var(--ok)"></small><div style="display:flex;gap:8px;margin-top:16px"><button class=g style="flex:1" onclick="closeSh()">Cancel</button><button style="flex:1" onclick="saveChore()">Add</button></div>`;pickC(-1);pickS(newStatus);pickR('once');$('#sh').classList.add('show')}
 function pickC(i){pickIdx=i;$('#pk').innerHTML=PICKS.map(([e,n],j)=>`<button class="${j==i?'on':''}" onclick="pickC(${j})">${e} ${n}</button>`).join('');const o=i==PICKS.length-1;$('#t').style.display=o?'block':'none';if(o)$('#t').focus()}
 function pickS(s){newStatus=s;$('#ns').innerHTML=['later','pending'].map(x=>`<button class="${x==s?'on '+x:''}" onclick="pickS('${x}')">${LBL[x]}</button>`).join('')}
 function pickR(r){rep=r;$('#rp').innerHTML=[['once','Once'],['daily','Daily × 7'],['weekly','Weekly × 4']].map(([v,l])=>`<button class="${v==r?'on pending':''}" onclick="pickR('${v}')">${l}</button>`).join('')}
-async function saveChore(){const o=pickIdx==PICKS.length-1,title=pickIdx<0?'':o?$('#t').value.trim():PICKS[pickIdx][1],d=$('#d').value;
- if(!title)return alert(pickIdx<0?'Pick a chore first':'Type the chore name');
- if(!d||d<local())return alert("You can't add chores in the past. Pick today or a future date.");
- const n=rep=='daily'?7:rep=='weekly'?4:1,step=rep=='weekly'?7:1;
- try{const bp=newBlob?await upload(newBlob):null;await db('/rest/v1/chores',{m:'POST',b:Array.from({length:n},(_,i)=>({title,due_date:add(d,i*step),status:newStatus,before_path:i?null:bp}))});date=d}catch(e){return alert('Could not save: '+(e.t||'try again'))}closeSh();load()}
-function editView(id){const c=chores.find(x=>x.id==id);$('#shc').innerHTML=`<h2>Edit chore</h2><input id=et value="${esc(c.title)}" maxlength=100><input id=ed type=date min="${local()}" value="${date}"><small style="color:var(--mut)">Change the date to move it to another day</small>
- <div style="display:flex;gap:8px;margin-top:16px"><button class=g style="flex:1" onclick="closeSh()">Cancel</button><button style="flex:1" onclick="saveEdit(${id})">Save</button></div>`;$('#sh').classList.add('show')}
-async function saveEdit(id){const t=$('#et').value.trim(),d=$('#ed').value;if(!t||!d)return;if(d!=date&&d<local())return alert("You can't move a chore to the past.");
- try{await db(`/rest/v1/chores?id=eq.${id}`,{m:'PATCH',b:{title:t,due_date:d}});date=d}catch{return alert('Could not save, try again')}closeSh();load()}
+async function saveChore(){const o=pickIdx==PICKS.length-1,title=pickIdx<0?'':o?$('#t').value.trim():PICKS[pickIdx][1],d=$('#d').value;if(!title)return alert(pickIdx<0?'Pick a chore first':'Type the chore name');if(!d||d<local())return alert("You can't add chores in the past.");const n=rep=='daily'?7:rep=='weekly'?4:1,step=rep=='weekly'?7:1;try{const bp=newBlob?await upload(newBlob):null;await db('/rest/v1/chores',{m:'POST',b:Array.from({length:n},(_,i)=>({title,due_date:add(d,i*step),status:newStatus,before_path:i?null:bp}))});date=d}catch(e){return alert('Could not save: '+(e.t||''))}closeSh();load()}
+function editView(id){const c=chores.find(x=>x.id==id);$('#shc').innerHTML=`<h2>Edit chore</h2><input id=et value="${esc(c.title)}" maxlength=100><input id=ed type=date min="${local()}" value="${date}"><div style="display:flex;gap:8px;margin-top:16px"><button class=g style="flex:1" onclick="closeSh()">Cancel</button><button style="flex:1" onclick="saveEdit(${id})">Save</button></div>`;$('#sh').classList.add('show')}
+async function saveEdit(id){const t=$('#et').value.trim(),d=$('#ed').value;if(!t||!d)return;if(d!=date&&d<local())return alert("You can't move a chore to the past.");try{await db(`/rest/v1/chores?id=eq.${id}`,{m:'PATCH',b:{title:t,due_date:d}});date=d}catch{return alert('Could not save')}closeSh();load()}
 const REPO='jjcoloma096-cmd/chorely',APP_VERSION=10;let upd=null;
 const MR=15,MB=1048576,rpc=(f,b)=>db('/rest/v1/rpc/'+f,{m:'POST',b,h:{Prefer:'return=representation'}});
 const fmtDur=s=>`${Math.floor(s/3600)}h ${Math.floor(s%3600/60)}m ${Math.floor(s%60)}s`;
 const fmtCallTime=ms=>{const s=Math.floor(ms/1000);const m=Math.floor(s/60);const h=Math.floor(m/60);const ss=String(s%60).padStart(2,'0');const mm=String(m%60).padStart(2,'0');return h?`${h}:${mm}:${ss}`:`${m}:${ss}`};
 const leftSec=w=>w.screen_until?Math.max(0,Math.floor((new Date(w.screen_until)-Date.now())/1000)):0;
-const nmOf=id=>(users.find(u=>u.id==id)||{}).name||'?';
+const nmOf=id=>(users.find(u=>u.id==id)||{}).name||(id==='ai-groq'?'Groq AI':'?');
 const pct=()=>usage?Math.max(usage.files/(1024*MB),usage.db/(500*MB)):0;
-const online=id=>{if(id==S.id)return true;const u=users.find(x=>x.id==id);return !!(u&&u.last_seen&&Date.now()-new Date(u.last_seen)<75000)};
-function av(id,z=42){const u=users.find(x=>x.id==id)||{name:'?'},hue=parseInt(String(id).slice(0,6),16)%360;
- return `<div class=aw onclick="event.stopPropagation();profile('${id}')" style="width:${z}px;height:${z}px"><div class=av style="width:100%;height:100%;background:hsl(${hue} 60% 45%);overflow:hidden">${u.avatar_path?`<img data-p="${esc(u.avatar_path)}" style="width:100%;height:100%;object-fit:cover">`:esc((u.name||'?')[0].toUpperCase())}</div><i class="pd ${online(id)?'on':''}"></i></div>`}
-async function loadExtra(){
- const q=[db('/rest/v1/wallets?select=*'),db('/rest/v1/notifs?select=id,body,read,created_at&order=created_at.desc&limit=40'),db('/rest/v1/locations?select=user_id,lat,lng,updated_at')];
- if(tab=='tasks')q.push(db(`/rest/v1/tasks?select=*&or=(scheduled.eq.true,created_day.eq.${local()})&order=created_at.desc`));
- if(tab=='credit')q.push(db(`/rest/v1/chores?select=id,title,credits,done_at,before_path,photo_path&owner=eq.${S.id}&status=eq.done&credits=gt.0&done_at=gte.${encodeURIComponent(monthStartISO())}&order=done_at.desc&limit=100`));
- if(tab=='settings')q.push(db('/rest/v1/push_topics?select=topic'));
- if(tab=='msgs')q.push(db('/rest/v1/convs?select=id,title,is_group,members(user_id)&order=id.desc'),db('/rest/v1/msgs?select=conv_id,sender,body,created_at&order=created_at.desc&limit=300'),db('/rest/v1/alerts?select=id,body,ends_at,created_at&order=created_at.desc&limit=50'),chat?db(`/rest/v1/msgs?select=id,sender,body,images,created_at&conv_id=eq.${chat}&order=created_at&limit=300`):Promise.resolve(null),
-   chat?db(`/rest/v1/calls?select=id,conv_id,started_by,created_at,ended_at&conv_id=eq.${chat}&ended_at=is.null&order=created_at.desc&limit=1`):Promise.resolve(null));
- const r=await Promise.all(q);W={};r[0].forEach(x=>W[x.user_id]=x);notifs=r[1];
- locs={};(r[2]||[]).forEach(x=>{locs[x.user_id]=x});
- const un=notifs.filter(n=>!n.read).length;if(lastUn!==null&&un>lastUn){navigator.vibrate&&navigator.vibrate(200);toast(notifs.find(n=>!n.read).body)}lastUn=un;
- if(tab=='tasks')tasks=r[3];
- if(tab=='settings')pushTopic=(r[3]&&r[3][0]&&r[3][0].topic)||'';
- if(tab=='credit')earn=r[3];
- if(tab=='msgs'){
-  convs=r[3];lastM={};r[4].forEach(x=>{if(!lastM[x.conv_id])lastM[x.conv_id]=x});alertsL=r[5];
-  activeCall=null;
-  if(chat){
-   chatMsgs=r[6]||[];
-   if(chatMsgs.length)markChatSeen(chat);
-   const candidate=(r[7]&&r[7][0])||null;
-   if(candidate){
-    try{
-     const participants=await db(`/rest/v1/call_participants?select=user_id,joined_at,left_at&call_id=eq.${candidate.id}&left_at=is.null`);
-     const other=participants.filter(x=>x.user_id!==S.id);
-     if(other.some(x=>online(x.user_id)))activeCall=candidate;
-    }catch{activeCall=null}
-   }
-  }
- }}
-const seenKey=cid=>`chorely_seen_${cid}`;
-function getSeenMap(cid){try{return JSON.parse(localStorage.getItem(seenKey(cid))||'{}')}catch{return {}}}
-function setSeenMap(cid,m){try{localStorage.setItem(seenKey(cid),JSON.stringify(m))}catch{}}
-function markChatSeen(cid){
- const last=chatMsgs[chatMsgs.length-1];
- if(!last)return;
- const m=getSeenMap(cid);
- if(!m[S.id]||m[S.id]<last.id){
-  m[S.id]=last.id;
-  setSeenMap(cid,m);
-  try{
-   if(ws&&ws.readyState===1){
-    ws.send(JSON.stringify({topic:'realtime:chorely',event:'broadcast',payload:{event:'seen',payload:{conv_id:cid,user_id:S.id,msg_id:last.id}},ref:'s'}));
-   }
-  }catch{}
- }
-}
-const DEFAULT_REACTS=['❤️','😆','😮','😢','😠','👍'];
-const ALL_REACT_EMOJIS=['❤️','😆','😮','😢','😠','👍','🤡','🔥','🎉','👏','😂','🥰','😍','😭','😱','🤯','💯','🙏','👀','💀','🥳','😎','🤔','🙄','😴','🤮','💔','✨','🫶','🤝'];
-function getMyReacts(){try{const a=JSON.parse(localStorage.getItem('chorely_react_bar')||'null');return Array.isArray(a)&&a.length===6?a:[...DEFAULT_REACTS]}catch{return [...DEFAULT_REACTS]}}
-function saveMyReacts(arr){try{localStorage.setItem('chorely_react_bar',JSON.stringify(arr.slice(0,6)))}catch{}}
-
-const REPLY_RE=/^\[\[reply:(\d+)\|([^\|\]]*)\|([^\]]*)\]\]\n([\s\S]*)$/;
-const REACT_RE=/\n?\[\[reacts:(\{[^\]]*\})\]\]$/;
-function parseMsgBody(raw){
- let s=String(raw||'');
- let reacts={};
- const rm=s.match(REACT_RE);
- if(rm){
-  s=s.slice(0,rm.index);
-  try{const p=JSON.parse(rm[1]);if(p&&typeof p==='object')reacts=p}catch{}
- }
- const m=s.match(REPLY_RE);
- if(!m)return {reply:null,text:s,reacts};
- return {reply:{id:m[1],sender:m[2],snippet:m[3]},text:m[4],reacts};
-}
-function buildMsgBody(reply,text,reacts){
- let out='';
- if(reply)out+=`[[reply:${reply.id}|${reply.sender}|${reply.snippet}]]\n`;
- out+=String(text||'');
- const clean={};
- if(reacts&&typeof reacts==='object'){
-  Object.entries(reacts).forEach(([k,v])=>{if(v)clean[k]=v});
- }
- if(Object.keys(clean).length)out+=`\n[[reacts:${JSON.stringify(clean)}]]`;
- return out;
-}
-function startHoldMsg(id,ev){
- if(ev&&ev.button&&ev.button!==0)return;
- clearTimeout(holdTimer);
- holdTriggered=false;
- holdTimer=setTimeout(()=>{
-  holdTriggered=true;
-  reactMenuId=id;
-  if(navigator.vibrate)try{navigator.vibrate(25)}catch{}
-  render();
- },380);
-}
+const online=id=>{if(id==S.id||id==='ai-groq')return true;const u=users.find(x=>x.id==id);return !!(u&&u.last_seen&&Date.now()-new Date(u.last_seen)<75000)};
+function av(id,z=42){if(id==='ai-groq'){return `<div class=aw style="width:${z}px;height:${z}px"><div class=av style="width:100%;height:100%;background:var(--ac);display:grid;place-items:center;font-size:16px">🤖</div><i class="pd on"></i></div>`}const u=users.find(x=>x.id==id)||{name:'?'},hue=parseInt(String(id).slice(0,6),16)%360;return `<div class=aw onclick="event.stopPropagation();profile('${id}')" style="width:${z}px;height:${z}px"><div class=av style="width:100%;height:100%;background:hsl(${hue} 60% 45%);overflow:hidden">${u.avatar_path?`<img data-p="${esc(u.avatar_path)}" style="width:100%;height:100%;object-fit:cover">`:esc((u.name||'?')[0].toUpperCase())}</div><i class="pd ${online(id)?'on':''}"></i></div>`}
+async function loadExtra(){const q=[db('/rest/v1/wallets?select=*'),db('/rest/v1/notifs?select=id,body,read,created_at&order=created_at.desc&limit=40'),db('/rest/v1/locations?select=user_id,lat,lng,updated_at')];if(tab=='tasks')q.push(db(`/rest/v1/tasks?select=*&or=(scheduled.eq.true,created_day.eq.${local()})&order=created_at.desc`));if(tab=='credit')q.push(db(`/rest/v1/chores?select=id,title,credits,done_at,before_path,photo_path&owner=eq.${S.id}&status=eq.done&credits=gt.0&done_at.gte.${encodeURIComponent(monthStartISO())}&order=done_at.desc&limit=100`));if(tab=='settings')q.push(db('/rest/v1/push_topics?select=topic'));if(tab=='msgs')q.push(db('/rest/v1/convs?select=id,title,is_group,members(user_id)&order=id.desc'),db('/rest/v1/msgs?select=conv_id,sender,body,created_at&order=created_at.desc&limit=300'),db('/rest/v1/alerts?select=id,body,ends_at,created_at&order=created_at.desc&limit=50'),chat&&chat!==AI_ID?db(`/rest/v1/msgs?select=id,sender,body,images,created_at&conv_id=eq.${chat}&order=created_at&limit=300`):Promise.resolve(null),chat&&chat!==AI_ID?db(`/rest/v1/calls?select=id,conv_id,started_by,created_at,ended_at&conv_id=eq.${chat}&ended_at=is.null&order=created_at.desc&limit=1`):Promise.resolve(null));const r=await Promise.all(q);W={};r[0].forEach(x=>W[x.user_id]=x);notifs=r[1];locs={};(r[2]||[]).forEach(x=>{locs[x.user_id]=x});const un=notifs.filter(n=>!n.read).length;if(lastUn!==null&&un>lastUn){navigator.vibrate&&navigator.vibrate(200);toast(notifs.find(n=>!n.read).body)}lastUn=un;if(tab=='tasks')tasks=r[3];if(tab=='settings')pushTopic=(r[3]&&r[3][0]&&r[3][0].topic)||'';if(tab=='credit')earn=r[3];if(tab=='msgs'){convs=r[3];lastM={};r[4].forEach(x=>{if(!lastM[x.conv_id])lastM[x.conv_id]=x});alertsL=r[5];activeCall=null;if(chat===AI_ID){chatMsgs=JSON.parse(localStorage.getItem('chorely_ai_msgs_'+AI_ID)||'[]');}else if(chat){const localAi=JSON.parse(localStorage.getItem('chorely_ai_msgs_'+chat)||'[]');const localReactions=JSON.parse(localStorage.getItem('chorely_reactions_'+chat)||'{}');const baseMsgs=(r[6]||[]).map(m=>{const p=parseMsgBody(m.body);const k=String(m.id);if(localReactions[k]){p.reacts=localReactions[k];m.body=buildMsgBody(p.reply,p.text,p.reacts)}return m});chatMsgs=[...baseMsgs,...localAi].sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));if(chatMsgs.length)markChatSeen(chat);const candidate=(r[7]&&r[7][0])||null;if(candidate){try{const participants=await db(`/rest/v1/call_participants?select=user_id,joined_at,left_at&call_id=eq.${candidate.id}&left_at=is.null`);const other=participants.filter(x=>x.user_id!==S.id);if(other.some(x=>online(x.user_id)))activeCall=candidate}catch{activeCall=null}}}}}
+const seenKey=cid=>`chorely_seen_${cid}`;function getSeenMap(cid){try{return JSON.parse(localStorage.getItem(seenKey(cid))||'{}')}catch{return {}}}function setSeenMap(cid,m){try{localStorage.setItem(seenKey(cid),JSON.stringify(m))}catch{}}
+function markChatSeen(cid){const last=chatMsgs[chatMsgs.length-1];if(!last)return;const m=getSeenMap(cid);if(!m[S.id]||m[S.id]<last.id){m[S.id]=last.id;setSeenMap(cid,m);try{if(ws&&ws.readyState===1)ws.send(JSON.stringify({topic:'realtime:chorely',event:'broadcast',payload:{event:'seen',payload:{conv_id:cid,user_id:S.id,msg_id:last.id}},ref:'s'}))}catch{}}}
+const DEFAULT_REACTS=['❤','😆','😮','😢','😠','👍'];const ALL_REACT_EMOJIS=['❤','😆','😮','😢','😠','👍','🤡','🔥','🎉','👏','😂','🥰','😍','😭','😱','🤯','💯','🙏','👀','💀','🥳','😎','🤔','🙄','😴','🤮','💔','✨','🫶','🤝'];
+function getMyReacts(){try{const a=JSON.parse(localStorage.getItem('chorely_react_bar')||'null');return Array.isArray(a)&&a.length===6?a:[...DEFAULT_REACTS]}catch{return [...DEFAULT_REACTS]}}function saveMyReacts(arr){try{localStorage.setItem('chorely_react_bar',JSON.stringify(arr.slice(0,6)))}catch{}}
+const REPLY_RE=/^\[\[reply:(\d+)\|([^\|\]]*)\|([^\]]*)\]\]\n([\s\S]*)$/;const REACT_RE=/\n?\[\[reacts:(\{[^\]]*\})\]\]$/;
+function parseMsgBody(raw){let s=String(raw||'');let reacts={};const rm=s.match(REACT_RE);if(rm){s=s.slice(0,rm.index);try{const p=JSON.parse(rm[1]);if(p&&typeof p==='object')reacts=p}catch{}}const m=s.match(REPLY_RE);if(!m)return {reply:null,text:s,reacts};return {reply:{id:m[1],sender:m[2],snippet:m[3]},text:m[4],reacts}}
+function buildMsgBody(reply,text,reacts){let out='';if(reply)out+=`[[reply:${reply.id}|${reply.sender}|${reply.snippet}]]\n`;out+=String(text||'');const clean={};if(reacts&&typeof reacts==='object'){Object.entries(reacts).forEach(([k,v])=>{if(v)clean[k]=v})}if(Object.keys(clean).length)out+=`\n[[reacts:${JSON.stringify(clean)}]]`;return out}
+function startHoldMsg(id,ev){if(ev&&ev.button&&ev.button!==0)return;clearTimeout(holdTimer);holdTriggered=false;holdTimer=setTimeout(()=>{holdTriggered=true;reactMenuId=id;if(navigator.vibrate)try{navigator.vibrate(25)}catch{}render()},380)}
 function cancelHoldMsg(){clearTimeout(holdTimer)}
-function onBubClick(id){
- if(holdTriggered){holdTriggered=false;return}
- if(reactMenuId!==null){reactMenuId=null;render();return}
- toggleMsgReceipt(id);
-}
-document.addEventListener('pointerdown',e=>{
- if(reactMenuId!==null&&!e.target.closest('.react-row')&&!e.target.closest('.emoji-custom-box')){
-  reactMenuId=null;
-  render();
- }
-});
-async function reactToMsg(id,emoji){
- const m=chatMsgs.find(x=>x.id==id);
- reactMenuId=null;
- if(!m)return render();
- const parsed=parseMsgBody(m.body);
- const reacts={...parsed.reacts};
- if(reacts[S.id]===emoji)delete reacts[S.id];
- else reacts[S.id]=emoji;
- const newBody=buildMsgBody(parsed.reply,parsed.text,reacts);
- m.body=newBody;
- render();
- try{
-  if(ws&&ws.readyState===1){
-   ws.send(JSON.stringify({topic:'realtime:chorely',event:'broadcast',payload:{event:'react',payload:{conv_id:chat,msg_id:id,user_id:S.id,emoji:reacts[S.id]||null}},ref:'r'}));
-  }
- }catch{}
- try{
-  await rpc('react_msg', {p_msg_id: id, p_body: newBody});
- }catch{
-  try {
-   await db(`/rest/v1/msgs?id=eq.${id}`,{m:'PATCH',b:{body:newBody}});
-  } catch(e) {}
- }
- load();
-}
-function openReactCustomizer(msgId){
- const cur=getMyReacts();
- let slotIdx=0;
- const renderSheet=()=>{
-  $('#shc').innerHTML=`<div class=emoji-custom-box><h2>Customize reactions</h2><small style="color:var(--mut)">Tap a slot below to pick which reaction to replace, then tap an emoji.</small>
-  <div style="display:flex;justify-content:center;gap:8px;margin-top:14px;background:var(--card);padding:10px;border-radius:999px;border:1px solid var(--bd)">
-   ${cur.map((em,i)=>`<button class="react-em ${slotIdx===i?'picked':''}" style="font-size:26px;padding:4px 8px" onclick="window._setReactSlot(${i})">${em}</button>`).join('')}
-  </div>
-  <div class=emoji-grid>${ALL_REACT_EMOJIS.map(em=>`<button onclick="window._pickReactEmoji('${em}')">${em}</button>`).join('')}</div>
-  <div style="display:flex;gap:8px;margin-top:16px"><button class=g style="flex:1" onclick="window._resetReacts()">Reset default</button><button style="flex:1" onclick="closeSh();${msgId?`reactMenuId=${msgId};render()`:''}">Done</button></div></div>`;
- };
- window._setReactSlot=i=>{slotIdx=i;renderSheet()};
- window._pickReactEmoji=em=>{cur[slotIdx]=em;saveMyReacts(cur);renderSheet()};
- window._resetReacts=()=>{const d=[...DEFAULT_REACTS];for(let i=0;i<6;i++)cur[i]=d[i];saveMyReacts(cur);renderSheet()};
- renderSheet();
- $('#sh').classList.add('show');
-}
-function showReactionDetails(id){
- const m=chatMsgs.find(x=>x.id==id);if(!m)return;
- const parsed=parseMsgBody(m.body);
- const entries=Object.entries(parsed.reacts);
- if(!entries.length)return;
- $('#shc').innerHTML=`<h2>Reactions (${entries.length})</h2>
-  ${entries.map(([uid,em])=>`<div class="top" style="margin-top:12px">${av(uid,38)}<div class=m><b>${esc(nmOf(uid))}${uid==S.id?' (you)':''}</b></div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:24px">${em}</span>${uid==S.id?`<button class=g style="padding:4px 8px;font-size:12px;background:#e5484d22;color:#e5484d;border-color:#e5484d" onclick="reactToMsg(${id},'${em}');closeSh()">Remove</button>`:''}</div></div>`).join('')}
-  <button class=g style="width:100%;margin-top:16px" onclick="closeSh()">Close</button>`;
- $('#sh').classList.add('show');
- loadImgs();
-}
-function startReply(id){
- const m=chatMsgs.find(x=>x.id==id);if(!m)return;
- const parsed=parseMsgBody(m.body);
- const snip=(parsed.text||(m.images&&m.images.length?'📷 Photo':'')).replace(/[\|\]]/g,'').slice(0,80);
- replyTo={id:m.id,senderName:nmOf(m.sender),snippet:snip};
- render();
- const inp=$('#mi');if(inp)inp.focus();
-}
+function onBubClick(id){id=String(id);if(holdTriggered){holdTriggered=false;return}if(reactMenuId!==null){reactMenuId=null;render();return}toggleMsgReceipt(id)}
+document.addEventListener('pointerdown',e=>{if(reactMenuId!==null&&!e.target.closest('.react-row')&&!e.target.closest('.emoji-custom-box')){reactMenuId=null;render()}});
+async function reactToMsg(id,emoji){const m=chatMsgs.find(x=>String(x.id)===String(id));reactMenuId=null;if(!m)return render();const parsed=parseMsgBody(m.body);const reacts={...parsed.reacts};if(reacts[S.id]===emoji)delete reacts[S.id];else reacts[S.id]=emoji;const newBody=buildMsgBody(parsed.reply,parsed.text,reacts);m.body=newBody;render();const lr=JSON.parse(localStorage.getItem('chorely_reactions_'+chat)||'{}');lr[String(id)]=reacts;localStorage.setItem('chorely_reactions_'+chat,JSON.stringify(lr));try{if(ws&&ws.readyState===1)ws.send(JSON.stringify({topic:'realtime:chorely',event:'broadcast',payload:{event:'react',payload:{conv_id:chat,msg_id:id,user_id:S.id,emoji:reacts[S.id]||null}},ref:'r'}))}catch{}try{await rpc('react_msg',{p_msg_id:id,p_body:newBody})}catch{try{await db(`/rest/v1/msgs?id=eq.${id}`,{m:'PATCH',b:{body:newBody}})}catch{}}}
+function openReactCustomizer(msgId){const cur=getMyReacts();let slotIdx=0;const renderSheet=()=>{$('#shc').innerHTML=`<div class=emoji-custom-box><h2>Customize reactions</h2><small style="color:var(--mut)">Tap a slot, then tap an emoji.</small><div style="display:flex;justify-content:center;gap:8px;margin-top:14px;background:var(--card);padding:10px;border-radius:999px;border:1px solid var(--bd)">${cur.map((em,i)=>`<button class="react-em ${slotIdx===i?'picked':''}" style="font-size:26px" onclick="window._setReactSlot(${i})">${em}</button>`).join('')}</div><div class=emoji-grid>${ALL_REACT_EMOJIS.map(em=>`<button onclick="window._pickReactEmoji('${em}')">${em}</button>`).join('')}</div><div style="display:flex;gap:8px;margin-top:16px"><button class=g style="flex:1" onclick="window._resetReacts()">Reset</button><button class=g style="flex:1" onclick="closeSh();${msgId?`reactMenuId=${msgId};render()`:''}">Done</button></div></div>`};window._setReactSlot=i=>{slotIdx=i;renderSheet()};window._pickReactEmoji=em=>{cur[slotIdx]=em;saveMyReacts(cur);renderSheet()};window._resetReacts=()=>{const d=[...DEFAULT_REACTS];for(let i=0;i<6;i++)cur[i]=d[i];saveMyReacts(cur);renderSheet()};renderSheet();$('#sh').classList.add('show')}
+function showReactionDetails(id){const m=chatMsgs.find(x=>String(x.id)===String(id));if(!m)return;const parsed=parseMsgBody(m.body);const entries=Object.entries(parsed.reacts);if(!entries.length)return;$('#shc').innerHTML=`<h2>Reactions (${entries.length})</h2>${entries.map(([uid,em])=>`<div class="top" style="margin-top:12px">${av(uid,38)}<div class=m><b>${esc(nmOf(uid))}${uid==S.id?' (you)':''}</b></div><div style="display:flex;gap:8px;align-items:center"><span style="font-size:24px">${em}</span>${uid==S.id?`<button class=g onclick="reactToMsg('${id}','${em}');closeSh()">Remove</button>`:''}</div></div>`).join('')}<button class=g style="width:100%;margin-top:16px" onclick="closeSh()">Close</button>`;$('#sh').classList.add('show');loadImgs()}
+function formatMsgText(txt){let s=esc(txt);s=s.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');s=s.replace(/(@[a-zA-Z0-9_]+)/g,'<strong>$1</strong>');return s}
+function startReply(id){const m=chatMsgs.find(x=>String(x.id)===String(id));if(!m)return;const parsed=parseMsgBody(m.body);const snip=(parsed.text||(m.images&&m.images.length?'📷 Photo':'')).replace(/[\|\]]/g,'').slice(0,80);replyTo={id:m.id,senderName:nmOf(m.sender),snippet:snip};render();const inp=$('#mi');if(inp){if(m.sender==='ai-groq')inp.value='';inp.focus()}}
 function cancelReply(){replyTo=null;render()}
-function toggleMsgReceipt(id){openMsgId=(openMsgId===id?null:id);render()}
-function msgStatusInfo(m,conv){
- const members=(conv&&conv.members?conv.members.map(x=>x.user_id):[]).filter(uid=>uid!==m.sender);
- const seenMap=getSeenMap(conv.id);
- const seenBy=[];
- let delivered=false;
- for(const uid of members){
-  const u=users.find(x=>x.id===uid);
-  const lastSeenAt=u&&u.last_seen?new Date(u.last_seen).getTime():0;
-  const msgAt=new Date(m.created_at).getTime();
-  if((seenMap[uid]&&seenMap[uid]>=m.id)||(lastSeenAt>=msgAt&&online(uid))){
-   seenBy.push(nmOf(uid));
-  }
-  if(lastSeenAt>=msgAt||online(uid)){
-   delivered=true;
-  }
- }
- if(seenBy.length){
-  return `Seen by ${seenBy.map(esc).join(', ')}`;
- }
- if(delivered){
-  return 'Delivered';
- }
- return 'Sent';
+function toggleMsgReceipt(id){id=String(id);openMsgId=(String(openMsgId)===id?null:id);render()}
+function msgStatusInfo(m,conv){const members=(conv&&conv.members?conv.members.map(x=>x.user_id):[]).filter(uid=>uid!==m.sender);const seenMap=getSeenMap(conv.id);const seenBy=[];let delivered=false;for(const uid of members){const u=users.find(x=>x.id==uid);const lastSeenAt=u&&u.last_seen?new Date(u.last_seen).getTime():0;const msgAt=new Date(m.created_at).getTime();const seenId=seenMap[uid];const isSeen=seenId&&(String(seenId)===String(m.id)||(!isNaN(seenId)&&!isNaN(m.id)&&Number(seenId)>=Number(m.id)));if(isSeen)seenBy.push(nmOf(uid));if(lastSeenAt>=msgAt||online(uid))delivered=true}if(seenBy.length)return `Seen by ${seenBy.map(esc).join(', ')}`;if(delivered)return 'Delivered';return 'Sent'}
+
+
+/* ===== V2 HELPERS: slider / edit / pin / search / human typing ===== */
+let baActive=null;
+function baSet(id, pct){ const after=document.getElementById('ba-after-'+id), h=document.getElementById('ba-h-'+id), k=document.getElementById('ba-k-'+id); if(!after) return; pct=Math.max(5,Math.min(95,pct)); after.style.clipPath=`inset(0 0 0 ${pct}%)`; if(h) h.style.left=pct+'%'; if(k) k.style.left=pct+'%'; }
+function baStart(e,id){ baActive=id; baMove(e,id); }
+function baMove(e,id){ if(baActive!==id) return; const w=document.getElementById('ba-'+id); if(!w) return; const r=w.getBoundingClientRect(); const x=(e.clientX||(e.touches&&e.touches[0].clientX))-r.left; baSet(id, x/r.width*100); }
+function baEnd(e,id){ baActive=null; }
+function baInitAll(){ document.querySelectorAll('[id^="ba-"]').forEach(el=>{ const id=el.id.replace('ba-',''); if(!isNaN(id)) baSet(Number(id),50); }); }
+// Edit message (5 min window)
+function startEditMsg(id){ const m=chatMsgs.find(x=>String(x.id)===String(id)); if(!m) return; const age=Date.now()-new Date(m.created_at).getTime(); if(age>5*60*1000) return alert('You can only edit within 5 minutes.'); const p=parseMsgBody(m.body); editMsgId=id; const inp=$('#mi'); if(inp){ inp.value=p.text; inp.focus(); inp.placeholder='Editing message… (Enter to save, Esc to cancel)'; } render(); }
+function cancelEdit(){ editMsgId=null; const inp=$('#mi'); if(inp) inp.placeholder='Message…'; render(); }
+function saveEditMsg(){ const inp=$('#mi'); if(!inp||!editMsgId) return; const txt=inp.value.trim(); if(!txt) return; const m=chatMsgs.find(x=>String(x.id)===String(editMsgId)); if(m){ const p=parseMsgBody(m.body); const nb=buildMsgBody(p.reply, txt+'  (edited)', p.reacts); m.body=nb; if(chat===AI_ID){ const arr=aiMsgs().map(x=>String(x.id)===String(editMsgId)?{...x,body:nb}:x); saveAiMsgs(arr); } else { db(`/rest/v1/msgs?id=eq.${editMsgId}`,{m:'PATCH',b:{body:nb}}).catch(()=>{}); } } editMsgId=null; inp.value=''; inp.placeholder='Message…'; render(); }
+// Pinned messages
+function togglePinMsg(id){ const m=chatMsgs.find(x=>String(x.id)===String(id)); if(!m) return; const key='chorely_pinned_'+chat; let arr=[]; try{arr=JSON.parse(localStorage.getItem(key)||'[]')}catch{} const idx=arr.indexOf(String(id)); if(idx>=0) arr.splice(idx,1); else arr=[String(id),...arr].slice(0,3); localStorage.setItem(key,JSON.stringify(arr)); pinnedMsgs=arr; render(); toast(idx>=0?'Unpinned':'Pinned 📌'); }
+function getPinned(){ try{return JSON.parse(localStorage.getItem('chorely_pinned_'+chat)||'[]')}catch{return []} }
+function jumpToMsg(id){ if(chatSearch){ chatSearch=''; render(); setTimeout(()=>jumpToMsg(id),80); return; } const el=document.querySelector(`[data-mid="${id}"]`); if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); el.style.outline='2px solid var(--ac)'; setTimeout(()=>el.style.outline='',1500); } }
+// Search in chat
+function setChatSearch(v){ chatSearch=v; render(); setTimeout(()=>{ const inp=document.getElementById('chatSearchInp'); if(inp){ inp.focus(); inp.setSelectionRange(inp.value.length,inp.value.length); } },30); }
+function clearChatSearch(){ chatSearch=''; render(); }
+// Human typing broadcast
+function sendTyping(){ if(chat===AI_ID||!chat) return; try{ if(ws&&ws.readyState===1) ws.send(JSON.stringify({topic:'realtime:chorely',event:'broadcast',payload:{event:'typing',payload:{conv_id:chat,user_id:S.id,name:S.name}},ref:'ty'})); }catch{} }
+let _typingThrottle=0;
+function onChatInputTyping(e){ handleChatInput(e); const now=Date.now(); if(now-_typingThrottle>1500){ _typingThrottle=now; sendTyping(); } }
+// Smart AI - knows Chorely
+function chorelyContextForAI(q){
+  const today=local(); const todays=(Array.isArray(chores)?chores:[]).filter(c=>c.due_date===today);
+  const doneToday=todays.filter(c=>c.status==='done').length;
+  const myChores=todays.filter(c=>c.owner===S.id);
+  const leadersTxt=leaders.map((u,i)=>`${i+1}. ${u.name}: ${u.n} done`).slice(0,5).join(' | ')||'No leaderboard data yet';
+  const wallet=W[S.id]||{credits:0};
+  const tasksTxt=(tasks||[]).slice(0,8).map(t=>`- ${t.title} ${t.done?'[done]':''}`).join('\n')||'No tasks';
+  return `You are Groq AI inside Chorely, a family chores app. User is ${S.name||'user'}.
+Today is ${today}.
+TODAY'S CHORES (${todays.length} total, ${doneToday} done):
+${todays.map(c=>`- ${c.title} — ${nmOf(c.owner)} — ${c.status}`).join('\n')||'None'}
+MY CHORES TODAY:
+${myChores.map(c=>`- ${c.title} — ${c.status}`).join('\n')||'None'}
+LEADERBOARD: ${leadersTxt}
+MY CREDITS: ${wallet.credits} credits (≈ ₱${(wallet.credits/15).toFixed(2)})
+TASKS:\n${tasksTxt}
+If user asks "what chores do I have", list MY CHORES TODAY. If "who did most", use LEADERBOARD. If user says "remind me to X tomorrow / later", reply with a clear confirmation like "Got it — I'll remind you: X" and also create a local reminder. Keep answers short, friendly, Taglish ok. User question: ${q}`;
 }
-function vMsgs(){if(chat)return vChat();
- const recent=id=>{const L=locs[id];if(!L)return false;return Date.now()-new Date(L.updated_at).getTime()<24*3600*1000};
- const ppl=users.filter(u=>u.id!=S.id).map(u=>`<div class=pp onclick="profile('${u.id}')">${av(u.id,48)}${esc(u.name)}${recent(u.id)?'<span class=loc-pin title="Shared location">📍</span>':''}</div>`).join('');
- const list=convs.map(c=>{const o=c.members.map(m=>m.user_id).filter(i=>i!=S.id),l=lastM[c.id];
-  const lText=l?parseMsgBody(l.body).text:'';
-  return `<div class="card top" onclick="chat=${c.id};replyTo=null;openMsgId=null;load()">${c.is_group?'<div class=av style="background:var(--ac)">👥</div>':av(o[0])}<div class=m><b>${esc(c.is_group?(c.title||'Group'):nmOf(o[0]))}${!c.is_group&&recent(o[0])?' 📍':''}</b><small>${l?esc((l.sender==S.id?'You: ':'')+(lText.slice(0,50)||'📷 Photo')):'No messages yet'}</small></div>${l?`<small>${fmt(l.created_at)}</small>`:''}</div>`}).join('');
- return `<header><h1>Messages</h1><span style="display:flex;gap:6px"><button class=g onclick="mapView()">📍 Map</button><button class=g onclick="groupView()">＋ Group</button></span></header><div class=row>${ppl}</div>
- ${alertsL.length?`<div class="card top" onclick="alertsView()"><div class=av style="background:#e5484d">🔔</div><div class=m><b>System Alerts</b><small>${esc(alertsL[0].body+(alertsL[0].ends_at?' · ends '+fmt(alertsL[0].ends_at):''))}</small></div></div>`:''}${list||'<div class=empty>Tap a person above to chat, or make a group</div>'}`}
-function vChat(){const c=convs.find(x=>x.id==chat);if(!c){chat=null;return vMsgs()}
- const o=c.members.map(m=>m.user_id).filter(i=>i!=S.id);
- const myBar=getMyReacts();
- const rowsHtml=chatMsgs.map(m=>{
-  const isMe=m.sender==S.id;
-  const parsed=parseMsgBody(m.body);
-  const receiptOpen=openMsgId===m.id;
-  const statusText=receiptOpen?msgStatusInfo(m,c):'';
-  const quoteHtml=parsed.reply?`<div class=reply-quote><b>${esc(parsed.reply.sender)}</b><br>${esc(parsed.reply.snippet||'📷 Photo')}</div>`:'';
-  const reactEntries=Object.entries(parsed.reacts||{});
-  const totalReacts=reactEntries.length;
-  let pillHtml='';
-  if(totalReacts>0){
-   const counts={};
-   reactEntries.forEach(([,em])=>{counts[em]=(counts[em]||0)+1});
-   const top2=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,2).map(x=>x[0]).join('');
-   pillHtml=`<div class=react-pill onclick="event.stopPropagation();showReactionDetails(${m.id})"><span>${top2}</span>${totalReacts>1?`<span class=cnt-r>${totalReacts}</span>`:''}</div>`;
+function maybeCreateReminderFromAI(q){
+  const m=q.match(/remind me to (.+?)( tomorrow| later| tonight| today|$)/i);
+  if(!m) return null;
+  const what=m[1].trim(); const when=(m[2]||'').trim()||'later';
+  const rem={id:'rem_'+Date.now(), text:what, when, created:new Date().toISOString(), done:false};
+  const arr=JSON.parse(localStorage.getItem('chorely_reminders')||'[]'); arr.push(rem); localStorage.setItem('chorely_reminders',JSON.stringify(arr));
+  setTimeout(()=>{ toast('⏰ Reminder: '+what); }, 500);
+  return rem;
+}
+
+/* ===== NEW: AI DM ===== */
+function aiMsgs(){try{return JSON.parse(localStorage.getItem('chorely_ai_msgs_'+AI_ID)||'[]')}catch{return []}}
+function saveAiMsgs(a){try{localStorage.setItem('chorely_ai_msgs_'+AI_ID,JSON.stringify(a))}catch{}}
+function openAiDm(){
+  chat=AI_ID;
+  if(!convs.find(x=>x.id===AI_ID)) convs.unshift({id:AI_ID,title:'Groq AI',is_group:false,members:[{user_id:AI_SENDER},{user_id:S.id}]});
+  chatMsgs=[...aiMsgs()].sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+  replyTo=null; openMsgId=null; reactMenuId=null;
+  tab='msgs'; render(); setTimeout(()=>window.scrollTo(0,document.body.scrollHeight),50);
+}
+function aiLastPreview(){const a=aiMsgs(); if(!a.length) return 'Tap to chat directly with Groq AI'; const l=a[a.length-1]; const p=parseMsgBody(l.body); return (l.sender===S.id?'You: ':'Groq AI: ')+(p.text||'').slice(0,50);}
+
+function vMsgs(){
+  if(chat) return vChat();
+  const recent=id=>{const L=locs[id]; if(!L) return false; return Date.now()-new Date(L.updated_at).getTime()<24*3600*1000};
+  const ppl=users.filter(u=>u.id!=S.id).map(u=>`<div class=pp onclick="profile('${u.id}')">${av(u.id,48)}${esc(u.name)}${recent(u.id)?'<span class=loc-pin>📍</span>':''}</div>`).join('');
+  const aiCard=`<div class="card top" onclick="openAiDm()">${av('ai-groq')}<div class=m><b>Groq AI <span class=ai-badge>AI</span></b><small>${esc(aiLastPreview())}</small></div><small style="color:var(--ok)">Private</small></div>`;
+  const list=convs.filter(c=>c.id!==AI_ID).map(c=>{const o=c.members.map(m=>m.user_id).filter(i=>i!=S.id),l=lastM[c.id]; const lText=l?parseMsgBody(l.body).text:''; return `<div class="card top" onclick="chat=${c.id};replyTo=null;openMsgId=null;load()">${c.is_group?'<div class=av style="background:var(--ac)">👥</div>':av(o[0])}<div class=m><b>${esc(c.is_group?(c.title||'Group'):nmOf(o[0]))}${!c.is_group&&recent(o[0])?' 📍':''}</b><small>${l?esc((l.sender==S.id?'You: ':'')+(lText.slice(0,50)||'📷 Photo')):'No messages yet'}</small></div>${l?`<small>${fmt(l.created_at)}</small>`:''}</div>`}).join('');
+  return `<header><h1>Messages</h1><span style="display:flex;gap:6px"><button class=g onclick="mapView()">📍 Map</button><button class=g onclick="groupView()">＋ Group</button></span></header><div class=row>${ppl}</div>${alertsL.length?`<div class="card top" onclick="alertsView()"><div class=av style="background:#e5484d">🔔</div><div class=m><b>System Alerts</b><small>${esc(alertsL[0].body)}</small></div></div>`:''}${aiCard}${list||'<div class=empty>Tap a person above to chat, or make a group</div>'}`
+}
+
+function vChat(){
+  const isAi = chat===AI_ID;
+  const c = isAi ? {id:AI_ID,title:'Groq AI',is_group:false,members:[{user_id:AI_SENDER},{user_id:S.id}]} : convs.find(x=>x.id==chat);
+  if(!c){chat=null;return vMsgs()}
+  const o=c.members.map(m=>m.user_id).filter(i=>i!=S.id);
+  const myBar=getMyReacts();
+  const _displayMsgs = chatSearch ? chatMsgs.filter(m=>parseMsgBody(m.body).text.toLowerCase().includes(chatSearch.toLowerCase())) : chatMsgs;
+  const rowsHtml = _displayMsgs.map(m=>{
+    const mid=String(m.id); const isMe=m.sender==S.id && m.sender!=='ai-groq'; const parsed=parseMsgBody(m.body); const receiptOpen=String(openMsgId)===mid; const statusText=receiptOpen&&!isAi?msgStatusInfo(m,c):''; const quoteHtml=parsed.reply?`<div class=reply-quote><b>${esc(parsed.reply.sender)}</b><br>${esc(parsed.reply.snippet||'📷 Photo')}</div>`:'';
+    const reactEntries=Object.entries(parsed.reacts||{}); const totalReacts=reactEntries.length; let pillHtml='';
+    if(totalReacts>0){const counts={}; reactEntries.forEach(([,em])=>{counts[em]=(counts[em]||0)+1}); const top2=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,2).map(x=>x[0]).join(''); pillHtml=`<div class=react-pill onclick="event.stopPropagation();showReactionDetails('${mid}')"><span>${top2}</span>${totalReacts>1?`<span class=cnt-r>${totalReacts}</span>`:''}</div>`}
+    const pickerHtml=String(reactMenuId)===mid?`<div class=react-row onclick="event.stopPropagation()">${myBar.map(em=>`<button class="react-em ${parsed.reacts[S.id]===em?'picked':''}" onclick="reactToMsg('${mid}','${em}')">${em}</button>`).join('')}<button class=react-plus onclick="openReactCustomizer('${mid}')">+</button></div>`:'';
+    const bubble=`<div class=bub-wrap data-mid="${mid}">${pickerHtml}<div class="bub ${isMe?'me':''}" onpointerdown="startHoldMsg('${mid}',event)" onpointerup="cancelHoldMsg()" onpointerleave="cancelHoldMsg()" onpointercancel="cancelHoldMsg()" oncontextmenu="event.preventDefault();reactMenuId='${mid}';render()" onclick="onBubClick('${mid}')">${quoteHtml}<div>${formatMsgText(parsed.text)}</div>${imgs(m.images,isMe,'m','${mid}')}<small>${fmt(m.created_at)}</small><div><a onclick="event.stopPropagation();startReply('${mid}')">↩ Reply</a>${isMe?`<a onclick="event.stopPropagation();startEditMsg('${mid}')">✏ Edit</a><a onclick="event.stopPropagation();delM('${mid}')">🗑 Delete</a>`:''}<a onclick="event.stopPropagation();togglePinMsg('${mid}')">📌 ${getPinned().includes(mid)?'Unpin':'Pin'}</a></div>${receiptOpen?`<div class=msg-receipt>${statusText}</div>`:''}</div>${pillHtml}</div>`;
+    if(isMe) return `<div class="msg-row me"><div class=msg-col>${bubble}</div></div>`;
+    return `<div class=msg-row>${av(m.sender,34)}<div class=msg-col><div class=msg-name>${esc(nmOf(m.sender))}</div>${bubble}</div></div>`;
+  }).join('')||'<div class=empty>Say hi 👋</div>';
+  // NEW: typing indicator
+  const typingHtml = aiTyping ? `<div class="typing-row">${av('ai-groq',34)}<div><div class="typing-label">${esc(aiTypingName)} is typing...</div><div class="typing-bub"><i></i><i></i><i></i></div></div></div>` : '';
+  const humanTypingNames = Object.values(humanTyping).filter(x=>x.conv_id===chat && Date.now()-x.at<4000).map(x=>x.name);
+  const humanTypingHtml = humanTypingNames.length ? `<div class="typing-row"><div><div class="typing-label">${esc(humanTypingNames.join(', '))} is typing...</div><div class="typing-bub"><i></i><i></i><i></i></div></div></div>` : '';
+  const pinnedIds = getPinned(); const pinnedList = pinnedIds.map(pid=>chatMsgs.find(x=>String(x.id)===String(pid))).filter(Boolean);
+  const pinnedBar = pinnedList.length ? `<div class=pinned-bar>📌 <b onclick="jumpToMsg('${pinnedList[0].id}')">${esc(parseMsgBody(pinnedList[0].body).text.slice(0,80))}</b><button class=g style="padding:4px 8px;font-size:12px" onclick="togglePinMsg('${pinnedList[0].id}')">Unpin</button></div>` : '';
+  const replyBarHtml=replyTo?`<div class=reply-bar><div style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Replying to <b>${esc(replyTo.senderName)}</b>: ${esc(replyTo.snippet)}</div><button class=ic onclick="cancelReply()">✕</button></div>`:'';
+  const title = isAi ? 'Groq AI 🤖' : (c.is_group?(c.title||'Group'):nmOf(o[0])); const _otherId = !isAi ? o[0] : null; const _otherOnline = _otherId ? online(_otherId) : true; const _sub = isAi ? '🟢 Always online' : (c.is_group ? `${o.length+1} members` : (_otherOnline ? '🟢 Online now' : '⚪ Offline'));
+  return `<header><button class=g onclick="chat=null;replyTo=null;openMsgId=null;reactMenuId=null;activeCall=null;render()">‹ Back</button><div style="min-width:0"><b style="display:block">${esc(title)}</b><small style="color:var(--mut)">${_sub}</small></div><span style="display:flex;gap:6px;align-items:center">${!isAi&&activeCall?`<button class=join-call onclick="joinCall('${activeCall.id}',${chat},true)">Join 📞</button>`:(!isAi?`<button class=ic onclick="startCall()">📞</button>`:'')}<button class=g title="Pinned messages" onclick="pinnedView()">📌<span id=pinCount>${getPinned().length||""}</span></button><button class=g onclick="chatMenu()">⋯</button></span></header>
+  <div class=chat-search style="padding:6px 16px;background:var(--bg)"><input id=chatSearchInp placeholder="🔍 Search in this chat…" value="${esc(chatSearch)}" oninput="setChatSearch(this.value)">${chatSearch?`<button class=g style="margin-top:6px" onclick="clearChatSearch()">Clear search</button>`:''}</div><div class=chat-area style="padding-bottom:${replyTo?'135px':'90px'}">${pinnedBar}${chatSearch?`<small style="color:var(--mut)">Showing ${chatMsgs.filter(m=>parseMsgBody(m.body).text.toLowerCase().includes(chatSearch.toLowerCase())).length} result(s) for “${esc(chatSearch)}”</small>`:''}${rowsHtml}${typingHtml}${humanTypingHtml}</div>${replyBarHtml}
+  <div id="mentionPopup" class="mention-popup"></div>
+  <div class=cin style="position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom));padding:8px 16px;background:var(--bg);z-index:3"><button class=g onclick="attach()">📎<span id=pc>${pend.length||''}</span></button><input id=mi placeholder="${isAi?'Message Groq AI…':'Message… (type @ to tag)'}" maxlength=1000 oninput="onChatInputTyping(event)" onkeydown="if(event.key==='Enter'&&editMsgId){event.preventDefault();saveEditMsg()} if(event.key==='Escape'&&editMsgId)cancelEdit()"><button onclick="editMsgId?saveEditMsg():sendM()">${editMsgId?"Save":"Send"}</button></div>`
+}
+
+/* ===== NEW: ⋯ MENU + DELETE CONVERSATION ===== */
+
+/* ===== PINNED LIST VIEW ===== */
+function pinnedView(){
+  const ids = getPinned();
+  const items = ids.map(pid=>chatMsgs.find(x=>String(x.id)===String(pid))).filter(Boolean);
+  const title = chat===AI_ID ? 'Groq AI' : (convs.find(x=>x.id==chat)?.title || nmOf(convs.find(x=>x.id==chat)?.members?.map(m=>m.user_id).filter(i=>i!=S.id)[0]||''));
+  $('#shc').innerHTML = `<h2>📌 Pinned messages</h2><small style="color:var(--mut)">${items.length} pinned in ${esc(title||'this chat')} — tap one to jump to it</small>
+  ${items.map(m=>{ const txt=parseMsgBody(m.body).text||'📷 Photo'; return `<div class="card" style="margin:10px 0;cursor:pointer" onclick="closeSh();setTimeout(()=>jumpToMsg('${m.id}'),120)">
+    <div style="display:flex;gap:10px;align-items:flex-start">${av(m.sender,34)}<div class=m><b>${esc(nmOf(m.sender))}</b><small style="color:var(--mut)">${fmt(m.created_at)}</small><div style="margin-top:4px;white-space:pre-wrap">${esc(txt.slice(0,300))}</div></div>
+    <button class=g style="flex:0 0 auto" onclick="event.stopPropagation();togglePinMsg('${m.id}');pinnedView()">Unpin</button></div></div>` }).join('') || '<div class=empty>No pinned messages yet.<br>Tap 📌 Pin on any message to pin it here.</div>'}
+  <button class=g style="width:100%;margin-top:12px" onclick="closeSh()">Close</button>`;
+  $('#sh').classList.add('show');
+}
+function chatMenu(){
+
+  const isAi = chat===AI_ID;
+  const c = isAi ? {id:AI_ID,title:'Groq AI',is_group:false,members:[{user_id:AI_SENDER}]} : convs.find(x=>x.id==chat);
+  if(!c) return;
+  const title = isAi ? 'Groq AI' : (c.is_group ? (c.title||'Group') : nmOf(c.members.map(m=>m.user_id).filter(i=>i!=S.id)[0]));
+  $('#shc').innerHTML=`<h2>${esc(title)}</h2><small style="color:var(--mut)">${isAi?'Private conversation with Groq AI. Only stored on this device.':c.is_group?'Group options':'Conversation options'}</small>
+  ${!isAi&&c.is_group?`<button class=g style="width:100%;margin-top:12px" onclick="closeSh();grpMenu()">👥 Manage members</button>`:''}
+  ${!isAi?`<button class=g style="width:100%;margin-top:8px" onclick="closeSh();profile('${c.members.map(m=>m.user_id).filter(i=>i!=S.id)[0]}')">👤 View profile</button>`:''}
+  <div style="display:flex;gap:8px;margin-top:16px"><button class=g style="flex:1" onclick="closeSh()">Close</button><button style="flex:1;background:#e5484d" onclick="deleteConversation()">🗑 Delete conversation</button></div>`;
+  $('#sh').classList.add('show');
+}
+async function deleteConversation(){
+  const isAi = chat===AI_ID;
+  const c = isAi ? {title:'Groq AI'} : convs.find(x=>x.id==chat);
+  if(!c) return;
+  const name = isAi ? 'Groq AI' : (c.is_group ? (c.title||'Group') : nmOf(c.members.map(m=>m.user_id).filter(i=>i!=S.id)[0]));
+  if(!confirm(`Delete conversation with ${name}?\n\n${isAi?'This clears your local AI chat on this device.':'This deletes your messages and removes you from this conversation. Other members will still see it.'}`)) return;
+  try{
+    if(isAi){ localStorage.removeItem('chorely_ai_msgs_'+AI_ID); localStorage.removeItem('chorely_reactions_'+AI_ID); chatMsgs=[]; aiTyping=false; chat=null; closeSh(); render(); toast('AI conversation deleted'); return; }
+    await db(`/rest/v1/msgs?conv_id=eq.${chat}&sender=eq.${S.id}`,{m:'DELETE'}).catch(()=>{});
+    await db(`/rest/v1/members?conv_id=eq.${chat}&user_id=eq.${S.id}`,{m:'DELETE'});
+  }catch(e){ alert('Could not delete conversation'); return; }
+  chat=null; closeSh(); load(); toast('Conversation deleted');
+}
+
+function handleChatInput(e){const inp=e.target;const val=inp.value;const pos=inp.selectionStart;const textBefore=val.slice(0,pos);const match=textBefore.match(/@([a-zA-Z0-9_\s]*)$/);const popup=$('#mentionPopup');if(!popup)return;if(match){const query=match[1].toLowerCase();const c=convs.find(x=>x.id==chat);const memberIds=c&&c.members?c.members.map(m=>m.user_id):users.map(u=>u.id);const matchingUsers=users.filter(u=>memberIds.includes(u.id)&&u.name.toLowerCase().includes(query));let listHtml=`<div class="mention-item" onclick="insertMention('@groqAI ')"><div class="av" style="background:var(--ac);width:30px;height:30px;font-size:14px">🤖</div><div><b>Groq AI</b><small style="color:var(--mut)">openai/gpt-oss-120b</small></div></div>`;listHtml+=matchingUsers.map(u=>`<div class="mention-item" onclick="insertMention('@${esc(u.name)} ')">${av(u.id,30)}<div><b>${esc(u.name)}</b></div></div>`).join('');popup.innerHTML=listHtml;popup.classList.add('show')}else{popup.classList.remove('show')}}
+function insertMention(name){const inp=$('#mi');if(!inp)return;const val=inp.value;const pos=inp.selectionStart;const textBefore=val.slice(0,pos);const textAfter=val.slice(pos);const newBefore=textBefore.replace(/@[a-zA-Z0-9_\s]*$/,name);inp.value=newBefore+textAfter;inp.focus();const popup=$('#mentionPopup');if(popup)popup.classList.remove('show')}
+async function queryGroqAI(promptText){const apiKey="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";try{const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Authorization":`Bearer ${apiKey}`,"Content-Type":"application/json"},body:JSON.stringify({model:"openai/gpt-oss-120b",messages:[{role:"user",content:promptText}]})});const data=await r.json();if(data&&data.choices&&data.choices[0]&&data.choices[0].message)return data.choices[0].message.content;if(data&&data.error)return "Groq Error: "+(data.error.message||JSON.stringify(data.error));return "No response from Groq AI."}catch(e){return "Error connecting to Groq AI: "+e.message}}
+
+async function sendM(){
+  const el=$('#mi'),b=el.value.trim(); if(!b&&!pend.length) return; el.value=''; el.blur();
+  const popup=$('#mentionPopup'); if(popup) popup.classList.remove('show');
+  // ===== AI DM: direct 1-on-1, no @ needed =====
+  if(chat===AI_ID){
+    const userMsg={id:'u_'+Date.now(),conv_id:AI_ID,sender:S.id,body:b,images:[],created_at:new Date().toISOString()};
+    const arr=aiMsgs(); arr.push(userMsg); saveAiMsgs(arr); chatMsgs=[...arr]; render(); window.scrollTo(0,document.body.scrollHeight);
+    aiTyping=true; aiTypingName='Groq AI'; render();
+    const _rem=maybeCreateReminderFromAI(b); const aiResp=await queryGroqAI(chorelyContextForAI(b||'Hello!')+(_rem?`\n[Reminder created: ${ _rem.text} - ${ _rem.when}] Tell user you saved it.`:''));
+    aiTyping=false;
+    const aiMsg={id:'ai_'+Date.now(),conv_id:AI_ID,sender:AI_SENDER,body:aiResp,images:[],created_at:new Date(Date.now()+100).toISOString()};
+    arr.push(aiMsg); saveAiMsgs(arr); chatMsgs=[...arr]; render(); window.scrollTo(0,document.body.scrollHeight);
+    return;
   }
-  const pickerHtml=reactMenuId===m.id?`<div class=react-row onclick="event.stopPropagation()">${myBar.map(em=>`<button class="react-em ${parsed.reacts[S.id]===em?'picked':''}" onclick="reactToMsg(${m.id},'${em}')">${em}</button>`).join('')}<button class=react-plus title="Customize reactions" onclick="openReactCustomizer(${m.id})">+</button></div>`:'';
-  const bubble=`<div class=bub-wrap>${pickerHtml}<div class="bub ${isMe?'me':''}" onpointerdown="startHoldMsg(${m.id},event)" onpointerup="cancelHoldMsg()" onpointerleave="cancelHoldMsg()" onpointercancel="cancelHoldMsg()" oncontextmenu="event.preventDefault();reactMenuId=${m.id};render()" onclick="onBubClick(${m.id})">${quoteHtml}<div>${esc(parsed.text)}</div>${imgs(m.images,isMe,'m',m.id)}<small>${fmt(m.created_at)}</small><div><a onclick="event.stopPropagation();startReply(${m.id})">↩ Reply</a>${isMe?`<a onclick="event.stopPropagation();delM(${m.id})">🗑 Delete</a>`:''}</div>${receiptOpen?`<div class=msg-receipt>${statusText}</div>`:''}</div>${pillHtml}</div>`;
-  if(isMe){
-   return `<div class="msg-row me"><div class=msg-col>${bubble}</div></div>`;
-  }
-  return `<div class=msg-row>${av(m.sender,34)}<div class=msg-col><div class=msg-name>${esc(nmOf(m.sender))}</div>${bubble}</div></div>`;
- }).join('')||'<div class=empty>Say hi 👋</div>';
- const replyBarHtml=replyTo?`<div class=reply-bar><div style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Replying to <b>${esc(replyTo.senderName)}</b>: ${esc(replyTo.snippet)}</div><button class=ic style="padding:2px 6px;font-size:16px" onclick="cancelReply()">✕</button></div>`:'';
- return `<header><button class=g onclick="chat=null;replyTo=null;openMsgId=null;reactMenuId=null;activeCall=null;render()">‹ Back</button><b>${esc(c.is_group?(c.title||'Group'):nmOf(o[0]))}</b><span>${activeCall?`<button class=join-call onclick="joinCall('${activeCall.id}',${chat},true)">Join 📞</button>`:`<button class=ic title="Start call" aria-label="Start call" onclick="startCall()">📞</button>`}${c.is_group?' <button class=g onclick="grpMenu()">⋯</button>':''}</span></header>
- <div class=chat-area style="padding-bottom:${replyTo?'135px':'90px'}">${rowsHtml}</div>
- ${replyBarHtml}
- <div class=cin style="position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom));padding:8px 16px;background:var(--bg);z-index:3"><button class=g onclick="attach()">📎<span id=pc>${pend.length||''}</span></button><input id=mi placeholder="Message…" maxlength=1000><button onclick="sendM()">Send</button></div>`}
-async function sendM(){const el=$('#mi'),b=el.value.trim();if(!b&&!pend.length)return;el.value='';el.blur();
- const finalBody=replyTo?`[[reply:${replyTo.id}|${replyTo.senderName}|${replyTo.snippet}]]
-${b}`:b;
- replyTo=null;
- try{const im=[];for(const x of pend)im.push(await upload(x));pend=[];await db('/rest/v1/msgs',{m:'POST',b:{conv_id:chat,body:finalBody,images:im}})}catch{alert('Could not send')}load()}
-async function delM(id){const m=chatMsgs.find(x=>x.id==id);try{await db(`/rest/v1/msgs?id=eq.${id}`,{m:'DELETE'});if(m&&m.images&&m.images.length)rmFiles(m.images)}catch{}load()}
+  const finalBody=replyTo?`[[reply:${replyTo.id}|${replyTo.senderName}|${replyTo.snippet}]]\n${b}`:b; replyTo=null;
+  try{
+    const im=[]; for(const x of pend) im.push(await upload(x)); pend=[];
+    await db('/rest/v1/msgs',{m:'POST',b:{conv_id:chat,body:finalBody,images:im}});
+    if(/@groqai/i.test(b)){
+      const prompt=b.replace(/@groqai/gi,'').trim();
+      aiTyping=true; aiTypingName='Groq AI'; render();
+      const _rem2=maybeCreateReminderFromAI(prompt); const aiResp=await queryGroqAI(chorelyContextForAI(prompt||'Hello!')+(_rem2?`\n[Reminder created] Tell user you saved it.`:''));
+      aiTyping=false;
+      const aiBody=`[[reply:0|Groq AI|@groqAI]]\n`+aiResp;
+      const aiMsgs2=JSON.parse(localStorage.getItem('chorely_ai_msgs_'+chat)||'[]');
+      aiMsgs2.push({id:'ai_'+Date.now(),conv_id:chat,sender:'ai-groq',body:aiBody,images:[],created_at:new Date(Date.now()+1000).toISOString()});
+      localStorage.setItem('chorely_ai_msgs_'+chat,JSON.stringify(aiMsgs2));
+      render();
+    }
+  }catch(e){ aiTyping=false; alert('Could not send') }
+  load();
+}
+async function delM(id){const m=chatMsgs.find(x=>String(x.id)===String(id)); if(chat===AI_ID){ const arr=aiMsgs().filter(x=>String(x.id)!==String(id)); saveAiMsgs(arr); chatMsgs=arr; render(); return; } try{await db(`/rest/v1/msgs?id=eq.${id}`,{m:'DELETE'}); if(m&&m.images&&m.images.length)rmFiles(m.images)}catch{} load()}
 function alertsView(){$('#shc').innerHTML=`<h2>🔔 System Alerts</h2>${alertsL.map(a=>`<div class=cm style="margin-top:12px"><b>${esc(a.body)}</b>${a.ends_at?`<br>⏳ Screen time ends <b>${fmt(a.ends_at)}</b>`:''}<br><small>${fmt(a.created_at)}</small></div>`).join('')}<button class=g style="width:100%;margin-top:14px" onclick="closeSh()">Close</button>`;$('#sh').classList.add('show')}
 let gSel=new Set();
 function groupView(){gSel=new Set();$('#shc').innerHTML=`<h2>New group</h2><input id=gn placeholder="Group name" maxlength=40><small style="color:var(--mut)">Add members</small><div class=pk id=gp></div><div style="display:flex;gap:8px;margin-top:16px"><button class=g style="flex:1" onclick="closeSh()">Cancel</button><button class=g style="flex:1" onclick="mkGroup()">Create</button></div>`;gRender();$('#sh').classList.add('show')}
 function gRender(){$('#gp').innerHTML=users.filter(u=>u.id!=S.id).map(u=>`<button class="${gSel.has(u.id)?'on':''}" onclick="gSel.has('${u.id}')?gSel.delete('${u.id}'):gSel.add('${u.id}');gRender()">${esc(u.name)}</button>`).join('')}
 async function mkGroup(){const t=$('#gn').value.trim();if(!t||!gSel.size)return alert('Name the group and add at least one member');try{chat=await rpc('start_chat',{title:t,uids:[...gSel],grp:true});closeSh();load()}catch{alert('Could not create group')}}
 async function dm(id){try{chat=await rpc('start_chat',{title:null,uids:[id],grp:false});tab='msgs';closeSh();load()}catch{alert('Could not open chat')}}
-function grpMenu(){const c=convs.find(x=>x.id==chat),ids=c.members.map(m=>m.user_id),rest=users.filter(u=>!ids.includes(u.id));
- $('#shc').innerHTML=`<h2>${esc(c.title||'Group')}</h2><small style="color:var(--mut)">Members</small><div class=row style="padding:8px 0">${ids.map(i=>`<div class=pp>${av(i,44)}${esc(nmOf(i))}</div>`).join('')}</div>
- ${rest.length?`<small style="color:var(--mut)">Add a member</small><div class=pk>${rest.map(u=>`<button onclick="addMem('${u.id}')">${esc(u.name)}</button>`).join('')}</div>`:''}
- <div style="display:flex;gap:8px;margin-top:16px"><button class=g style="flex:1" onclick="closeSh()">Close</button><button style="flex:1;background:#e5484d" onclick="leave()">Leave group</button></div>`;$('#sh').classList.add('show');loadImgs()}
+function grpMenu(){const c=convs.find(x=>x.id==chat),ids=c.members.map(m=>m.user_id),rest=users.filter(u=>!ids.includes(u.id));$('#shc').innerHTML=`<h2>${esc(c.title||'Group')}</h2><small style="color:var(--mut)">Members</small><div class=row style="padding:8px 0">${ids.map(i=>`<div class=pp>${av(i,44)}${esc(nmOf(i))}</div>`).join('')}</div>${rest.length?`<small style="color:var(--mut)">Add a member</small><div class=pk>${rest.map(u=>`<button onclick="addMem('${u.id}')">${esc(u.name)}</button>`).join('')}</div>`:''}<div style="display:flex;gap:8px;margin-top:16px"><button class=g style="flex:1" onclick="closeSh()">Close</button><button style="flex:1;background:#e5484d" onclick="leave()">Leave group</button></div>`;$('#sh').classList.add('show');loadImgs()}
 async function addMem(u){try{await rpc('add_member',{cid:chat,uid:u});closeSh();load()}catch{alert('Could not add')}}
 async function leave(){if(!confirm('Leave this group?'))return;try{await db(`/rest/v1/members?conv_id=eq.${chat}&user_id=eq.${S.id}`,{m:'DELETE'})}catch{}chat=null;closeSh();load()}
-async function profile(id){const w=W[id]||{credits:0,screen_seconds:0};let r=[];try{r=await db(`/rest/v1/chores?select=done_at&owner=eq.${id}&status=eq.done`)}catch{}
- const t=new Date();t.setHours(0,0,0,0);const wk=new Date(t);wk.setDate(wk.getDate()-6);const mo=new Date(t);mo.setDate(1);
- const n=d=>r.filter(x=>new Date(x.done_at)>=d).length;
- const L=locs[id];const locLine=L?`<small style="color:var(--mut)">📍 ${locAge(L.updated_at)} · <a href="#" onclick="event.preventDefault();closeSh();mapView();setTimeout(()=>focusMapUser('${id}'),300)">Show on map</a></small>`:'<small style="color:var(--mut)">📍 No shared location</small>';
- $('#shc').innerHTML=`<div style="text-align:center"><div style="display:flex;justify-content:center">${av(id,84)}</div><h2 style="margin-top:8px">${esc(nmOf(id))}</h2><small style="color:var(--mut)">${online(id)?'🟢 Online':'⚪ Offline'}</small><br>${locLine}</div>
- <div class=st><div><b>👛 ${w.credits}</b>credits</div><div><b>₱${(w.credits/MR).toFixed(2)}</b>money value</div><div style="grid-column:span 2"><b data-cd="${id}">${fmtDur(leftSec(w))}</b>screen time left${leftSec(w)?' · ends '+fmt(w.screen_until):''}</div>
- <div><b>${n(t)}</b>today</div><div><b>${n(wk)}</b>last 7 days</div><div><b>${n(mo)}</b>this month</div><div><b>${r.length}</b>all time</div></div>
- <div style="display:flex;gap:8px;margin-top:16px"><button class=g style="flex:1" onclick="closeSh()">Close</button>${id!=S.id?`<button style="flex:1" onclick="dm('${id}')">💬 Message</button>`:''}</div>`;$('#sh').classList.add('show');loadImgs()}
-
+async function profile(id){if(id==='ai-groq'){openAiDm();return}const w=W[id]||{credits:0,screen_seconds:0};let r=[];try{r=await db(`/rest/v1/chores?select=done_at&owner=eq.${id}&status=eq.done`)}catch{}const t=new Date();t.setHours(0,0,0,0);const wk=new Date(t);wk.setDate(wk.getDate()-6);const mo=new Date(t);mo.setDate(1);const n=d=>r.filter(x=>new Date(x.done_at)>=d).length;const L=locs[id];const locLine=L?`<small style="color:var(--mut)">📍 ${locAge(L.updated_at)} · <a href="#" onclick="event.preventDefault();closeSh();mapView();setTimeout(()=>focusMapUser('${id}'),300)">Show on map</a></small>`:'<small style="color:var(--mut)">📍 No shared location</small>';$('#shc').innerHTML=`<div style="text-align:center"><div style="display:flex;justify-content:center">${av(id,84)}</div><h2 style="margin-top:8px">${esc(nmOf(id))}</h2><small style="color:var(--mut)">${online(id)?'🟢 Online':'⚪ Offline'}</small><br>${locLine}</div><div class=st><div><b>👛 ${w.credits}</b>credits</div><div><b>₱${(w.credits/MR).toFixed(2)}</b>money value</div><div style="grid-column:span 2"><b data-cd="${id}">${fmtDur(leftSec(w))}</b>screen time left${leftSec(w)?' · ends '+fmt(w.screen_until):''}</div><div><b>${n(t)}</b>today</div><div><b>${n(wk)}</b>last 7 days</div><div><b>${n(mo)}</b>this month</div><div><b>${r.length}</b>all time</div></div><div style="display:flex;gap:8px;margin-top:16px"><button class=g style="flex:1" onclick="closeSh()">Close</button>${id!=S.id?`<button style="flex:1" onclick="dm('${id}')">💬 Message</button>`:''}</div>`;$('#sh').classList.add('show');loadImgs()}
 const locAge=t=>{if(!t)return '';const s=Math.floor((Date.now()-new Date(t).getTime())/1000);if(s<60)return 'just now';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';return Math.floor(s/86400)+'d ago'};
-function mapView(){
- const sharing=shareLoc;
- $('#shc').innerHTML=`<h2>📍 Locations</h2>
- <small style="color:var(--mut)">See where everyone is. Avatars on the map are profile pictures. Locations older than 24h still show but are faded.</small>
- <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-  <button id=shareBtn onclick="toggleShareLoc()" style="flex:1">${sharing?'🛑 Stop sharing':'📍 Share my location'}</button>
-  <button class=g onclick="refreshMapLocs()">↻ Refresh</button>
- </div>
- <div id=mapBox></div>
- <div id=mapList style="margin-top:10px;max-height:20vh;overflow:auto"></div>
- <button class=g style="width:100%;margin-top:12px" onclick="closeMapView()">Close</button>`;
- $('#sh').classList.add('show');
- setTimeout(initMap,50);
-}
-function closeMapView(){
- if(mapInst){try{mapInst.remove()}catch{}mapInst=null;mapMarkers={}}
- closeSh();
-}
-async function refreshMapLocs(){
- try{
-  const rows=await db('/rest/v1/locations?select=user_id,lat,lng,updated_at');
-  locs={};(rows||[]).forEach(x=>{locs[x.user_id]=x});
-  updateMapMarkers();
-  renderMapList();
- }catch{toast('Could not refresh locations')}
-}
-function renderMapList(){
- const el=$('#mapList');if(!el)return;
- const rows=Object.values(locs).sort((a,b)=>new Date(b.updated_at)-new Date(a.updated_at));
- el.innerHTML=rows.map(L=>{
-  const stale=Date.now()-new Date(L.updated_at).getTime()>24*3600*1000;
-  return `<div class="top" style="margin:6px 0;opacity:${stale?.55:1};cursor:pointer" onclick="focusMapUser('${L.user_id}')">
-   ${av(L.user_id,36)}<div class=m><b>${esc(nmOf(L.user_id))}${L.user_id==S.id?' (you)':''}</b>
-   <small>${locAge(L.updated_at)} · ${Number(L.lat).toFixed(4)}, ${Number(L.lng).toFixed(4)}</small></div></div>`}).join('')||'<small style="color:var(--mut)">No one is sharing a location yet. Tap “Share my location”.</small>';
- loadImgs();
-}
-function focusMapUser(id){
- const L=locs[id];if(!L||!mapInst)return;
- mapInst.setView([L.lat,L.lng],16);
- const m=mapMarkers[id];if(m)m.openPopup();
-}
-function initMap(){
- const box=$('#mapBox');
- if(!box)return;
- if(typeof window.L==='undefined'){box.innerHTML='<div class=empty>Map library failed to load. Check your internet connection, then close and open Map again.</div>';return}
- if(mapInst){try{mapInst.remove()}catch{}mapInst=null;mapMarkers={}}
- let center=[15.145,120.585],zoom=12;
- const mine=locs[S.id];
- if(mine){center=[mine.lat,mine.lng];zoom=14}
- else{const any=Object.values(locs)[0];if(any){center=[any.lat,any.lng];zoom=13}}
- mapInst=window.L.map(box,{zoomControl:true}).setView(center,zoom);
- window.L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',{
-  maxZoom:19,
-  attribution:'© Esri'
- }).addTo(mapInst);
- updateMapMarkers();
- renderMapList();
- setTimeout(()=>{try{mapInst.invalidateSize()}catch{}},200);
-}
-async function markerIcon(id){
- const u=users.find(x=>x.id==id)||{name:'?'};
- const isMe=id==S.id;
- let html;
- if(u.avatar_path){
-  try{
-   const url=await photo(u.avatar_path);
-   html=`<div class="loc-marker${isMe?' me':''}"><img src="${url}" alt=""></div>`;
-  }catch{
-   html=`<div class="loc-marker${isMe?' me':''}">${esc((u.name||'?')[0].toUpperCase())}</div>`;
-  }
- }else{
-  const hue=parseInt(String(id).slice(0,6),16)%360;
-  html=`<div class="loc-marker${isMe?' me':''}" style="background:hsl(${hue} 60% 45%)">${esc((u.name||'?')[0].toUpperCase())}</div>`;
- }
- return window.L.divIcon({className:'',html,iconSize:[44,44],iconAnchor:[22,22],popupAnchor:[0,-22]});
-}
-async function updateMapMarkers(){
- if(!mapInst||typeof window.L==='undefined')return;
- Object.values(mapMarkers).forEach(m=>{try{mapInst.removeLayer(m)}catch{}});
- mapMarkers={};
- const bounds=[];
- for(const row of Object.values(locs)){
-  if(row.lat==null||row.lng==null)continue;
-  const stale=Date.now()-new Date(row.updated_at).getTime()>24*3600*1000;
-  const icon=await markerIcon(row.user_id);
-  const m=window.L.marker([row.lat,row.lng],{icon,opacity:stale?0.55:1}).addTo(mapInst);
-  m.bindPopup(`<b>${esc(nmOf(row.user_id))}${row.user_id==S.id?' (you)':''}</b><br><small>${locAge(row.updated_at)}</small>`);
-  mapMarkers[row.user_id]=m;
-  bounds.push([row.lat,row.lng]);
- }
- if(bounds.length>1)try{mapInst.fitBounds(bounds,{padding:[40,40],maxZoom:15})}catch{}
- else if(bounds.length===1)mapInst.setView(bounds[0],15);
-}
-async function toggleShareLoc(){
- if(shareLoc){await stopShareLoc();return}
- if(!navigator.geolocation){alert('Geolocation is not supported on this device.');return}
- const btn=$('#shareBtn');if(btn){btn.disabled=true;btn.textContent='Getting location…'}
- try{
-  const pos=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:true,timeout:20000,maximumAge:10000}));
-  await upsertLocation(pos.coords.latitude,pos.coords.longitude);
-  shareLoc=true;CS.shareLoc=true;saveCS();
-  startLocWatch();
-  toast('Location sharing on');
-  if(btn){btn.disabled=false;btn.textContent='🛑 Stop sharing'}
-  updateMapMarkers();renderMapList();
- }catch(e){
-  if(btn){btn.disabled=false;btn.textContent='📍 Share my location'}
-  alert('Could not get location. Allow location permission for this site and try again.');
- }
-}
-async function stopShareLoc(){
- shareLoc=false;CS.shareLoc=false;saveCS();
- if(locWatch!=null){navigator.geolocation.clearWatch(locWatch);locWatch=null}
- try{await db(`/rest/v1/locations?user_id=eq.${S.id}`,{m:'DELETE'})}catch{}
- delete locs[S.id];
- toast('Location sharing off');
- const btn=$('#shareBtn');if(btn)btn.textContent='📍 Share my location';
- updateMapMarkers();renderMapList();
-}
-async function upsertLocation(lat,lng){
- const body={user_id:S.id,lat,lng,updated_at:new Date().toISOString()};
- try{
-  await req('/rest/v1/locations',{m:'POST',h:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(body)});
- }catch(e){
-  try{await db(`/rest/v1/locations?user_id=eq.${S.id}`,{m:'PATCH',b:{lat,lng,updated_at:body.updated_at}})}
-  catch{await db('/rest/v1/locations',{m:'POST',b:body})}
- }
- locs[S.id]={user_id:S.id,lat,lng,updated_at:body.updated_at};
-}
-function startLocWatch(){
- if(locWatch!=null)navigator.geolocation.clearWatch(locWatch);
- locWatch=navigator.geolocation.watchPosition(async pos=>{
-  if(!shareLoc||!S.access)return;
-  try{await upsertLocation(pos.coords.latitude,pos.coords.longitude);
-   if(mapInst){updateMapMarkers();renderMapList()}
-  }catch{}
- },()=>{},{enableHighAccuracy:true,maximumAge:15000,timeout:20000});
-}
+function mapView(){$('#shc').innerHTML=`<h2>📍 Locations</h2><small style="color:var(--mut)">See where everyone is. Locations older than 24h still show but are faded.</small><div style="display:flex;gap:8px;margin-top:10px"><button id=shareBtn onclick="toggleShareLoc()" style="flex:1">${shareLoc?'🛑 Stop sharing':'📍 Share my location'}</button><button class=g onclick="refreshMapLocs()">↻ Refresh</button></div><div id=mapBox></div><div id=mapList style="margin-top:10px;max-height:20vh;overflow:auto"></div><button class=g style="width:100%;margin-top:12px" onclick="closeMapView()">Close</button>`;$('#sh').classList.add('show');setTimeout(initMap,50)}
+function closeMapView(){if(mapInst){try{mapInst.remove()}catch{}mapInst=null;mapMarkers={}}closeSh()}
+async function refreshMapLocs(){try{const rows=await db('/rest/v1/locations?select=user_id,lat,lng,updated_at');locs={};(rows||[]).forEach(x=>{locs[x.user_id]=x});updateMapMarkers();renderMapList()}catch{toast('Could not refresh locations')}}
+function renderMapList(){const el=$('#mapList');if(!el)return;const rows=Object.values(locs).sort((a,b)=>new Date(b.updated_at)-new Date(a.updated_at));el.innerHTML=rows.map(L=>{const stale=Date.now()-new Date(L.updated_at).getTime()>24*3600*1000;return `<div class="top" style="margin:6px 0;opacity:${stale?.55:1};cursor:pointer" onclick="focusMapUser('${L.user_id}')">${av(L.user_id,36)}<div class=m><b>${esc(nmOf(L.user_id))}${L.user_id==S.id?' (you)':''}</b><small>${locAge(L.updated_at)} · ${Number(L.lat).toFixed(4)}, ${Number(L.lng).toFixed(4)}</small></div></div>`}).join('')||'<small style="color:var(--mut)">No one is sharing a location yet.</small>';loadImgs()}
+function focusMapUser(id){const L=locs[id];if(!L||!mapInst)return;mapInst.setView([L.lat,L.lng],16);const m=mapMarkers[id];if(m)m.openPopup()}
+function initMap(){const box=$('#mapBox');if(!box)return;if(typeof window.L==='undefined'){box.innerHTML='<div class=empty>Map library failed to load.</div>';return}if(mapInst){try{mapInst.remove()}catch{}mapInst=null;mapMarkers={}}let center=[15.145,120.585],zoom=12;const mine=locs[S.id];if(mine){center=[mine.lat,mine.lng];zoom=14}else{const any=Object.values(locs)[0];if(any){center=[any.lat,any.lng];zoom=13}}mapInst=window.L.map(box,{zoomControl:true}).setView(center,zoom);window.L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'© Esri'}).addTo(mapInst);updateMapMarkers();renderMapList();setTimeout(()=>{try{mapInst.invalidateSize()}catch{}},200)}
+async function markerIcon(id){const u=users.find(x=>x.id==id)||{name:'?'};const isMe=id==S.id;let html;if(u.avatar_path){try{const url=await photo(u.avatar_path);html=`<div class="loc-marker${isMe?' me':''}"><img src="${url}"></div>`}catch{html=`<div class="loc-marker${isMe?' me':''}">${esc((u.name||'?')[0].toUpperCase())}</div>`}}else{const hue=parseInt(String(id).slice(0,6),16)%360;html=`<div class="loc-marker${isMe?' me':''}" style="background:hsl(${hue} 60% 45%)">${esc((u.name||'?')[0].toUpperCase())}</div>`}return window.L.divIcon({className:'',html,iconSize:[44,44],iconAnchor:[22,22],popupAnchor:[0,-22]})}
+async function updateMapMarkers(){if(!mapInst||typeof window.L==='undefined')return;Object.values(mapMarkers).forEach(m=>{try{mapInst.removeLayer(m)}catch{}});mapMarkers={};const bounds=[];for(const row of Object.values(locs)){if(row.lat==null||row.lng==null)continue;const stale=Date.now()-new Date(row.updated_at).getTime()>24*3600*1000;const icon=await markerIcon(row.user_id);const m=window.L.marker([row.lat,row.lng],{icon,opacity:stale?0.55:1}).addTo(mapInst);m.bindPopup(`<b>${esc(nmOf(row.user_id))}${row.user_id==S.id?' (you)':''}</b><br><small>${locAge(row.updated_at)}</small>`);mapMarkers[row.user_id]=m;bounds.push([row.lat,row.lng])}if(bounds.length>1)try{mapInst.fitBounds(bounds,{padding:[40,40],maxZoom:15})}catch{}else if(bounds.length===1)mapInst.setView(bounds[0],15)}
+async function toggleShareLoc(){if(shareLoc){await stopShareLoc();return}if(!navigator.geolocation){alert('Geolocation is not supported.');return}const btn=$('#shareBtn');if(btn){btn.disabled=true;btn.textContent='Getting location…'}try{const pos=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:true,timeout:20000,maximumAge:10000}));await upsertLocation(pos.coords.latitude,pos.coords.longitude);shareLoc=true;CS.shareLoc=true;saveCS();startLocWatch();toast('Location sharing on');if(btn){btn.disabled=false;btn.textContent='🛑 Stop sharing'}updateMapMarkers();renderMapList()}catch(e){if(btn){btn.disabled=false;btn.textContent='📍 Share my location'}alert('Could not get location. Allow location permission and try again.')}} 
+async function stopShareLoc(){shareLoc=false;CS.shareLoc=false;saveCS();if(locWatch!=null){navigator.geolocation.clearWatch(locWatch);locWatch=null}try{await db(`/rest/v1/locations?user_id=eq.${S.id}`,{m:'DELETE'})}catch{}delete locs[S.id];toast('Location sharing off');const btn=$('#shareBtn');if(btn)btn.textContent='📍 Share my location';updateMapMarkers();renderMapList()}
+async function upsertLocation(lat,lng){const body={user_id:S.id,lat,lng,updated_at:new Date().toISOString()};try{await req('/rest/v1/locations',{m:'POST',h:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(body)})}catch(e){try{await db(`/rest/v1/locations?user_id=eq.${S.id}`,{m:'PATCH',b:{lat,lng,updated_at:body.updated_at}})}catch{await db('/rest/v1/locations',{m:'POST',b:body})}}locs[S.id]={user_id:S.id,lat,lng,updated_at:body.updated_at}}
+function startLocWatch(){if(locWatch!=null)navigator.geolocation.clearWatch(locWatch);locWatch=navigator.geolocation.watchPosition(async pos=>{if(!shareLoc||!S.access)return;try{await upsertLocation(pos.coords.latitude,pos.coords.longitude);if(mapInst){updateMapMarkers();renderMapList()}}catch{}},()=>{},{enableHighAccuracy:true,maximumAge:15000,timeout:20000})}
 function resumeLocShare(){if(shareLoc&&S.access&&navigator.geolocation)startLocWatch()}
-
-function walletView(){const w=W[S.id]||{credits:0,screen_seconds:0};
- $('#shc').innerHTML=`<h2>👛 My wallet</h2><div class=set style="margin:10px 0"><h3>${w.credits} credits</h3><small>≈ ₱${(w.credits/MR).toFixed(2)} (${MR} credits = ₱1). Your credits never reset.</small></div>
- <div class=set style="margin:10px 0"><h3>⏳ Screen time: <span data-cd="${S.id}">${fmtDur(leftSec(w))}</span></h3><small>${leftSec(w)?'Ends '+fmt(w.screen_until):'No active screen time'} · counts down automatically</small></div>
- <h3 style="margin-top:12px">Cash out</h3><small style="color:var(--mut)">60 credits = 1h 45m screen time · ${MR} credits = ₱1</small>
- <input id=ca type=number min=1 placeholder="Credits to cash out"><div class=seg><button class=g onclick="$('#ca').value=${w.credits}">All</button></div>
- <div style="display:flex;gap:8px;margin-top:12px"><button style="flex:1" onclick="cash('screen')">Screen time</button><button style="flex:1;background:var(--ok);color:#000" onclick="cash('money')">Money (₱)</button></div>
- <button class=g style="width:100%;margin-top:12px" onclick="closeSh()">Close</button>`;$('#sh').classList.add('show')}
-async function cash(k){const a=parseInt($('#ca').value),w=W[S.id]||{credits:0};if(!a||a<1)return alert('Enter an amount');if(a>w.credits)return alert('Not enough credits');
- if(!confirm(k=='money'?`Cash out ${a} credits = ₱${(a/MR).toFixed(2)}?`:`Convert ${a} credits to ${fmtDur(a*105)} of screen time?`))return;
- try{await rpc('cash_out',{kind:k,amount:a});alert(k=='screen'?'Done! Your screen time countdown started. Meriam and you were notified.':'Done! Meriam was notified.');closeSh();load()}catch(e){alert('Could not cash out: '+(e.t||''))}}
-function warn(){return pct()>=.8?`<div class=warn>⚠ Cloud storage is ${Math.round(pct()*100)}% full. Delete old data to keep Chorely working.<br><button class=g style="margin-top:8px" onclick="cleanupView()">Delete old data…</button></div>`:''}
+function showReminders(){ const arr=JSON.parse(localStorage.getItem('chorely_reminders')||'[]'); $('#shc').innerHTML=`<h2>⏰ Reminders</h2>${arr.map(r=>`<div class=nf>${esc(r.text)}<br><small>${esc(r.when)} · ${fmt(r.created)}</small></div>`).join('')||'<div class=empty>No reminders yet. Tell Groq AI: remind me to sweep tomorrow</div>'}<button class=g style="width:100%;margin-top:12px" onclick="closeSh()">Close</button>`; $('#sh').classList.add('show'); }
+function walletView(){const w=W[S.id]||{credits:0,screen_seconds:0};$('#shc').innerHTML=`<h2>👛 My wallet</h2><div class=set style="margin:10px 0"><h3>${w.credits} credits</h3><small>≈ ₱${(w.credits/MR).toFixed(2)} (${MR} credits = ₱1).</small></div><div class=set style="margin:10px 0"><h3>⏳ Screen time: <span data-cd="${S.id}">${fmtDur(leftSec(w))}</span></h3></div><h3 style="margin-top:12px">Cash out</h3><input id=ca type=number min=1 placeholder="Credits to cash out"><div class=seg><button class=g onclick="$('#ca').value=${w.credits}">All</button></div><div style="display:flex;gap:8px;margin-top:12px"><button style="flex:1" onclick="cash('screen')">Screen time</button><button style="flex:1;background:var(--ok);color:#000" onclick="cash('money')">Money (₱)</button></div><button class=g style="width:100%;margin-top:12px" onclick="closeSh()">Close</button>`;$('#sh').classList.add('show')}
+async function cash(k){const a=parseInt($('#ca').value),w=W[S.id]||{credits:0};if(!a||a<1)return alert('Enter an amount');if(a>w.credits)return alert('Not enough credits');if(!confirm(k=='money'?`Cash out ${a} credits = ₱${(a/MR).toFixed(2)}?`:`Convert ${a} credits to ${fmtDur(a*105)} of screen time?`))return;try{await rpc('cash_out',{kind:k,amount:a});alert('Done!');closeSh();load()}catch(e){alert('Could not cash out: '+(e.t||''))}}
+function warn(){return pct()>=.8?`<div class=warn>⚠ Cloud storage is ${Math.round(pct()*100)}% full.<br><button class=g style="margin-top:8px" onclick="cleanupView()">Delete old data…</button></div>`:''}
 async function checkStorage(){try{usage=await rpc('storage_usage',{})}catch{}}
-function cleanupView(){$('#shc').innerHTML=`<h2>Free up space</h2><small style="color:var(--mut)">Deletes YOUR old chores, photos and messages. Other people's data is not touched.</small><div class=pk>${[30,60,90].map(d=>`<button onclick="cleanup(${d})">Older than ${d} days</button>`).join('')}</div><button class=g style="width:100%;margin-top:14px" onclick="closeSh()">Cancel</button>`;$('#sh').classList.add('show')}
-async function cleanup(days){if(!confirm(`Delete YOUR chores, photos and messages older than ${days} days? This cannot be undone.`))return;const cut=add(local(),-days);
- try{const old=await db(`/rest/v1/chores?select=before_path,photo_path&owner=eq.${S.id}&due_date.lt.${cut}`),paths=old.flatMap(c=>[c.before_path,c.photo_path]).filter(Boolean);
-  if(paths.length)await req('/storage/v1/object/proof',{m:'DELETE',h:{'Content-Type':'application/json'},body:JSON.stringify({prefixes:paths})});
-  await db(`/rest/v1/chores?owner=eq.${S.id}&due_date.lt.${cut}`,{m:'DELETE'});await db(`/rest/v1/msgs?sender=eq.${S.id}&created_at.lt.${cut}`,{m:'DELETE'});
-  alert('Old data deleted');closeSh();checkStorage();load()}catch{alert('Could not clean up, try again')}}
+function cleanupView(){$('#shc').innerHTML=`<h2>Free up space</h2><small style="color:var(--mut)">Deletes YOUR old chores, photos and messages.</small><div class=pk>${[30,60,90].map(d=>`<button onclick="cleanup(${d})">Older than ${d} days</button>`).join('')}</div><button class=g style="width:100%;margin-top:14px" onclick="closeSh()">Cancel</button>`;$('#sh').classList.add('show')}
+async function cleanup(days){if(!confirm(`Delete YOUR chores, photos and messages older than ${days} days?`))return;const cut=add(local(),-days);try{const old=await db(`/rest/v1/chores?select=before_path,photo_path&owner=eq.${S.id}&due_date.lt.${cut}`),paths=old.flatMap(c=>[c.before_path,c.photo_path]).filter(Boolean);if(paths.length)await req('/storage/v1/object/proof',{m:'DELETE',h:{'Content-Type':'application/json'},body:JSON.stringify({prefixes:paths})});await db(`/rest/v1/chores?owner=eq.${S.id}&due_date.lt.${cut}`,{m:'DELETE'});await db(`/rest/v1/msgs?sender=eq.${S.id}&created_at.lt.${cut}`,{m:'DELETE'});alert('Old data deleted');closeSh();checkStorage();load()}catch{alert('Could not clean up')}}
 setInterval(()=>document.querySelectorAll('[data-cd]').forEach(e=>{const w=W[e.dataset.cd];if(w)e.textContent=fmtDur(leftSec(w))}),1000);
 const rmFiles=p=>req('/storage/v1/object/proof',{m:'DELETE',h:{'Content-Type':'application/json'},body:JSON.stringify({prefixes:p})}).catch(()=>{});
 const attach=()=>$('#fm').click();
 $('#fm').onchange=async e=>{const fs=[...e.target.files];e.target.value='';for(const f of fs)try{pend.push(await shrink(f))}catch{}const c=$('#pc');if(c)c.textContent=pend.length||''};
 function imgs(list,canDel,kind,id){return list&&list.length?`<div class=pics style="flex-wrap:wrap">${list.map((p,i)=>`<figure style="flex:0 0 31%"><img class=th data-p="${esc(p)}" onclick="event.stopPropagation();show(this.dataset.p)">${canDel?`<figcaption onclick="event.stopPropagation();rmImg('${kind}',${id},${i})" style="color:#ff6b6b">✕ remove</figcaption>`:''}</figure>`).join('')}</div>`:''}
-async function rmImg(kind,id,i){if(!confirm('Remove this photo?'))return;const o=kind=='t'?tasks.find(x=>x.id==id):chatMsgs.find(x=>x.id==id),p=o.images[i];
- try{await db(`/rest/v1/${kind=='t'?'tasks':'msgs'}?id=eq.${id}`,{m:'PATCH',b:{images:o.images.filter((_,j)=>j!=i)}});rmFiles([p])}catch{alert('Could not remove. To remove the last photo of a photo-only message, delete the message.')}load()}
+async function rmImg(kind,id,i){if(!confirm('Remove this photo?'))return;const o=kind=='t'?tasks.find(x=>x.id==id):chatMsgs.find(x=>String(x.id)===String(id)),p=o.images[i];try{await db(`/rest/v1/${kind=='t'?'tasks':'msgs'}?id=eq.${id}`,{m:'PATCH',b:{images:o.images.filter((_,j)=>j!=i)}});rmFiles([p])}catch{alert('Could not remove.')}load()}
 function toast(t){const d=document.createElement('div');d.className='toast';d.textContent='🔔 '+t;document.body.appendChild(d);setTimeout(()=>d.remove(),4000)}
-function bellView(){$('#shc').innerHTML=`<h2>🔔 Notifications</h2>${notifs.map(n=>`<div class="nf ${n.read?'':'un'}">${esc(n.body)}<br><small style="color:var(--mut);font-weight:400">${fmt(n.created_at)}</small></div>`).join('')||'<div class=empty>Nothing yet</div>'}
- <div style="display:flex;gap:8px;margin-top:14px"><button class=g style="flex:1" onclick="clearN()">Clear all</button><button style="flex:1" onclick="closeSh()">Close</button></div>`;$('#sh').classList.add('show');
- if(notifs.some(n=>!n.read))db('/rest/v1/notifs?read=eq.false',{m:'PATCH',b:{read:true}}).then(load).catch(()=>{})}
+function bellView(){$('#shc').innerHTML=`<h2>🔔 Notifications</h2>${notifs.map(n=>`<div class="nf ${n.read?'':'un'}">${esc(n.body)}<br><small style="color:var(--mut);font-weight:400">${fmt(n.created_at)}</small></div>`).join('')||'<div class=empty>Nothing yet</div>'}<div style="display:flex;gap:8px;margin-top:14px"><button class=g style="flex:1" onclick="clearN()">Clear all</button><button class=g style="flex:1" onclick="closeSh()">Close</button></div>`;$('#sh').classList.add('show');if(notifs.some(n=>!n.read))db('/rest/v1/notifs?read=eq.false',{m:'PATCH',b:{read:true}}).then(load).catch(()=>{})}
 async function clearN(){try{await db(`/rest/v1/notifs?user_id=eq.${S.id}`,{m:'DELETE'})}catch{}closeSh();load()}
-function vTasks(){const cards=tasks.map(t=>{const mine=t.created_by==S.id,as=t.assignees.length?t.assignees.map(i=>'@'+nmOf(i)).join(', '):'@everyone';
- return `<div class=card><div class=top><button class="chk ${t.done?'on':''}" onclick="chkT(${t.id},${!t.done})">${t.done?'✓':''}</button><div class=m><b style="${t.done?'text-decoration:line-through;opacity:.6':''}">${esc(t.title)}</b>${t.scheduled?`<span class="tag later" style="margin-left:6px">📅 Scheduled${t.sched_date?' · '+t.sched_date:''}</span>`:''}</div>${mine?`<button class=ic onclick="delT(${t.id})">🗑️</button>`:''}</div>
- ${imgs(t.images,mine,'t',t.id)}<small class=ct style="margin-top:8px">by ${esc(nmOf(t.created_by))}</small><small class=ct>to ${esc(as)}</small>${t.done?`<small class=ct style="color:var(--ok)">✓ done by ${esc(nmOf(t.done_by))}</small>`:''}</div>`}).join('')||'<div class=empty>No tasks yet. Tap + to add one</div>';
- return `<header><h1>Tasks</h1></header>${cards}<p class=note>Daily tasks disappear at 12 AM. 📅 Scheduled tasks stay until deleted.</p><button class=fab onclick="taskView()">+</button>`}
-function taskView(){tSel=new Set();pend=[];schedOn=false;$('#shc').innerHTML=`<h2>New task</h2><input id=tt placeholder="Task title" maxlength=120><small style="color:var(--mut)">Assign to (none selected = everyone)</small><div class=pk id=tp></div>
- <div class=seg><button id=sc class=g onclick="schedOn=!schedOn;$('#sc').className=schedOn?'':'g';$('#sd').style.display=schedOn?'block':'none'">📅 Schedule (keep until deleted)</button></div><input id=sd type=date min="${local()}" style="display:none">
- <button class=g style="margin-top:12px" onclick="attach()">📎 Add photos <span id=pc></span></button>
- <div style="display:flex;gap:8px;margin-top:16px"><button class=g style="flex:1" onclick="closeSh()">Cancel</button><button style="flex:1" onclick="saveTask()">Add</button></div>`;tRender();$('#sh').classList.add('show')}
+function vTasks(){const cards=tasks.map(t=>{const mine=t.created_by==S.id,as=t.assignees.length?t.assignees.map(i=>'@'+nmOf(i)).join(', '):'@everyone';return `<div class=card><div class=top><button class="chk ${t.done?'on':''}" onclick="chkT(${t.id},${!t.done})">${t.done?'✓':''}</button><div class=m><b style="${t.done?'text-decoration:line-through;opacity:.6':''}">${esc(t.title)}</b>${t.scheduled?`<span class="tag later" style="margin-left:6px">📅 Scheduled${t.sched_date?' · '+t.sched_date:''}</span>`:''}</div>${mine?`<button class=ic onclick="delT(${t.id})">🗑</button>`:''}</div>${imgs(t.images,mine,'t',t.id)}<small class=ct style="margin-top:8px">by ${esc(nmOf(t.created_by))}</small><small class=ct>to ${esc(as)}</small>${t.done?`<small class=ct style="color:var(--ok)">✓ done by ${esc(nmOf(t.done_by))}</small>`:''}</div>`}).join('')||'<div class=empty>No tasks yet. Tap + to add one</div>';return `<header><h1>Tasks</h1></header>${cards}<p class=note>Daily tasks disappear at 12 AM. 📅 Scheduled tasks stay until deleted.</p><button class=fab onclick="taskView()">+</button>`}
+function taskView(){tSel=new Set();pend=[];schedOn=false;$('#shc').innerHTML=`<h2>New task</h2><input id=tt placeholder="Task title" maxlength=120><small style="color:var(--mut)">Assign to (none selected = everyone)</small><div class=pk id=tp></div><div class=seg><button id=sc class=g onclick="schedOn=!schedOn;$('#sc').className=schedOn?'':'g';$('#sd').style.display=schedOn?'block':'none'">📅 Schedule (keep until deleted)</button></div><input id=sd type=date min="${local()}" style="display:none"><button class=g style="margin-top:12px" onclick="attach()">📎 Add photos <span id=pc></span></button><div style="display:flex;gap:8px;margin-top:16px"><button class=g style="flex:1" onclick="closeSh()">Cancel</button><button class=g style="flex:1" onclick="saveTask()">Add</button></div>`;tRender();$('#sh').classList.add('show')}
 function tRender(){$('#tp').innerHTML=users.map(u=>`<button class="${tSel.has(u.id)?'on':''}" onclick="tSel.has('${u.id}')?tSel.delete('${u.id}'):tSel.add('${u.id}');tRender()">${esc(u.id==S.id?'Me':u.name)}</button>`).join('')}
-async function saveTask(){const t=$('#tt').value.trim();if(!t)return alert('Type the task');
- try{const im=[];for(const x of pend)im.push(await upload(x));pend=[];await db('/rest/v1/tasks',{m:'POST',b:{title:t,assignees:[...tSel],scheduled:schedOn,sched_date:(schedOn&&$('#sd').value)||null,created_day:local(),images:im}})}catch(e){return alert('Could not save: '+(e.t||''))}closeSh();load()}
+async function saveTask(){const t=$('#tt').value.trim();if(!t)return alert('Type the task');try{const im=[];for(const x of pend)im.push(await upload(x));pend=[];await db('/rest/v1/tasks',{m:'POST',b:{title:t,assignees:[...tSel],scheduled:schedOn,sched_date:(schedOn&&$('#sd').value)||null,created_day:local(),images:im}})}catch(e){return alert('Could not save: '+(e.t||''))}closeSh();load()}
 async function chkT(id,v){try{await db(`/rest/v1/tasks?id=eq.${id}`,{m:'PATCH',b:{done:v}})}catch{alert('Could not update')}load()}
 async function delT(id){if(!confirm('Delete this task?'))return;const t=tasks.find(x=>x.id==id);try{await db(`/rest/v1/tasks?id=eq.${id}`,{m:'DELETE'});if(t.images.length)rmFiles(t.images)}catch{alert('Could not delete')}load()}
 async function purgeTasks(){try{const q=`scheduled=eq.false&created_day.lt.${local()}`,ex=await db(`/rest/v1/tasks?select=images&${q}&created_by=eq.${S.id}`),p=ex.flatMap(x=>x.images);if(p.length)await rmFiles(p);await db(`/rest/v1/tasks?${q}`,{m:'DELETE'})}catch{}}
-async function checkUpdate(){try{const r=await fetch(`https://api.github.com/repos/${REPO}/releases/latest`);if(!r.ok)return;const j=await r.json(),v=parseInt(String(j.tag_name).replace(/\D/g,''));
- if(v>APP_VERSION){const a=(j.assets||[]).find(x=>/\.apk$/.test(x.name));upd={v,url:a?a.browser_download_url:j.html_url}}}catch{}}
-const updBanner=()=>upd?`<div class=warn style="background:#7c5cff22;border-color:var(--ac)">⬆ Update v${upd.v} is ready.<br><button style="margin-top:8px" onclick="window.open('${esc(upd.url)}','_blank')">Download update</button><br><small style="color:var(--mut)">If nothing opens, visit github.com/${REPO}/releases/latest in your browser.</small></div>`:'';
-const pushTest=()=>rpc('push_test',{}).then(()=>alert('Sent! It should pop up in ntfy in a few seconds.')).catch(()=>alert('Could not send the test'));
+async function checkUpdate(){try{const r=await fetch(`https://api.github.com/repos/${REPO}/releases/latest`);if(!r.ok)return;const j=await r.json(),v=parseInt(String(j.tag_name).replace(/\D/g,''));if(v>APP_VERSION){const a=(j.assets||[]).find(x=>/\.apk$/.test(x.name));upd={v,url:a?a.browser_download_url:j.html_url}}}catch{}}
+const updBanner=()=>upd?`<div class=warn style="background:#7c5cff22;border-color:var(--ac)">⬆ Update v${upd.v} is ready.<br><button style="margin-top:8px" onclick="window.open('${esc(upd.url)}','_blank')">Download update</button></div>`:'';
+const pushTest=()=>rpc('push_test',{}).then(()=>alert('Sent!')).catch(()=>alert('Could not send the test'));
 const ICE=[{urls:'stun:stun.l.google.com:19302'},...(CFG.turn||[])];
 let call=null,incoming=null,activeCall=null,pcs={},icePend={},remoteStreams={},makingOffer={},ignoreOffer={},callPoll=null,callTimer=null,switchingCam=false;
-const dismissedCallKey=()=>`chorely_dismissed_calls_${S.id||'guest'}`;
-function dismissedCalls(){try{return new Set(JSON.parse(localStorage.getItem(dismissedCallKey())||'[]'))}catch{return new Set()}}
-function rememberDismissedCall(id){const x=dismissedCalls();x.add(id);localStorage.setItem(dismissedCallKey(),JSON.stringify([...x].slice(-50)))}
-function clearDismissedCall(id){const x=dismissedCalls();x.delete(id);localStorage.setItem(dismissedCallKey(),JSON.stringify([...x]))}
-let callRouteHandled=false;
-const sig=(to,kind,data)=>call&&db('/rest/v1/signals',{m:'POST',b:{call_id:call.id,to_user:to,kind,data}}).catch(()=>{});
-async function handleCallRoute(){
- if(callRouteHandled)return;
- const u=new URL(location.href),id=u.searchParams.get('call'),conv=Number(u.searchParams.get('conv')),action=u.searchParams.get('action');
- if(!id||!conv||!['accept','decline'].includes(action))return;
- callRouteHandled=true;try{history.replaceState({},'',location.pathname+location.hash)}catch{}
- try{
-  const rows=await db(`/rest/v1/calls?select=id,conv_id,started_by,ended_at&id=eq.${encodeURIComponent(id)}&conv_id=eq.${conv}&ended_at=is.null`);
-  if(!rows.length){alert('This call has already ended.');return}
-  const members=await db(`/rest/v1/members?select=user_id&conv_id=eq.${conv}`);
-  if(!members.some(x=>x.user_id==S.id)){alert('You are not a member of this conversation.');return}
-  tab='msgs';chat=conv;await load();
-  if(action==='decline'){await db('/rest/v1/signals',{m:'POST',b:{call_id:id,to_user:rows[0].started_by,kind:'decline',data:null}}).catch(()=>{});toast('Call declined');return}
-  incoming={id,conv,from:rows[0].started_by};callUI();
- }catch{alert('Could not open this call. Check your connection and try again.')}
-}
-async function pollIncomingCalls(){
- if(!S.access||call||incoming)return;
- try{
-  const ms=await db(`/rest/v1/members?select=conv_id&user_id=eq.${S.id}`);
-  const ids=[...new Set(ms.map(x=>x.conv_id))];if(!ids.length)return;
-  const rows=await db(`/rest/v1/calls?select=id,conv_id,started_by,created_at,ended_at&conv_id=in.(${ids.join(',')})&ended_at=is.null&started_by=neq.${S.id}&order=created_at.desc&limit=20`);
-  const dismissed=dismissedCalls();
-  for(const r of rows){
-   if(dismissed.has(r.id))continue;
-   const active=await db(`/rest/v1/call_participants?select=user_id,last_seen_at&call_id=eq.${r.id}&user_id=eq.${r.started_by}&left_at=is.null&last_seen_at=gte.${encodeURIComponent(new Date(Date.now()-25000).toISOString())}`);
-   if(active.length){onIncoming(r);return}
-  }
- }catch{}
-}
-async function startCall(){
- if(!chat||call)return;
- try{
-  const r=await db('/rest/v1/calls',{m:'POST',b:{conv_id:chat},h:{Prefer:'return=representation'}});
-  activeCall={id:r[0].id,conv_id:chat};await joinCall(r[0].id,chat,false);
- }catch(e){alert('Could not start the call. Check the call database patch and permissions.')}
-}
-async function joinCall(id,conv,announce){
- try{
-  const stream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
-  await rpc('join_call',{p_call_id:id});
-  const rows=await db(`/rest/v1/call_participants?select=user_id&call_id=eq.${id}&left_at=is.null`);
-  const peers=rows.map(x=>x.user_id).filter(x=>x!==S.id);
-  call={id,conv,stream,peers,muted:false,camera:false,cameraSwitchAvailable:false,cameraFacing:'user',cameraDevices:[],cameraDeviceIndex:0,t0:Date.now(),remote:{}};
-  incoming=null;callUI();
-  if(announce)peers.forEach(u=>sig(u,'join',null));
- }catch(e){incoming=null;callUI();alert('Could not join. Allow microphone access and make sure the Chorely call SQL patch has been run.')}
-}
-function onIncoming(r){
- if(!r||r.started_by==S.id||call||incoming||r.ended_at)return;
- incoming={id:r.id,conv:r.conv_id,from:r.started_by};clearDismissedCall(r.id);navigator.vibrate&&navigator.vibrate([300,200,300]);callUI();
-}
+const dismissedCallKey=()=>`chorely_dismissed_calls_${S.id||'guest'}`;function dismissedCalls(){try{return new Set(JSON.parse(localStorage.getItem(dismissedCallKey())||'[]'))}catch{return new Set()}}function rememberDismissedCall(id){const x=dismissedCalls();x.add(id);localStorage.setItem(dismissedCallKey(),JSON.stringify([...x].slice(-50)))}function clearDismissedCall(id){const x=dismissedCalls();x.delete(id);localStorage.setItem(dismissedCallKey(),JSON.stringify([...x]))}
+let callRouteHandled=false;const sig=(to,kind,data)=>call&&db('/rest/v1/signals',{m:'POST',b:{call_id:call.id,to_user:to,kind,data}}).catch(()=>{});
+async function handleCallRoute(){if(callRouteHandled)return;const u=new URL(location.href),id=u.searchParams.get('call'),conv=Number(u.searchParams.get('conv')),action=u.searchParams.get('action');if(!id||!conv||!['accept','decline'].includes(action))return;callRouteHandled=true;try{history.replaceState({},'',location.pathname+location.hash)}catch{}try{const rows=await db(`/rest/v1/calls?select=id,conv_id,started_by,ended_at&id=eq.${encodeURIComponent(id)}&conv_id=eq.${conv}&ended_at=is.null`);if(!rows.length){alert('This call has already ended.');return}tab='msgs';chat=conv;await load();if(action==='decline'){await db('/rest/v1/signals',{m:'POST',b:{call_id:id,to_user:rows[0].started_by,kind:'decline',data:null}}).catch(()=>{});toast('Call declined');return}incoming={id,conv,from:rows[0].started_by};callUI()}catch{alert('Could not open this call.')}} 
+async function pollIncomingCalls(){if(!S.access||call||incoming)return;try{const ms=await db(`/rest/v1/members?select=conv_id&user_id=eq.${S.id}`);const ids=[...new Set(ms.map(x=>x.conv_id))];if(!ids.length)return;const rows=await db(`/rest/v1/calls?select=id,conv_id,started_by,created_at,ended_at&conv_id=in.(${ids.join(',')})&ended_at=is.null&started_by=neq.${S.id}&order=created_at.desc&limit=20`);const dismissed=dismissedCalls();for(const r of rows){if(dismissed.has(r.id))continue;const active=await db(`/rest/v1/call_participants?select=user_id,last_seen_at&call_id=eq.${r.id}&user_id=eq.${r.started_by}&left_at=is.null&last_seen_at.gte.${encodeURIComponent(new Date(Date.now()-25000).toISOString())}`);if(active.length){onIncoming(r);return}}}catch{}}
+async function startCall(){if(!chat||call||chat===AI_ID)return;try{const r=await db('/rest/v1/calls',{m:'POST',b:{conv_id:chat},h:{Prefer:'return=representation'}});activeCall={id:r[0].id,conv_id:chat};await joinCall(r[0].id,chat,false)}catch(e){alert('Could not start the call.')}} 
+async function joinCall(id,conv,announce){try{const stream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});await rpc('join_call',{p_call_id:id});const rows=await db(`/rest/v1/call_participants?select=user_id&call_id=eq.${id}&left_at=is.null`);const peers=rows.map(x=>x.user_id).filter(x=>x!==S.id);call={id,conv,stream,peers,muted:false,camera:false,cameraSwitchAvailable:false,cameraFacing:'user',cameraDevices:[],cameraDeviceIndex:0,t0:Date.now(),remote:{}};incoming=null;callUI();if(announce)peers.forEach(u=>sig(u,'join',null))}catch(e){incoming=null;callUI();alert('Could not join. Allow microphone access.')}} 
+function onIncoming(r){if(!r||r.started_by==S.id||call||incoming||r.ended_at)return;incoming={id:r.id,conv:r.conv_id,from:r.started_by};clearDismissedCall(r.id);navigator.vibrate&&navigator.vibrate([300,200,300]);callUI()}
 const acceptCall=()=>{if(!incoming)return;clearDismissedCall(incoming.id);joinCall(incoming.id,incoming.conv,true)};
-async function declineCall(){
- if(!incoming)return;const x=incoming;rememberDismissedCall(x.id);incoming=null;callUI();
- await db('/rest/v1/signals',{m:'POST',b:{call_id:x.id,to_user:x.from,kind:'decline',data:null}}).catch(()=>{});
-}
-function closePc(f){
- if(pcs[f])pcs[f].close();delete pcs[f];delete makingOffer[f];delete ignoreOffer[f];delete icePend[f];
- const a=document.getElementById('au-'+f);if(a)a.remove();const tile=document.getElementById('tile-'+f);if(tile)tile.remove();delete remoteStreams[f];
-}
-function fitVideoToOrientation(video,tile){
- if(!video||!tile)return;
- const apply=()=>{
-  const w=video.videoWidth,h=video.videoHeight;
-  if(!w||!h)return;
-  const portrait=h>w;
-  tile.classList.toggle('portrait',!portrait);
-  tile.classList.toggle('landscape',!portrait);
-  video.style.objectFit='contain';
-  video.style.objectPosition='center center';
- };
- video.addEventListener('loadedmetadata',apply);
- video.addEventListener('resize',apply);
- if(video.readyState>=1)apply();
-}
-function ensureRemoteTile(f,stream){
- remoteStreams[f]=stream;let tile=document.getElementById('tile-'+f);
- if(!tile){tile=document.createElement('div');tile.id='tile-'+f;tile.className='call-tile';const v=document.createElement('video');v.id='vid-'+f;v.autoplay=true;v.playsInline=true;v.srcObject=stream;tile.appendChild(v);fitVideoToOrientation(v,tile);const cap=document.createElement('small');cap.textContent=nmOf(f);tile.appendChild(cap);const grid=document.getElementById('call-grid');if(grid)grid.appendChild(tile)}
- else{const v=tile.querySelector('video');if(v&&v.srcObject!==stream)v.srcObject=stream;if(v)fitVideoToOrientation(v,tile)}
- layoutCallGrid();
-}
-function layoutCallGrid(){
- const grid=document.getElementById('call-grid');if(!grid)return;
- const n=grid.children.length+(call&&call.camera?1:0);
- const cols=n<=1?1:n<=4?2:n<=9?3:4;grid.style.gridTemplateColumns=`repeat(${cols},minmax(0,1fr))`;
-}
-function mkPc(f){
- if(pcs[f])return pcs[f];
- const pc=new RTCPeerConnection({iceServers:ICE});pcs[f]=pc;makingOffer[f]=false;ignoreOffer[f]=false;icePend[f]=[];
- call.stream.getAudioTracks().forEach(t=>pc.addTrack(t,call.stream));
- pc.onicecandidate=e=>{if(e.candidate)sig(f,'ice',e.candidate.toJSON())};
- pc.ontrack=e=>{const stream=e.streams&&e.streams[0]||new MediaStream([e.track]);ensureRemoteTile(f,stream)};
- pc.onnegotiationneeded=async()=>{
-  try{makingOffer[f]=true;await pc.setLocalDescription();sig(f,'offer',pc.localDescription.toJSON())}
-  catch(e){}finally{makingOffer[f]=false}
- };
- pc.onconnectionstatechange=()=>{if(pc.connectionState==='failed'){pc.restartIce()}};
- return pc;
-}
+async function declineCall(){if(!incoming)return;const x=incoming;rememberDismissedCall(x.id);incoming=null;callUI();await db('/rest/v1/signals',{m:'POST',b:{call_id:x.id,to_user:x.from,kind:'decline',data:null}}).catch(()=>{})}
+function closePc(f){if(pcs[f])pcs[f].close();delete pcs[f];delete makingOffer[f];delete ignoreOffer[f];delete icePend[f];const tile=document.getElementById('tile-'+f);if(tile)tile.remove();delete remoteStreams[f]}
+function fitVideoToOrientation(video,tile){if(!video||!tile)return;const apply=()=>{const w=video.videoWidth,h=video.videoHeight;if(!w||!h)return;const portrait=h>w;tile.classList.toggle('portrait',!portrait);tile.classList.toggle('landscape',!portrait);video.style.objectFit='contain'};video.addEventListener('loadedmetadata',apply);video.addEventListener('resize',apply);if(video.readyState>=1)apply()}
+function ensureRemoteTile(f,stream){remoteStreams[f]=stream;let tile=document.getElementById('tile-'+f);if(!tile){tile=document.createElement('div');tile.id='tile-'+f;tile.className='call-tile';const v=document.createElement('video');v.id='vid-'+f;v.autoplay=true;v.playsInline=true;v.srcObject=stream;tile.appendChild(v);fitVideoToOrientation(v,tile);const cap=document.createElement('small');cap.textContent=nmOf(f);tile.appendChild(cap);const grid=document.getElementById('call-grid');if(grid)grid.appendChild(tile)}else{const v=tile.querySelector('video');if(v&&v.srcObject!==stream)v.srcObject=stream;if(v)fitVideoToOrientation(v,tile)}layoutCallGrid()}
+function layoutCallGrid(){const grid=document.getElementById('call-grid');if(!grid)return;const n=grid.children.length+(call&&call.camera?1:0);const cols=n<=1?1:n<=4?2:n<=9?3:4;grid.style.gridTemplateColumns=`repeat(${cols},minmax(0,1fr))`}
+function mkPc(f){if(pcs[f])return pcs[f];const pc=new RTCPeerConnection({iceServers:ICE});pcs[f]=pc;makingOffer[f]=false;ignoreOffer[f]=false;icePend[f]=[];call.stream.getAudioTracks().forEach(t=>pc.addTrack(t,call.stream));pc.onicecandidate=e=>{if(e.candidate)sig(f,'ice',e.candidate.toJSON())};pc.ontrack=e=>{const stream=e.streams&&e.streams[0]||new MediaStream([e.track]);ensureRemoteTile(f,stream)};pc.onnegotiationneeded=async()=>{try{makingOffer[f]=true;await pc.setLocalDescription();sig(f,'offer',pc.localDescription.toJSON())}catch(e){}finally{makingOffer[f]=false}};pc.onconnectionstatechange=()=>{if(pc.connectionState==='failed'){pc.restartIce()}};return pc}
 async function flushIce(f){const pc=pcs[f];if(!pc||!pc.remoteDescription)return;for(const c of icePend[f]||[])await pc.addIceCandidate(c).catch(()=>{});icePend[f]=[]}
-async function onSignal(r){
- if(!call||r.call_id!=call.id||r.from_user==S.id)return;const f=r.from_user;
- try{
-  if(r.kind==='join'){
-   if(!call.peers.includes(f))call.peers.push(f);
-   mkPc(f);callUI();
-  }else if(r.kind==='offer'){
-   const pc=mkPc(f),polite=String(S.id)>String(f),collision=makingOffer[f]||pc.signalingState!=='stable';
-   ignoreOffer[f]=!polite&&collision;if(ignoreOffer[f])return;
-   if(collision&&polite)await pc.setLocalDescription({type:'rollback'});
-   await pc.setRemoteDescription(r.data);await flushIce(f);
-   await pc.setLocalDescription();sig(f,'answer',pc.localDescription.toJSON());
-  }else if(r.kind==='answer'){
-   const pc=pcs[f];if(pc){await pc.setRemoteDescription(r.data);await flushIce(f)}
-  }else if(r.kind==='ice'){
-   const pc=pcs[f];if(pc&&pc.remoteDescription)await pc.addIceCandidate(r.data).catch(()=>{});
-   else(icePend[f]=icePend[f]||[]).push(r.data);
-  }else if(r.kind==='leave'){
-   closePc(f);call.peers=call.peers.filter(x=>x!==f);callUI();
-  }else if(r.kind==='decline'){toast(nmOf(f)+' declined the call')}
- }catch(e){}
-}
-async function toggleCamera(){
- if(!call)return;
- try{
-  if(!call.camera){
-   const facing=call.cameraFacing||'user';
-   let v;
-   try{v=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:facing}},audio:false})}
-   catch{v=await navigator.mediaDevices.getUserMedia({video:true,audio:false})}
-   const track=v.getVideoTracks()[0];
-   call.stream.addTrack(track);call.cameraStream=v;call.camera=true;
-   call.cameraFacing=(track.getSettings&&track.getSettings().facingMode)||facing;
-   call.cameraSwitchAvailable=true;try{call.cameraDevices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');const current=call.cameraDevices.findIndex(d=>d.deviceId===track.getSettings().deviceId);if(current>=0)call.cameraDeviceIndex=current;}catch{}
-   Object.keys(pcs).forEach(f=>{const pc=pcs[f];const sender=pc.getSenders().find(x=>x.track&&x.track.kind==='video');if(sender)sender.replaceTrack(track);else pc.addTrack(track,call.stream)});
-  }else{
-   call.stream.getVideoTracks().forEach(t=>{call.stream.removeTrack(t);t.stop()});
-   Object.keys(pcs).forEach(f=>{const pc=pcs[f];const sender=pc.getSenders().find(x=>x.track&&x.track.kind==='video');if(sender)sender.replaceTrack(null)});
-   call.cameraStream&&call.cameraStream.getTracks().forEach(t=>t.stop());call.camera=false;
-  }
-  callUI();
- }catch{alert('Camera permission was not granted or no camera is available.')}
-}
-async function switchCamera(){
- if(!call||!call.camera||switchingCam)return;
- switchingCam=true;
- const btn=[...document.querySelectorAll('#call button')].find(b=>/switch camera/i.test(b.textContent||''));
- if(btn){btn.disabled=true;btn.textContent='⏳ Switching…'}
- let nextStream=null;
- const prevFacing=call.cameraFacing||'user';
- const prevDeviceId=(call.stream.getVideoTracks()[0]&&call.stream.getVideoTracks()[0].getSettings)?call.stream.getVideoTracks()[0].getSettings().deviceId:null;
- try{
-  const nextFacing=prevFacing==='environment'?'user':'environment';
-  const oldVideoTracks=call.stream.getVideoTracks().slice();
-  oldVideoTracks.forEach(t=>{try{call.stream.removeTrack(t)}catch{};try{t.stop()}catch{}});
-  if(call.cameraStream){call.cameraStream.getTracks().forEach(t=>{try{t.stop()}catch{}});call.cameraStream=null}
-  await new Promise(r=>setTimeout(r,180));
-  let lastErr=null;
-  const attempts=[
-   {video:{facingMode:{exact:nextFacing},width:{ideal:1280},height:{ideal:720}},audio:false},
-   {video:{facingMode:{ideal:nextFacing},width:{ideal:1280},height:{ideal:720}},audio:false},
-   {video:{facingMode:nextFacing},audio:false}
-  ];
-  for(const constraints of attempts){
-   try{nextStream=await navigator.mediaDevices.getUserMedia(constraints);break}
-   catch(e){lastErr=e}
-  }
-  if(!nextStream){
-   const devices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
-   if(devices.length<2)throw lastErr||new Error('Only one camera');
-   const wantBack=nextFacing==='environment';
-   let next=devices.find(d=>{
-    const lab=(d.label||'').toLowerCase();
-    if(d.deviceId===prevDeviceId)return false;
-    if(wantBack)return /back|rear|environment|world|0 /.test(lab);
-    return /front|user|face|selfie|1 /.test(lab);
-   });
-   if(!next){
-    const idx=Math.max(0,devices.findIndex(d=>d.deviceId===prevDeviceId));
-    next=devices[(idx+1)%devices.length];
-   }
-   nextStream=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:next.deviceId},width:{ideal:1280},height:{ideal:720}},audio:false});
-  }
-  const newTrack=nextStream.getVideoTracks()[0];
-  if(!newTrack)throw new Error('No video track');
-  const gotId=newTrack.getSettings?newTrack.getSettings().deviceId:null;
-  const gotFacing=(newTrack.getSettings&&newTrack.getSettings().facingMode)||'';
-  if(prevDeviceId&&gotId===prevDeviceId&&gotFacing!==nextFacing){
-   try{
-    const devices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput'&&d.deviceId!==prevDeviceId);
-    if(devices.length){
-     nextStream.getTracks().forEach(t=>{try{t.stop()}catch{}});
-     nextStream=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:devices[0].deviceId}},audio:false});
-    }
-   }catch{}
-  }
-  const finalTrack=nextStream.getVideoTracks()[0];
-  if(!finalTrack)throw new Error('No video track');
-  call.stream.addTrack(finalTrack);
-  call.cameraStream=nextStream;
-  call.cameraFacing=(finalTrack.getSettings&&finalTrack.getSettings().facingMode)||nextFacing;
-  call.camera=true;
-  call.cameraSwitchAvailable=true;
-  for(const pc of Object.values(pcs)){
-   let sender=pc.getSenders().find(s=>s.track&&s.track.kind==='video');
-   if(!sender)sender=pc.getSenders().find(s=>!s.track);
-   if(sender)await sender.replaceTrack(finalTrack);
-   else pc.addTrack(finalTrack,call.stream);
-  }
-  let tile=document.getElementById('tile-local');
-  let localVid=tile&&tile.querySelector('video');
-  if(!tile){
-   const grid=document.getElementById('call-grid');
-   if(grid){
-    tile=document.createElement('div');tile.id='tile-local';tile.className='call-tile';
-    localVid=document.createElement('video');localVid.autoplay=true;localVid.muted=true;localVid.playsInline=true;
-    tile.appendChild(localVid);
-    const cap=document.createElement('small');cap.textContent='You';tile.appendChild(cap);
-    grid.insertBefore(tile,grid.firstChild);
-    layoutCallGrid();
-   }
-  }
-  if(localVid){
-   localVid.srcObject=new MediaStream([finalTrack]);
-   try{await localVid.play()}catch{}
-   fitVideoToOrientation(localVid,tile);
-  }
-  try{call.cameraDevices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput')}catch{}
- }catch(e){
-  if(nextStream)nextStream.getTracks().forEach(t=>{try{t.stop()}catch{}});
-  console.warn('switchCamera',e);
-  try{
-   if(call&&!call.stream.getVideoTracks().length){
-    const restore=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:prevFacing}},audio:false});
-    const t=restore.getVideoTracks()[0];
-    call.stream.addTrack(t);call.cameraStream=restore;call.camera=true;call.cameraFacing=prevFacing;
-    for(const pc of Object.values(pcs)){
-     const sender=pc.getSenders().find(s=>s.track&&s.track.kind==='video')||pc.getSenders().find(s=>!s.track);
-     if(sender)await sender.replaceTrack(t);else pc.addTrack(t,call.stream);
-    }
-    const localVid=document.querySelector('#tile-local video');
-    if(localVid){localVid.srcObject=new MediaStream([t]);try{await localVid.play()}catch{}}
-   }
-  }catch{}
-  toast('Could not switch. Tap Switch again, or turn camera off/on.');
- }finally{
-  switchingCam=false;
-  const b=[...document.querySelectorAll('#call button')].find(x=>/switch|switching/i.test(x.textContent||''));
-  if(b){b.disabled=false;b.textContent='🔄 Switch camera'}
- }
-}
+async function onSignal(r){if(!call||r.call_id!=call.id||r.from_user==S.id)return;const f=r.from_user;try{if(r.kind==='join'){if(!call.peers.includes(f))call.peers.push(f);mkPc(f);callUI()}else if(r.kind==='offer'){const pc=mkPc(f),polite=String(S.id)>String(f),collision=makingOffer[f]||pc.signalingState!=='stable';ignoreOffer[f]=!polite&&collision;if(ignoreOffer[f])return;if(collision&&polite)await pc.setLocalDescription({type:'rollback'});await pc.setRemoteDescription(r.data);await flushIce(f);await pc.setLocalDescription();sig(f,'answer',pc.localDescription.toJSON())}else if(r.kind==='answer'){const pc=pcs[f];if(pc){await pc.setRemoteDescription(r.data);await flushIce(f)}}else if(r.kind==='ice'){const pc=pcs[f];if(pc&&pc.remoteDescription)await pc.addIceCandidate(r.data).catch(()=>{});else(icePend[f]=icePend[f]||[]).push(r.data)}else if(r.kind==='leave'){closePc(f);call.peers=call.peers.filter(x=>x!==f);callUI()}else if(r.kind==='decline'){toast(nmOf(f)+' declined the call')}}catch(e){}}
+async function toggleCamera(){if(!call)return;try{if(!call.camera){let v;try{v=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:call.cameraFacing||'user'}},audio:false})}catch{v=await navigator.mediaDevices.getUserMedia({video:true,audio:false})}const track=v.getVideoTracks()[0];call.stream.addTrack(track);call.cameraStream=v;call.camera=true;call.cameraSwitchAvailable=true;Object.keys(pcs).forEach(f=>{const pc=pcs[f];const sender=pc.getSenders().find(x=>x.track&&x.track.kind==='video');if(sender)sender.replaceTrack(track);else pc.addTrack(track,call.stream)})}else{call.stream.getVideoTracks().forEach(t=>{call.stream.removeTrack(t);t.stop()});Object.keys(pcs).forEach(f=>{const pc=pcs[f];const sender=pc.getSenders().find(x=>x.track&&x.track.kind==='video');if(sender)sender.replaceTrack(null)});call.cameraStream&&call.cameraStream.getTracks().forEach(t=>t.stop());call.camera=false}callUI()}catch{alert('Camera permission was not granted.')}} 
 function muteCall(){call.muted=!call.muted;call.stream.getAudioTracks().forEach(t=>t.enabled=!call.muted);callUI()}
-async function endCall(){
- if(!call)return;const c=call;call=null;clearInterval(callTimer);callTimer=null;
- Object.keys(pcs).forEach(closePc);c.stream.getTracks().forEach(t=>t.stop());c.cameraStream&&c.cameraStream.getTracks().forEach(t=>t.stop());
- await rpc('leave_call',{p_call_id:c.id}).catch(()=>{});
- c.peers.forEach(u=>db('/rest/v1/signals',{m:'POST',b:{call_id:c.id,to_user:u,kind:'leave',data:null}}).catch(()=>{}));
- callUI();
-}
-async function checkCallEnded(){
- if(!call)return;
- try{
-  const rows=await db(`/rest/v1/calls?select=ended_at&id=eq.${call.id}`);
-  if(!rows.length||rows[0].ended_at){const c=call;call=null;clearInterval(callTimer);callTimer=null;Object.keys(pcs).forEach(closePc);c.stream.getTracks().forEach(t=>t.stop());c.cameraStream&&c.cameraStream.getTracks().forEach(t=>t.stop());callUI();toast('The call has ended.')}
- }catch{}
-}
-function callUI(){
- const el=$('#call');
- if(!call&&!incoming){clearInterval(callTimer);callTimer=null;el.className='';el.innerHTML='';return}
- el.className='show';
- if(!call){el.innerHTML=`<div style="font-size:60px">📞</div><h2>${esc(nmOf(incoming.from)==='?'?'Someone':nmOf(incoming.from))} is calling…</h2><div style="display:flex;gap:16px"><button style="background:#e5484d;padding:16px 24px" onclick="declineCall()">Decline</button><button class=join-call style="padding:16px 24px" onclick="acceptCall()">📞 Accept</button></div>`;return}
- const peers=call.peers.length,tiles=1+(Object.keys(remoteStreams).length);
- el.innerHTML=`<h2>Chorely call</h2><div id="call-status">${peers?peers+' other participant(s)':'Waiting for others to join…'}</div><div id="call-grid" class="call-grid"></div><div id="ct" style="font-size:24px">${fmtCallTime(Date.now()-(call.t0||Date.now()))}</div><div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button class=g onclick="muteCall()">${call.muted?'🔇 Unmute':'🎤 Mute'}</button><button class=g onclick="toggleCamera()">${call.camera?'📷 Camera off':'📷 Camera on'}</button>${call.camera&&call.cameraSwitchAvailable?'<button class=g onclick="switchCamera()">🔄 Switch camera</button>':''}<button style="background:#e5484d" onclick="endCall()">Hang up</button></div>`;
- const grid=$('#call-grid');
- if(call.camera){const tile=document.createElement('div');tile.id='tile-local';tile.className='call-tile';const v=document.createElement('video');v.autoplay=true;v.muted=true;v.playsInline=true;v.srcObject=call.stream;tile.appendChild(v);fitVideoToOrientation(v,tile);const cap=document.createElement('small');cap.textContent='You';tile.appendChild(cap);grid.appendChild(tile)}
- Object.entries(remoteStreams).forEach(([id,stream])=>ensureRemoteTile(id,stream));
- layoutCallGrid();
- clearInterval(callTimer);
- callTimer=setInterval(()=>{const el=$('#ct');if(el&&call)el.textContent=fmtCallTime(Date.now()-(call.t0||Date.now()));else clearInterval(callTimer)},1000);
-}
+async function endCall(){if(!call)return;const c=call;call=null;clearInterval(callTimer);callTimer=null;Object.keys(pcs).forEach(closePc);c.stream.getTracks().forEach(t=>t.stop());c.cameraStream&&c.cameraStream.getTracks().forEach(t=>t.stop());await rpc('leave_call',{p_call_id:c.id}).catch(()=>{});c.peers.forEach(u=>db('/rest/v1/signals',{m:'POST',b:{call_id:c.id,to_user:u,kind:'leave',data:null}}).catch(()=>{}));callUI()}
+async function checkCallEnded(){if(!call)return;try{const rows=await db(`/rest/v1/calls?select=ended_at&id=eq.${call.id}`);if(!rows.length||rows[0].ended_at){const c=call;call=null;clearInterval(callTimer);callTimer=null;Object.keys(pcs).forEach(closePc);c.stream.getTracks().forEach(t=>t.stop());c.cameraStream&&c.cameraStream.getTracks().forEach(t=>t.stop());callUI();toast('The call has ended.')}}catch{}}
+function callUI(){const el=$('#call');if(!call&&!incoming){clearInterval(callTimer);callTimer=null;el.className='';el.innerHTML='';return}el.className='show';if(!call){el.innerHTML=`<div style="font-size:60px">📞</div><h2>${esc(nmOf(incoming.from))} is calling…</h2><div style="display:flex;gap:16px"><button style="background:#e5484d;padding:16px 24px" onclick="declineCall()">Decline</button><button class=join-call style="padding:16px 24px" onclick="acceptCall()">📞 Accept</button></div>`;return}const peers=call.peers.length;el.innerHTML=`<h2>Chorely call</h2><div id="call-status">${peers?peers+' other participant(s)':'Waiting for others to join…'}</div><div id="call-grid" class="call-grid"></div><div id="ct" style="font-size:24px">${fmtCallTime(Date.now()-(call.t0||Date.now()))}</div><div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button class=g onclick="muteCall()">${call.muted?'🔇 Unmute':'🎤 Mute'}</button><button class=g onclick="toggleCamera()">${call.camera?'📷 Camera off':'📷 Camera on'}</button><button style="background:#e5484d" onclick="endCall()">Hang up</button></div>`;const grid=$('#call-grid');if(call.camera){const tile=document.createElement('div');tile.id='tile-local';tile.className='call-tile';const v=document.createElement('video');v.autoplay=true;v.muted=true;v.playsInline=true;v.srcObject=call.stream;tile.appendChild(v);fitVideoToOrientation(v,tile);const cap=document.createElement('small');cap.textContent='You';tile.appendChild(cap);grid.appendChild(tile)}Object.entries(remoteStreams).forEach(([id,stream])=>ensureRemoteTile(id,stream));layoutCallGrid();clearInterval(callTimer);callTimer=setInterval(()=>{const el2=$('#ct');if(el2&&call)el2.textContent=fmtCallTime(Date.now()-(call.t0||Date.now()));else clearInterval(callTimer)},1000)}
 callPoll=setInterval(()=>{pollIncomingCalls();checkCallEnded();if(call)rpc('touch_call',{p_call_id:call.id}).catch(()=>{})},5000);
 let beatT;const beat=()=>{if(S.access&&!document.hidden)rpc('touch',{}).catch(()=>{})};
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.access){beat();load()}});
