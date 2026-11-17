@@ -5,6 +5,10 @@
 <style>
 :root{--bg:#0f1115;--card:#181b22;--tx:#eef0f4;--mut:#8a91a0;--ac:#7c5cff;--ok:#2fd08a;--wa:#f5a524;--bd:#262a33}
 body.light{--bg:#f4f5f9;--card:#fff;--tx:#14161b;--mut:#6b7280;--bd:#e2e4ec}
+header{position:sticky;top:0;z-index:8;background:var(--bg);padding-top:calc(12px + env(safe-area-inset-top))}
+.chat-area{background:var(--bg);min-height:calc(100vh - 150px);padding:8px 16px 90px}
+#call video{max-width:min(88vw,420px);max-height:34vh;border-radius:16px;background:#111;object-fit:cover}
+.join-call{background:#25c779!important;color:#062b18!important;font-weight:800}
 *{box-sizing:border-box;margin:0;font-family:system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
 body{background:var(--bg);color:var(--tx);padding:env(safe-area-inset-top) 0 150px}
 header{padding:18px 150px 6px 16px;display:flex;justify-content:space-between;align-items:center}h1{font-size:24px}
@@ -56,8 +60,8 @@ if(!window.CFG||/YOUR/.test(CFG.url)){document.body.innerHTML='<p style="padding
 const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let S={};try{S=JSON.parse(localStorage.getItem('chorely2')||'{}')}catch{}
 const save=()=>{try{localStorage.setItem('chorely2',JSON.stringify(S))}catch{}};
-let CS={theme:'dark',h24:false,def:'pending',sec:20};try{Object.assign(CS,JSON.parse(localStorage.getItem('chorely_set')||'{}'))}catch{}
-const saveCS=()=>{try{localStorage.setItem('chorely_set',JSON.stringify(CS))}catch{}document.body.classList.toggle('light',CS.theme=='light')};saveCS();
+let CS={theme:'dark',h24:false,def:'pending',sec:20,wallpaper:null};try{Object.assign(CS,JSON.parse(localStorage.getItem('chorely_set')||'{}'))}catch{}
+const saveCS=()=>{try{localStorage.setItem('chorely_set',JSON.stringify(CS))}catch{}document.body.classList.toggle('light',CS.theme=='light');if(CS.wallpaper)document.body.style.setProperty('--bg',CS.wallpaper);else document.body.style.removeProperty('--bg')};saveCS();
 let pushTopic='',earn=[],seenN=0,notifs=[],lastUn=null,tasks=[],pend=[],tSel=new Set(),schedOn=false,W={},convs=[],lastM={},chat=null,chatMsgs=[],alertsL=[],usage=null,tab='chores',users=[],chores=[],days={},hearts={},cms={},openC={},ph={},who='',flt='all',range='today',leaders=[],mode=null,target=null,timer,newStatus='pending',newBlob=null,refreshing=null;
 const local=()=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
 const add=(s,n)=>{const d=new Date(s+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)};
@@ -85,7 +89,7 @@ async function auth(kind){const name=$('#nm').value.trim(),pw=$('#pw').value;
   save();start()}
  catch(e){S.access=null;$('#err').textContent=e.t=='confirm'?'Turn off "Confirm email" in Supabase':/already|registered/i.test(e.t||'')?'That name is taken':e.s==400&&kind=='login'?'Wrong name or password':e instanceof TypeError?'Cannot reach the internet':'Problem: '+(e.t||e)}}
 function logout(){endCall();S={name:S.name};save();ph={};users=[];tab='chores';loginView()}
-function start(){rtConnect();checkUpdate().then(()=>render());checkStorage();purgeTasks();load();clearInterval(beatT);beatT=setInterval(beat,30000);beat();clearInterval(timer);timer=setInterval(()=>{if(!document.hidden)load()},CS.sec*1000)}
+function start(){rtConnect();checkUpdate().then(()=>render());checkStorage();purgeTasks();load().then(()=>handleCallRoute());clearInterval(beatT);beatT=setInterval(beat,30000);beat();clearInterval(timer);timer=setInterval(()=>{if(!document.hidden)load()},CS.sec*1000)}
 let busy=false,again=false;
 async function load(){if(busy){again=true;return}busy=true;try{await load0()}finally{busy=false;if(again){again=false;load()}}}
 async function load0(){try{
@@ -128,7 +132,7 @@ function vChores(){const t=local(),mo=new Date(date+'T12:00:00Z').toLocaleDateSt
  <div class=mo><button class=g onclick="shiftMonth(-1)">‹</button><b>${mo}</b><button class=g onclick="shiftMonth(1)">›</button></div>
  <div class=row>${strip}</div><div class=row>${chips}</div><div class=row>${fl}</div>${warn()}${prog}${cards}<button class=fab onclick="addView()">+</button>`}
 function card(c){const mine=c.owner==S.id,nm=nmOf(c.owner),hue=parseInt(c.owner.slice(0,6),16)%360,h=hearts[c.id]||{n:0,mine:false},cl=cms[c.id]||[];
- const ctl=mine?`<div class=seg>${['later','pending','done'].map(s=>`<button class="${c.status==s?'on '+s:''}" onclick="setS(${c.id},'${s}')">${LBL[s]}</button>`).join('')}</div>${!c.before_path?`<button class="g sm" onclick="pickPhoto('before',${c.id})">📷 Add before photo</button>`:''}`:`<span class="tag ${c.status}">${LBL[c.status]}</span>`;
+ const ctl=c.status=='done'?`<span class="tag done">✓ Done · Completed</span>`:mine?`<div class=seg>${['later','pending','done'].map(s=>`<button class="${c.status==s?'on '+s:''}" onclick="setS(${c.id},'${s}')">${LBL[s]}</button>`).join('')}</div>${!c.before_path?`<button class="g sm" onclick="pickPhoto('before',${c.id})">📷 Add before photo</button>`:''}`:`<span class="tag ${c.status}">${LBL[c.status]}</span>`;
  const pics=(c.before_path||c.photo_path)?`<div class=pics>${[['Before',c.before_path],['After',c.photo_path]].filter(x=>x[1]).map(([l,p])=>`<figure><img class=th data-p="${esc(p)}" onclick="show(this.dataset.p)"><figcaption>${l}</figcaption></figure>`).join('')}</div>`:'';
  const cmHtml=openC[c.id]?`<div class=cms>${cl.map(m=>`<div class=cm><b>${esc(nmOf(m.author))}</b> <small>${fmt(m.created_at)}</small>${m.author==S.id?`<a onclick="delC(${m.id})">✕</a>`:''}<div>${esc(m.body)}</div></div>`).join('')||'<small style="color:var(--mut)">No comments yet</small>'}<div class=cin style="margin-top:8px"><input id="c${c.id}" placeholder="Write a comment…" maxlength=500><button onclick="send(${c.id})">Send</button></div></div>`:'';
  return `<div class=card><div class=top>${av(c.owner)}<div class=m><span class=ct>Created ${fmt(c.created_at)}${c.status!='done'&&date<local()?' · ⚠ Overdue':''}</span><b>${esc(c.title)}</b><small>${esc(nm)}${c.done_at?' · ✓ done '+fmt(c.done_at)+(c.credits?' · +'+c.credits+' 👛':''):''}</small></div>${mine?`<button class=ic onclick="editView(${c.id})">✏️</button><button class=ic onclick="del(${c.id})">🗑️</button>`:''}</div>${ctl}${pics}
@@ -153,15 +157,16 @@ function vLeaders(){const max=Math.max(1,...leaders.map(x=>x.n)),med=['🥇','�
 function vSettings(){const seg=(k,o)=>`<div class=seg>${o.map(([v,l])=>`<button class="${CS[k]===v?'on pending':''}" onclick='setCS("${k}",${JSON.stringify(v)})'>${l}</button>`).join('')}</div>`;
  return `<header><h1>Settings</h1></header>
  <div class=set><h3>Account</h3><small>Signed in as ${esc(S.name||'')}</small><input id=dn value="${esc(S.name||'')}" maxlength=30><button onclick="saveName()">Save name</button><button class=g onclick="pickPhoto('avatar')">🖼 Change picture</button><button class=g onclick="logout()">Log out</button></div>
- <div class=set><h3>Appearance</h3>${seg('theme',[['dark','Dark'],['light','Light']])}</div>
+ <div class=set><h3>Appearance</h3>${seg('theme',[['dark','Dark'],['light','Light']])}<small>App background color (works with either theme)</small><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px"><input type=color value="${esc(CS.wallpaper||(CS.theme=='light'?'#f4f5f9':'#0f1115'))}" onchange="setCS('wallpaper',this.value)" style="height:48px;padding:4px;max-width:100px;margin:0"><button class=g onclick="resetBg()">↺ Reset background</button></div><small>Reset restores the default background for the selected theme.</small></div>
  <div class=set><h3>Time format</h3>${seg('h24',[[false,'12-hour'],[true,'24-hour']])}</div>
  <div class=set><h3>New chores start as</h3>${seg('def',[['later','Later'],['pending','Pending']])}</div>
  <div class=set><h3>Auto-refresh</h3>${seg('sec',[[10,'10 sec'],[20,'20 sec'],[60,'1 min']])}</div>
- <div class=set><h3>📲 Phone notifications</h3><small>Get alerts even when Chorely is closed. 1) Install the free <b>ntfy</b> app. 2) In ntfy tap + and type this topic (keep it private). Alert text passes through ntfy.sh.</small><input readonly value="${esc(pushTopic||'loading…')}" onclick="this.select()"><br><button onclick="pushTest()">Send test</button><button class=g onclick="location.href='ntfy://ntfy.sh/'+pushTopic">Open in ntfy</button></div>
+ <div class=set><h3>📲 Phone notifications</h3><small>Get incoming-call alerts when Chorely is not open. Install the free <b>ntfy</b> app and subscribe to this private topic. Tap the alert to open Chorely, then tap Join. A browser cannot keep camera/microphone calls running after it is closed.</small><input readonly value="${esc(pushTopic||'loading…')}" onclick="this.select()"><br><button onclick="pushTest()">Send test</button><button class=g onclick="location.href='ntfy://ntfy.sh/'+pushTopic">Open in ntfy</button></div>
  <div class=set><h3>Cloud storage</h3><small>${usage?`Photos ${Math.round(usage.files/MB)} of 1024 MB · Database ${Math.round(usage.db/MB)} of 500 MB`:'Checking…'}</small><br><button class=g onclick="cleanupView()">Free up space…</button></div>
  <div class=set><h3>Storage</h3><small>Photos are kept in memory while the app is open.</small><br><button class=g onclick="clearPh()">Clear photo cache</button></div>
  <p class=note>Chorely v10<br>Made by Jayson. LC PHILIPPINES</p>`}
 function setCS(k,v){CS[k]=v;saveCS();if(k=='sec')start();render()}
+function resetBg(){CS.wallpaper=null;saveCS();render()}
 function clearPh(){Object.values(ph).forEach(u=>URL.revokeObjectURL(u));ph={};alert('Cache cleared')}
 async function saveName(){const n=$('#dn').value.trim();if(!n)return;try{await db(`/rest/v1/profiles?id=eq.${S.id}`,{m:'PATCH',b:{name:n}});S.name=n;save();document.activeElement.blur();alert('Name saved')}catch{alert('Could not save, try again')}load()}
 async function photo(p){if(!ph[p])ph[p]=URL.createObjectURL(await(await req('/storage/v1/object/authenticated/proof/'+p)).blob());return ph[p]}
@@ -170,7 +175,7 @@ function shiftMonth(n){const d=new Date(date+'T12:00:00Z');d.setUTCDate(1);d.set
 async function show(p){$('#shc').innerHTML=`<img id=big src="${await photo(p)}"><button class=g style="width:100%;margin-top:12px" onclick="closeSh()">Close</button>`;$('#sh').classList.add('show')}
 function closeSh(){$('#sh').classList.remove('show');render()}
 function pickPhoto(m,id){mode=m;target=id;$('#f').click()}
-async function setS(id,s){const c=chores.find(x=>x.id==id);if(c.status==s)return;
+async function setS(id,s){const c=chores.find(x=>x.id==id);if(!c||c.status=='done'||c.status==s)return;
  if(s=='done'){if(!c.before_path)return alert('Add a BEFORE photo first (tap "Add before photo"), then mark it Done with an AFTER photo.');pickPhoto('after',id);return}
  try{await db(`/rest/v1/chores?id=eq.${id}`,{m:'PATCH',b:{status:s}})}catch{alert('Could not save, try again')}load()}
 async function shrink(f,mx=1024){const b=await createImageBitmap(f),k=Math.min(1,mx/Math.max(b.width,b.height)),c=document.createElement('canvas');c.width=b.width*k;c.height=b.height*k;c.getContext('2d').drawImage(b,0,0,c.width,c.height);return new Promise(r=>c.toBlob(r,'image/jpeg',.7))}
@@ -219,13 +224,14 @@ async function loadExtra(){
  if(tab=='tasks')q.push(db(`/rest/v1/tasks?select=*&or=(scheduled.eq.true,created_day.eq.${local()})&order=created_at.desc`));
  if(tab=='credit')q.push(db(`/rest/v1/chores?select=title,credits,done_at&owner=eq.${S.id}&status=eq.done&credits=gt.0&order=done_at.desc&limit=100`));
  if(tab=='settings')q.push(db('/rest/v1/push_topics?select=topic'));
- if(tab=='msgs')q.push(db('/rest/v1/convs?select=id,title,is_group,members(user_id)&order=id.desc'),db('/rest/v1/msgs?select=conv_id,sender,body,created_at&order=created_at.desc&limit=300'),db('/rest/v1/alerts?select=id,body,ends_at,created_at&order=created_at.desc&limit=50'),chat?db(`/rest/v1/msgs?select=id,sender,body,images,created_at&conv_id=eq.${chat}&order=created_at&limit=300`):Promise.resolve(null));
+ if(tab=='msgs')q.push(db('/rest/v1/convs?select=id,title,is_group,members(user_id)&order=id.desc'),db('/rest/v1/msgs?select=conv_id,sender,body,created_at&order=created_at.desc&limit=300'),db('/rest/v1/alerts?select=id,body,ends_at,created_at&order=created_at.desc&limit=50'),chat?db(`/rest/v1/msgs?select=id,sender,body,images,created_at&conv_id=eq.${chat}&order=created_at&limit=300`):Promise.resolve(null),
+   chat?db(`/rest/v1/calls?select=id,conv_id,started_by,created_at,ended_at&conv_id=eq.${chat}&ended_at=is.null&order=created_at.desc&limit=1`):Promise.resolve(null));
  const r=await Promise.all(q);W={};r[0].forEach(x=>W[x.user_id]=x);notifs=r[1];
  const un=notifs.filter(n=>!n.read).length;if(lastUn!==null&&un>lastUn){navigator.vibrate&&navigator.vibrate(200);toast(notifs.find(n=>!n.read).body)}lastUn=un;
  if(tab=='tasks')tasks=r[2];
  if(tab=='settings')pushTopic=(r[2]&&r[2][0]&&r[2][0].topic)||'';
  if(tab=='credit')earn=r[2];
- if(tab=='msgs'){convs=r[2];lastM={};r[3].forEach(x=>{if(!lastM[x.conv_id])lastM[x.conv_id]=x});alertsL=r[4];if(chat)chatMsgs=r[5]}}
+ if(tab=='msgs'){convs=r[2];lastM={};r[3].forEach(x=>{if(!lastM[x.conv_id])lastM[x.conv_id]=x});alertsL=r[4];if(chat){chatMsgs=r[5];activeCall=(r[6]&&r[6][0])||null}else activeCall=null}}
 function vMsgs(){if(chat)return vChat();
  const ppl=users.filter(u=>u.id!=S.id).map(u=>`<div class=pp onclick="profile('${u.id}')">${av(u.id,48)}${esc(u.name)}</div>`).join('');
  const list=convs.map(c=>{const o=c.members.map(m=>m.user_id).filter(i=>i!=S.id),l=lastM[c.id];
@@ -234,8 +240,8 @@ function vMsgs(){if(chat)return vChat();
  ${alertsL.length?`<div class="card top" onclick="alertsView()"><div class=av style="background:#e5484d">🔔</div><div class=m><b>System Alerts</b><small>${esc(alertsL[0].body+(alertsL[0].ends_at?' · ends '+fmt(alertsL[0].ends_at):''))}</small></div></div>`:''}${list||'<div class=empty>Tap a person above to chat, or make a group</div>'}`}
 function vChat(){const c=convs.find(x=>x.id==chat);if(!c){chat=null;return vMsgs()}
  const o=c.members.map(m=>m.user_id).filter(i=>i!=S.id);
- return `<header><button class=g onclick="chat=null;render()">‹ Back</button><b>${esc(c.is_group?(c.title||'Group'):nmOf(o[0]))}</b><span><button class=g onclick="startCall()">📞</button>${c.is_group?' <button class=g onclick="grpMenu()">⋯</button>':''}</span></header>
- <div style="padding:0 16px">${chatMsgs.map(m=>`<div class="bub ${m.sender==S.id?'me':''}"><small>${esc(nmOf(m.sender))} · ${fmt(m.created_at)}</small><div>${esc(m.body)}</div>${imgs(m.images,m.sender==S.id,'m',m.id)}${m.sender==S.id?`<a onclick="delM(${m.id})">🗑 Delete</a>`:''}</div>`).join('')||'<div class=empty>Say hi 👋</div>'}</div>
+ return `<header><button class=g onclick="chat=null;activeCall=null;render()">‹ Back</button><b>${esc(c.is_group?(c.title||'Group'):nmOf(o[0]))}</b><span>${activeCall?`<button class=join-call onclick="joinCall('${activeCall.id}',${chat},true)">Join 📞</button>`:`<button class=ic title="Start call" aria-label="Start call" onclick="startCall()">📞</button>`}${c.is_group?' <button class=g onclick="grpMenu()">⋯</button>':''}</span></header>
+ <div class=chat-area>${chatMsgs.map(m=>`<div class="bub ${m.sender==S.id?'me':''}"><small>${esc(nmOf(m.sender))} · ${fmt(m.created_at)}</small><div>${esc(m.body)}</div>${imgs(m.images,m.sender==S.id,'m',m.id)}${m.sender==S.id?`<a onclick="delM(${m.id})">🗑 Delete</a>`:''}</div>`).join('')||'<div class=empty>Say hi 👋</div>'}</div>
  <div class=cin style="position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom));padding:8px 16px;background:var(--bg);z-index:3"><button class=g onclick="attach()">📎<span id=pc>${pend.length||''}</span></button><input id=mi placeholder="Message…" maxlength=1000><button onclick="sendM()">Send</button></div>`}
 async function sendM(){const el=$('#mi'),b=el.value.trim();if(!b&&!pend.length)return;el.value='';el.blur();
  try{const im=[];for(const x of pend)im.push(await upload(x));pend=[];await db('/rest/v1/msgs',{m:'POST',b:{conv_id:chat,body:b,images:im}})}catch{alert('Could not send')}load()}
@@ -308,18 +314,38 @@ async function checkUpdate(){try{const r=await fetch(`https://api.github.com/rep
 const updBanner=()=>upd?`<div class=warn style="background:#7c5cff22;border-color:var(--ac)">⬆ Update v${upd.v} is ready.<br><button style="margin-top:8px" onclick="window.open('${esc(upd.url)}','_blank')">Download update</button><br><small style="color:var(--mut)">If nothing opens, visit github.com/${REPO}/releases/latest in your browser.</small></div>`:'';
 const pushTest=()=>rpc('push_test',{}).then(()=>alert('Sent! It should pop up in ntfy in a few seconds.')).catch(()=>alert('Could not send the test'));
 const ICE=[{urls:'stun:stun.l.google.com:19302'},...(CFG.turn||[])];
-let call=null,incoming=null,pcs={},icePend={};
+let call=null,incoming=null,activeCall=null,pcs={},icePend={};
+let callRouteHandled=false;
 const sig=(to,kind,data)=>db('/rest/v1/signals',{m:'POST',b:{call_id:call.id,to_user:to,kind,data}}).catch(()=>{});
+async function handleCallRoute(){
+ if(callRouteHandled)return;
+ const u=new URL(location.href),id=u.searchParams.get('call'),conv=Number(u.searchParams.get('conv')),action=u.searchParams.get('action');
+ if(!id||!conv||!['accept','decline'].includes(action))return;
+ callRouteHandled=true;
+ try{history.replaceState({},'',location.pathname+location.hash)}catch{}
+ try{
+  const rows=await db(`/rest/v1/calls?select=id,conv_id,started_by,ended_at&id=eq.${encodeURIComponent(id)}&conv_id=eq.${conv}&ended_at=is.null`);
+  if(!rows.length){alert('This call has already ended.');return}
+  const members=await db(`/rest/v1/members?select=user_id&conv_id=eq.${conv}`);
+  if(!members.some(x=>x.user_id==S.id)){alert('You are not a member of this conversation.');return}
+  tab='msgs';chat=conv;await load();
+  if(action==='decline'){
+   await db('/rest/v1/signals',{m:'POST',b:{call_id:id,to_user:rows[0].started_by,kind:'decline',data:null}}).catch(()=>{});
+   toast('Call declined');return;
+  }
+  incoming={id,conv,from:rows[0].started_by};callUI();
+ }catch(e){alert('Could not open this call. Please open Chorely and check your connection.')}
+}
 async function startCall(){if(!chat||call)return;if(!(ws&&ws.readyState==1))return alert('Calls need the live connection. Wait a few seconds and try again.');
- try{const r=await db('/rest/v1/calls',{m:'POST',b:{conv_id:chat},h:{Prefer:'return=representation'}});await joinCall(r[0].id,chat,false)}catch{alert('Could not start the call')}}
+ try{const r=await db('/rest/v1/calls',{m:'POST',b:{conv_id:chat},h:{Prefer:'return=representation'}});activeCall={id:r[0].id,conv_id:chat};await joinCall(r[0].id,chat,false)}catch{alert('Could not start the call')}}
 async function joinCall(id,conv,announce){try{const stream=await navigator.mediaDevices.getUserMedia({audio:true}),mem=(await db('/rest/v1/members?select=user_id&conv_id=eq.'+conv)).map(x=>x.user_id).filter(i=>i!=S.id);
-  call={id,conv,stream,mem,muted:false,t0:Date.now()};incoming=null;if(announce)mem.forEach(u=>sig(u,'join',null));callUI()}catch{incoming=null;callUI();alert('Cannot use the microphone. Please allow microphone access.')}}
-function onIncoming(r){if(r.started_by==S.id||call||incoming||Date.now()-new Date(r.created_at)>60000)return;incoming={id:r.id,conv:r.conv_id,from:r.started_by};navigator.vibrate&&navigator.vibrate([300,200,300,200,300]);callUI();setTimeout(()=>{if(incoming&&incoming.id==r.id){incoming=null;callUI()}},45000)}
+  call={id,conv,stream,mem,muted:false,camera:false,t0:Date.now()};incoming=null;if(announce)mem.forEach(u=>sig(u,'join',null));callUI()}catch{incoming=null;callUI();alert('Cannot use the microphone. Please allow microphone access.')}}
+function onIncoming(r){if(r.started_by==S.id||call||incoming)return;incoming={id:r.id,conv:r.conv_id,from:r.started_by};navigator.vibrate&&navigator.vibrate([300,200,300,200,300]);callUI()}
 const acceptCall=()=>joinCall(incoming.id,incoming.conv,true);
 const declineCall=()=>{incoming=null;callUI()};
 function mkPc(f){closePc(f);const pc=new RTCPeerConnection({iceServers:ICE});pcs[f]=pc;call.stream.getTracks().forEach(t=>pc.addTrack(t,call.stream));
  pc.onicecandidate=e=>{if(e.candidate)sig(f,'ice',e.candidate.toJSON())};
- pc.ontrack=e=>{let a=document.getElementById('au-'+f);if(!a){a=document.createElement('audio');a.id='au-'+f;a.autoplay=true;document.body.appendChild(a)}a.srcObject=e.streams[0]};
+ pc.ontrack=e=>{if(e.track.kind=='video'){let v=document.getElementById('vid-'+f);if(!v){v=document.createElement('video');v.id='vid-'+f;v.autoplay=true;v.playsInline=true;v.style.cssText='display:block;margin:8px auto';$('#call').appendChild(v)}v.srcObject=e.streams[0]}else{let a=document.getElementById('au-'+f);if(!a){a=document.createElement('audio');a.id='au-'+f;a.autoplay=true;document.body.appendChild(a)}a.srcObject=e.streams[0]}};
  pc.onconnectionstatechange=()=>callUI();return pc}
 function closePc(f){if(pcs[f])pcs[f].close();delete pcs[f];const a=document.getElementById('au-'+f);if(a)a.remove();delete icePend[f]}
 async function flushIce(f){const pc=pcs[f];for(const c of icePend[f]||[])await pc.addIceCandidate(c).catch(()=>{});icePend[f]=[]}
@@ -328,14 +354,19 @@ async function onSignal(r){if(!call||r.call_id!=call.id||r.from_user==S.id)retur
  else if(r.kind=='offer'){const pc=mkPc(f);await pc.setRemoteDescription(r.data);await flushIce(f);await pc.setLocalDescription(await pc.createAnswer());sig(f,'answer',pc.localDescription.toJSON())}
  else if(r.kind=='answer'){if(pcs[f]){await pcs[f].setRemoteDescription(r.data);await flushIce(f)}}
  else if(r.kind=='ice'){if(pcs[f]&&pcs[f].remoteDescription)await pcs[f].addIceCandidate(r.data).catch(()=>{});else(icePend[f]=icePend[f]||[]).push(r.data)}
- else if(r.kind=='leave'){closePc(f);callUI()}}catch{}}
-function muteCall(){call.muted=!call.muted;call.stream.getAudioTracks().forEach(t=>t.enabled=!call.muted);callUI()}
-function endCall(){if(!call)return;const c=call;call=null;Object.keys(pcs).forEach(closePc);c.stream.getTracks().forEach(t=>t.stop());
- db('/rest/v1/signals',{m:'POST',b:c.mem.map(u=>({call_id:c.id,to_user:u,kind:'leave',data:null}))}).catch(()=>{});callUI()}
+ else if(r.kind=='leave'){closePc(f);callUI()}
+ else if(r.kind=='decline'){toast(nmOf(f)+' declined the call')}}catch{}}
+async function toggleCamera(){if(!call)return;try{
+ if(!call.camera){const v=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false}),track=v.getVideoTracks()[0];call.stream.addTrack(track);Object.keys(pcs).forEach(f=>{const pc=pcs[f];pc.addTrack(track,call.stream);pc.createOffer().then(o=>pc.setLocalDescription(o)).then(()=>sig(f,'offer',pc.localDescription.toJSON())).catch(()=>{})});call.camera=true}
+ else{call.stream.getVideoTracks().forEach(t=>{call.stream.removeTrack(t);t.stop()});Object.keys(pcs).forEach(f=>{const pc=pcs[f];pc.getSenders().filter(s=>s.track&&s.track.kind=='video').forEach(s=>pc.removeTrack(s));pc.createOffer().then(o=>pc.setLocalDescription(o)).then(()=>sig(f,'offer',pc.localDescription.toJSON())).catch(()=>{})});call.camera=false}callUI()
+ }catch{alert('Camera permission was not granted or no camera is available.')}}
+ function muteCall(){call.muted=!call.muted;call.stream.getAudioTracks().forEach(t=>t.enabled=!call.muted);callUI()}
+function endCall(){if(!call)return;const c=call;call=null;Object.keys(pcs).forEach(closePc);c.stream.getTracks().forEach(t=>t.stop());document.querySelectorAll('#call video').forEach(v=>v.remove());
+ db('/rest/v1/signals',{m:'POST',b:c.mem.map(u=>({call_id:c.id,to_user:u,kind:'leave',data:null}))}).catch(()=>{});db(`/rest/v1/calls?id=eq.${c.id}`,{m:'PATCH',b:{ended_at:new Date().toISOString()}}).catch(()=>{});callUI()}
 function callUI(){const el=$('#call');if(!call&&!incoming){el.className='';el.innerHTML='';return}el.className='show';
- if(!call){el.innerHTML=`<div style="font-size:60px">📞</div><h2>${esc(nmOf(incoming.from))} is calling…</h2><div style="display:flex;gap:16px"><button style="background:#e5484d;padding:16px 24px" onclick="declineCall()">Decline</button><button style="background:var(--ok);color:#000;padding:16px 24px" onclick="acceptCall()">Accept</button></div>`;return}
+ if(!call){el.innerHTML=`<div style="font-size:60px">📞</div><h2>${esc(nmOf(incoming.from))} is calling…</h2><div style="display:flex;gap:16px"><button style="background:#e5484d;padding:16px 24px" onclick="declineCall()">Decline</button><button class=join-call style="padding:16px 24px" onclick="acceptCall()">📞 Join</button></div>`;return}
  const ids=Object.keys(pcs).filter(k=>pcs[k].connectionState=='connected');
- el.innerHTML=`<div style="font-size:60px">📞</div><h2>In call</h2><div>${ids.length?esc(ids.map(nmOf).join(', '))+' connected':'Waiting for others to join…'}</div><div id=ct style="font-size:28px">0:00</div><div style="display:flex;gap:16px"><button class=g style="padding:16px 22px" onclick="muteCall()">${call.muted?'🔇 Unmute':'🎤 Mute'}</button><button style="background:#e5484d;padding:16px 22px" onclick="endCall()">Hang up</button></div>`}
+ el.innerHTML=`<div style="font-size:60px">📞</div><h2>In call</h2><div>${ids.length?esc(ids.map(nmOf).join(', '))+' connected':'Waiting for others to join…'}</div><video id=local-video autoplay muted playsinline style="display:${call.camera?'block':'none'}"></video><div id=ct style="font-size:28px">0:00</div><div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button class=g style="padding:14px 18px" onclick="muteCall()">${call.muted?'🔇 Unmute':'🎤 Mute'}</button><button class=g style="padding:14px 18px" onclick="toggleCamera()">${call.camera?'📷 Camera off':'📷 Camera on'}</button><button style="background:#e5484d;padding:14px 18px" onclick="endCall()">Hang up</button></div>`;if(call.camera){const v=$('#local-video');if(v)v.srcObject=call.stream}}
 setInterval(()=>{const e=$('#ct');if(e&&call){const x=Math.floor((Date.now()-call.t0)/1000);e.textContent=Math.floor(x/60)+':'+String(x%60).padStart(2,'0')}},1000);
 let ws,wsT;
 function rtConnect(){if(!S.access)return;try{ws&&(ws.onclose=null,ws.close())}catch{}
