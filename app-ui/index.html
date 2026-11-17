@@ -42,7 +42,17 @@ input{width:100%;padding:13px;border-radius:12px;border:1px solid var(--bd);back
 .sheet{position:fixed;inset:0;background:#000a;display:none;align-items:flex-end;z-index:5}.sheet.show{display:flex}.sheet>div{background:var(--bg);width:100%;padding:20px;border-radius:24px 24px 0 0;max-height:90vh;overflow:auto}
 .pk{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.pk button{background:var(--card);color:var(--tx);border:1px solid var(--bd);font-weight:500}.pk .on{background:var(--ac);color:#fff;border-color:var(--ac)}
 #wal{position:fixed;top:calc(10px + env(safe-area-inset-top));right:12px;z-index:6;background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:8px 12px;font-weight:700;font-size:14px}#wal:empty{display:none}
-.bub{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:8px 12px;margin:8px 0;max-width:85%}.bub.me{margin-left:auto;background:var(--ac);color:#fff}.bub small{display:block;font-size:11px;opacity:.7}.bub a{font-size:12px}
+.msg-row{display:flex;align-items:flex-end;gap:8px;margin:12px 0}.msg-row.me{justify-content:flex-end}
+.msg-col{display:flex;flex-direction:column;max-width:80%;min-width:0}.msg-row.me .msg-col{align-items:flex-end}
+.msg-name{font-size:12px;font-weight:800;color:#fff;margin:0 0 3px 4px;background:none;-webkit-text-stroke:0.7px #000;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 1px 2px #000}
+.bub{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:8px 12px;margin:0;max-width:100%;cursor:pointer}.bub.me{background:var(--ac);color:#fff}.bub small{display:block;font-size:11px;opacity:.75;margin-top:3px}.bub a{font-size:12px;cursor:pointer;margin-right:10px;display:inline-block;margin-top:4px}
+.reply-quote{background:#0003;border-left:3px solid var(--ok);padding:4px 8px;border-radius:6px;margin-bottom:6px;font-size:12px;opacity:.9}
+.bub:not(.me) .reply-quote{background:var(--bg);border-left-color:var(--ac)}
+.reply-bar{position:fixed;left:0;right:0;bottom:calc(118px + env(safe-area-inset-bottom));padding:6px 16px;background:var(--card);border-top:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;gap:8px;z-index:3;font-size:12px}
+.msg-receipt{font-size:11px;color:var(--mut);margin-top:4px;padding-top:4px;border-top:1px solid #ffffff22}
+.bub:not(.me) .msg-receipt{border-top-color:var(--bd)}
+.earn-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.earn-chk{width:20px;height:20px;margin:0;accent-color:var(--ac);cursor:pointer;flex:0 0 auto}
 .pp{flex:0 0 auto;text-align:center;font-size:11px;color:var(--mut)}.pp .aw{margin:0 auto 4px}.aw{position:relative;flex:0 0 auto}.pd{position:absolute;right:0;bottom:0;width:12px;height:12px;border-radius:50%;border:2px solid var(--card);background:#8a91a0}.pd.on{background:#2fd08a}
 .warn{margin:8px 16px;padding:12px;border-radius:14px;background:#e5484d22;border:1px solid #e5484d;font-size:14px}
 .st{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.st div{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px;text-align:center;font-size:12px;color:var(--mut)}.st b{display:block;font-size:20px;color:var(--tx)}
@@ -66,12 +76,12 @@ input{width:100%;padding:13px;border-radius:12px;border:1px solid var(--bd);back
 <script src="config.js"></script>
 <script>
 if(!window.CFG||/YOUR/.test(String(CFG.url||''))){document.body.innerHTML='<p style="padding:30px;font-family:system-ui">Open <b>config.js</b> next to this file and paste your Supabase URL and key, then reload.</p>';throw 0}
-const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&','<':'<','>':'>','"':'"'}[c]));
 let S={};try{S=JSON.parse(localStorage.getItem('chorely2')||'{}')}catch{}
 const save=()=>{try{localStorage.setItem('chorely2',JSON.stringify(S))}catch{}};
 let CS={theme:'dark',h24:false,def:'pending',sec:20,wallpaper:null,shareLoc:false};try{Object.assign(CS,JSON.parse(localStorage.getItem('chorely_set')||'{}'))}catch{}
 const saveCS=()=>{try{localStorage.setItem('chorely_set',JSON.stringify(CS))}catch{}document.body.classList.toggle('light',CS.theme=='light');if(CS.wallpaper)document.body.style.setProperty('--bg',CS.wallpaper);else document.body.style.removeProperty('--bg')};saveCS();
-let pushTopic='',earn=[],seenN=0,notifs=[],lastUn=null,tasks=[],pend=[],tSel=new Set(),schedOn=false,W={},convs=[],lastM={},chat=null,chatMsgs=[],alertsL=[],usage=null,tab='chores',users=[],chores=[],days={},hearts={},cms={},openC={},ph={},who='',flt='all',range='today',leaders=[],mode=null,target=null,timer,newStatus='pending',newBlob=null,refreshing=null,locs={},shareLoc=!!CS.shareLoc,mapInst=null,locWatch=null,mapMarkers={};
+let pushTopic='',earn=[],earnSel=new Set(),seenN=0,notifs=[],lastUn=null,tasks=[],pend=[],tSel=new Set(),schedOn=false,W={},convs=[],lastM={},chat=null,chatMsgs=[],replyTo=null,openMsgId=null,alertsL=[],usage=null,tab='chores',users=[],chores=[],days={},hearts={},cms={},openC={},ph={},who='',flt='all',range='today',leaders=[],mode=null,target=null,timer,newStatus='pending',newBlob=null,refreshing=null,locs={},shareLoc=!!CS.shareLoc,mapInst=null,locWatch=null,mapMarkers={};
 const local=()=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
 const add=(s,n)=>{const d=new Date(s+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)};
 let date=local();const LBL={later:'Later',pending:'Pending',done:'Done'};
@@ -128,7 +138,7 @@ function rtConnect(){
   ws.onclose=()=>{clearInterval(wsT);if(S.access)setTimeout(rtConnect,5000)};
  }catch(e){setTimeout(rtConnect,5000)}
 }
-function start(){rtConnect();checkUpdate().then(()=>render());checkStorage();purgeTasks();load().then(()=>{handleCallRoute();pollIncomingCalls();resumeLocShare()});clearInterval(beatT);beatT=setInterval(beat,30000);beat();clearInterval(timer);timer=setInterval(()=>{if(!document.hidden)load()},CS.sec*1000)}
+function start(){rtConnect();checkUpdate().then(()=>render());checkStorage();purgeTasks();purgeOldEarnings();load().then(()=>{handleCallRoute();pollIncomingCalls();resumeLocShare()});clearInterval(beatT);beatT=setInterval(beat,30000);beat();clearInterval(timer);timer=setInterval(()=>{if(!document.hidden)load()},CS.sec*1000)}
 let busy=false,again=false;
 async function load(){if(busy){again=true;return}busy=true;try{await load0()}finally{busy=false;if(again){again=false;load()}}}
 async function load0(){try{
@@ -155,7 +165,7 @@ async function loadLeaders(){const d=new Date();d.setHours(0,0,0,0);if(range=='w
 function render(){
  const ae=document.activeElement,keep=ae&&ae.tagName=='INPUT'?{id:ae.id,v:ae.value}:null,inChat=tab=='msgs'&&chat;
  if($('#sh').classList.contains('show')||(keep&&!(inChat&&keep.id=='mi')))return;
- $('#app').innerHTML=updBanner()+(tab=='chores'?vChores():tab=='msgs'?vMsgs():tab=='tasks'?vTasks():tab=='credit'?vCredit():tab=='leaders'?vLeaders():vSettings());{const un=notifs.filter(n=>!n.read).length;$('#wal').innerHTML=`<span onclick="event.stopPropagation();bellView()">🔔${un?` <b style="color:#ff5d7a">${un}</b>`:''}</span> &nbsp; 👛 ${(W[S.id]||{credits:0}).credits}`}
+ $('#app').innerHTML=updBanner()+(tab=='chores'?vChores():tab=='msgs'?vMsgs():tab=='tasks'?vTasks():tab=='credit'?vCredit():tab=='leaders'?vLeaders():vSettings());{const un=notifs.filter(n=>!n.read).length;$('#wal').innerHTML=`<span onclick="event.stopPropagation();bellView()">🔔${un?` <b style="color:#ff5d7a">${un}</b>`:''}</span>   👛 ${(W[S.id]||{credits:0}).credits}`}
  $('#nav').innerHTML=[['chores','📋','Chores'],['msgs','💬','Messages'],['tasks','✅','Tasks'],['credit','👛','Credit'],['leaders','🏆','Leaders'],['settings','⚙️','Settings']].map(([t,i,l])=>`<button class="${tab==t?'on':''}" onclick="tab='${t}';load()">${i}<span>${l}</span></button>`).join('');
  loadImgs();if(keep&&keep.id=='mi'){const n=$('#mi');if(n){n.value=keep.v;n.focus()}}if(inChat&&chatMsgs.length!=seenN){seenN=chatMsgs.length;window.scrollTo(0,document.body.scrollHeight)}}
 function loadImgs(){document.querySelectorAll('img[data-p]').forEach(async i=>{try{i.src=await photo(i.dataset.p)}catch{}})}
@@ -176,9 +186,37 @@ function card(c){const mine=c.owner==S.id,nm=nmOf(c.owner),hue=parseInt(c.owner.
  const cmHtml=openC[c.id]?`<div class=cms>${cl.map(m=>`<div class=cm><b>${esc(nmOf(m.author))}</b> <small>${fmt(m.created_at)}</small>${m.author==S.id?`<a onclick="delC(${m.id})">✕</a>`:''}<div>${esc(m.body)}</div></div>`).join('')||'<small style="color:var(--mut)">No comments yet</small>'}<div class=cin style="margin-top:8px"><input id="c${c.id}" placeholder="Write a comment…" maxlength=500><button onclick="send(${c.id})">Send</button></div></div>`:'';
  return `<div class=card><div class=top>${av(c.owner)}<div class=m><span class=ct>Created ${fmt(c.created_at)}${c.status!='done'&&date<local()?' · ⚠ Overdue':''}</span><b>${esc(c.title)}</b><small>${esc(nm)}${c.done_at?' · ✓ done '+fmt(c.done_at)+(c.credits?' · +'+c.credits+' 👛':''):''}</small></div>${mine?`<button class=ic onclick="editView(${c.id})">✏️</button><button class=ic onclick="del(${c.id})">🗑️</button>`:''}</div>${ctl}${pics}
  <div class=act><button class="g ${h.mine?'on':''}" onclick="heart(${c.id})">${h.mine?'❤️':'🤍'} ${h.n}</button><button class=g onclick="openC[${c.id}]=!openC[${c.id}];render()">💬 ${cl.length}</button></div>${cmHtml}</div>`}
+const monthStartISO=()=>{const d=new Date();d.setDate(1);d.setHours(0,0,0,0);return d.toISOString()};
+async function purgeOldEarnings(){
+ try{
+  const cut=monthStartISO();
+  const old=await db(`/rest/v1/chores?select=id,before_path,photo_path&owner=eq.${S.id}&status=eq.done&credits=gt.0&done_at=lt.${encodeURIComponent(cut)}`);
+  if(old&&old.length){
+   const paths=old.flatMap(x=>[x.before_path,x.photo_path]).filter(Boolean);
+   if(paths.length)rmFiles(paths);
+   await db(`/rest/v1/chores?owner=eq.${S.id}&status=eq.done&credits=gt.0&done_at=lt.${encodeURIComponent(cut)}`,{m:'DELETE'});
+  }
+ }catch{}
+}
+function toggleEarnSel(id,checked){if(checked)earnSel.add(id);else earnSel.delete(id);render()}
+async function delSelectedEarn(){
+ if(!earnSel.size)return alert('Select at least one earning to delete.');
+ if(!confirm(`Delete ${earnSel.size} selected earning record(s)? Your wallet credits will NOT change.`))return;
+ const ids=[...earnSel];
+ try{
+  const rows=earn.filter(x=>earnSel.has(x.id));
+  const paths=rows.flatMap(x=>[x.before_path,x.photo_path]).filter(Boolean);
+  if(paths.length)rmFiles(paths);
+  await db(`/rest/v1/chores?id=in.(${ids.join(',')})&owner=eq.${S.id}`,{m:'DELETE'});
+  earnSel.clear();
+  toast('Selected earnings deleted');
+  load();
+ }catch{alert('Could not delete selected earnings')}
+}
 function vCredit(){const w=W[S.id]||{credits:0},left=leftSec(w);
  const t0=new Date();t0.setHours(0,0,0,0);const wk=new Date(t0);wk.setDate(wk.getDate()-6);const mo=new Date(t0);mo.setDate(1);
- const sum=d=>earn.filter(x=>new Date(x.done_at)>=d).reduce((a,x)=>a+x.credits,0);
+ const monthEarn=earn.filter(x=>new Date(x.done_at)>=mo);
+ const sum=d=>monthEarn.filter(x=>new Date(x.done_at)>=d).reduce((a,x)=>a+x.credits,0);
  const all=Object.values(W).sort((a,b)=>b.credits-a.credits);
  return `<header><h1>Credits</h1></header>
  <div class=set><h3 style="font-size:24px">👛 ${w.credits} credits</h3><small>≈ ₱${(w.credits/MR).toFixed(2)} · ${MR} credits = ₱1 · your credits never reset</small></div>
@@ -186,9 +224,9 @@ function vCredit(){const w=W[S.id]||{credits:0},left=leftSec(w);
  <div class=set><h3>Cash out</h3><small>60 credits = 1h 45m screen time · ${MR} credits = ₱1. Meriam gets an alert.</small>
   <input id=ca type=number min=1 placeholder="Credits to cash out"><div class=seg><button class=g onclick="$('#ca').value=${w.credits}">All</button></div>
   <div style="display:flex;gap:8px;margin-top:12px"><button style="flex:1" onclick="cash('screen')">⏳ Screen time</button><button style="flex:1;background:var(--ok);color:#000" onclick="cash('money')">💵 Money (₱)</button></div></div>
- <div class=set><h3>Earned</h3><div class=st><div><b>${sum(t0)}</b>today</div><div><b>${sum(wk)}</b>last 7 days</div><div><b>${sum(mo)}</b>this month</div><div><b>${earn.length}</b>paid chores</div></div><small>Each chore pays 25 to 30 credits, once, when it is first marked Done.</small></div>
+ <div class=set><h3>Earned</h3><div class=st><div><b>${sum(t0)}</b>today</div><div><b>${sum(wk)}</b>last 7 days</div><div><b>${sum(mo)}</b>this month</div><div><b>${monthEarn.length}</b>paid chores</div></div><small>Each chore pays 25 to 30 credits, once, when it is first marked Done.</small></div>
  <div class=set><h3>Everyone's credits</h3>${all.map(x=>`<div class=top style="margin-top:10px">${av(x.user_id,38)}<div class=m><b>${esc(nmOf(x.user_id))}${x.user_id==S.id?' (you)':''}</b><small>₱${(x.credits/MR).toFixed(2)} · ⏳ <span data-cd="${x.user_id}">${fmtDur(leftSec(x))}</span></small></div><b class=cnt>${x.credits}</b></div>`).join('')||'<small>No wallets yet</small>'}</div>
- <div class=set><h3>Recent earnings</h3>${earn.slice(0,15).map(x=>`<div class=nf>${esc(x.title)} <b style="float:right;color:var(--ok)">+${x.credits}</b><br><small style="color:var(--mut)">${fmt(x.done_at)}</small></div>`).join('')||'<small>Finish a chore with before and after photos to earn credits</small>'}</div>`}
+ <div class=set><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><h3>Recent earnings (this month)</h3><button class=ic title="Delete selected" style="margin:0;padding:4px 8px;opacity:${earnSel.size?1:.45}" onclick="delSelectedEarn()">🗑️</button></div>${monthEarn.map(x=>`<div class="nf earn-row"><div style="flex:1;min-width:0">${esc(x.title)} <b style="color:var(--ok)">+${x.credits}</b><br><small style="color:var(--mut)">${fmt(x.done_at)}</small></div><input type=checkbox class=earn-chk ${earnSel.has(x.id)?'checked':''} onchange="toggleEarnSel(${x.id},this.checked)"></div>`).join('')||'<small>Finish a chore with before and after photos to earn credits</small>'}</div>`}
 function vLeaders(){const max=Math.max(1,...leaders.map(x=>x.n)),med=['🥇','🥈','🥉'];
  return `<header><h1>Leaderboard</h1></header><div class=row>${[['today','Today'],['week','Last 7 days'],['month','This month'],['all','All time']].map(([r,l])=>`<div class="chip ${range==r?'on':''}" onclick="range='${r}';load()">${l}</div>`).join('')}</div>
  ${leaders.map((u,i)=>`<div class="card top"><div class=rk>${(u.n&&med[i])||i+1}</div><div class=m><b>${esc(u.name)}${u.id==S.id?' (you)':''}${u.s?` 🔥${u.s}`:''}</b><div class=pb><i style="width:${u.n/max*100}%"></i></div></div><b class=cnt>${u.n}</b></div>`).join('')||'<div class=empty>No data yet</div>'}
@@ -203,7 +241,7 @@ function vSettings(){const seg=(k,o)=>`<div class=seg>${o.map(([v,l])=>`<button 
  <div class=set><h3>📲 Phone notifications</h3><small>Get incoming-call alerts when Chorely is not open. Install the free <b>ntfy</b> app and subscribe to this private topic. Tap the alert to open Chorely, then tap Join. A browser cannot keep camera/microphone calls running after it is closed.</small><input readonly value="${esc(pushTopic||'loading…')}" onclick="this.select()"><br><button onclick="pushTest()">Send test</button><button class=g onclick="location.href='ntfy://ntfy.sh/'+pushTopic">Open in ntfy</button></div>
  <div class=set><h3>Cloud storage</h3><small>${usage?`Photos ${Math.round(usage.files/MB)} of 1024 MB · Database ${Math.round(usage.db/MB)} of 500 MB`:'Checking…'}</small><br><button class=g onclick="cleanupView()">Free up space…</button></div>
  <div class=set><h3>Storage</h3><small>Photos are kept in memory while the app is open.</small><br><button class=g onclick="clearPh()">Clear photo cache</button></div>
- <p class=note>Chorely v10<br>Made by Jayson. LC PHILIPPINES</p>`}
+ <p class=note>Chorely v10.0.5<br>Made by Jayson. LC PHILIPPINES</p>`}
 function setCS(k,v){CS[k]=v;saveCS();if(k=='sec')start();render()}
 function resetBg(){CS.wallpaper=null;saveCS();render()}
 function clearPh(){Object.values(ph).forEach(u=>URL.revokeObjectURL(u));ph={};alert('Cache cleared')}
@@ -262,7 +300,7 @@ function av(id,z=42){const u=users.find(x=>x.id==id)||{name:'?'},hue=parseInt(St
 async function loadExtra(){
  const q=[db('/rest/v1/wallets?select=*'),db('/rest/v1/notifs?select=id,body,read,created_at&order=created_at.desc&limit=40'),db('/rest/v1/locations?select=user_id,lat,lng,updated_at')];
  if(tab=='tasks')q.push(db(`/rest/v1/tasks?select=*&or=(scheduled.eq.true,created_day.eq.${local()})&order=created_at.desc`));
- if(tab=='credit')q.push(db(`/rest/v1/chores?select=title,credits,done_at&owner=eq.${S.id}&status=eq.done&credits=gt.0&order=done_at.desc&limit=100`));
+ if(tab=='credit')q.push(db(`/rest/v1/chores?select=id,title,credits,done_at,before_path,photo_path&owner=eq.${S.id}&status=eq.done&credits=gt.0&done_at=gte.${encodeURIComponent(monthStartISO())}&order=done_at.desc&limit=100`));
  if(tab=='settings')q.push(db('/rest/v1/push_topics?select=topic'));
  if(tab=='msgs')q.push(db('/rest/v1/convs?select=id,title,is_group,members(user_id)&order=id.desc'),db('/rest/v1/msgs?select=conv_id,sender,body,created_at&order=created_at.desc&limit=300'),db('/rest/v1/alerts?select=id,body,ends_at,created_at&order=created_at.desc&limit=50'),chat?db(`/rest/v1/msgs?select=id,sender,body,images,created_at&conv_id=eq.${chat}&order=created_at&limit=300`):Promise.resolve(null),
    chat?db(`/rest/v1/calls?select=id,conv_id,started_by,created_at,ended_at&conv_id=eq.${chat}&ended_at=is.null&order=created_at.desc&limit=1`):Promise.resolve(null));
@@ -276,32 +314,106 @@ async function loadExtra(){
   convs=r[3];lastM={};r[4].forEach(x=>{if(!lastM[x.conv_id])lastM[x.conv_id]=x});alertsL=r[5];
   activeCall=null;
   if(chat){
-   chatMsgs=r[6];
+   chatMsgs=r[6]||[];
+   if(chatMsgs.length)markChatSeen(chat);
    const candidate=(r[7]&&r[7][0])||null;
    if(candidate){
     try{
      const participants=await db(`/rest/v1/call_participants?select=user_id,joined_at,left_at&call_id=eq.${candidate.id}&left_at=is.null`);
      const other=participants.filter(x=>x.user_id!==S.id);
-     // Only show Join when another participant is actually present and recently online.
      if(other.some(x=>online(x.user_id)))activeCall=candidate;
     }catch{activeCall=null}
    }
   }
  }}
+const seenKey=cid=>`chorely_seen_${cid}`;
+function getSeenMap(cid){try{return JSON.parse(localStorage.getItem(seenKey(cid))||'{}')}catch{return {}}}
+function setSeenMap(cid,m){try{localStorage.setItem(seenKey(cid),JSON.stringify(m))}catch{}}
+function markChatSeen(cid){
+ const last=chatMsgs[chatMsgs.length-1];
+ if(!last)return;
+ const m=getSeenMap(cid);
+ if(!m[S.id]||m[S.id]<last.id){
+  m[S.id]=last.id;
+  setSeenMap(cid,m);
+  try{
+   if(ws&&ws.readyState===1){
+    ws.send(JSON.stringify({topic:'realtime:chorely',event:'broadcast',payload:{event:'seen',payload:{conv_id:cid,user_id:S.id,msg_id:last.id}},ref:'s'}));
+   }
+  }catch{}
+ }
+}
+const REPLY_RE=/^\[\[reply:(\d+)\|([^\|\]]*)\|([^\]]*)\]\]\n([\s\S]*)$/;
+function parseMsgBody(raw){
+ const m=String(raw||'').match(REPLY_RE);
+ if(!m)return {reply:null,text:String(raw||'')};
+ return {reply:{id:m[1],sender:m[2],snippet:m[3]},text:m[4]};
+}
+function startReply(id){
+ const m=chatMsgs.find(x=>x.id==id);if(!m)return;
+ const parsed=parseMsgBody(m.body);
+ const snip=(parsed.text||(m.images&&m.images.length?'📷 Photo':'')).replace(/[\|\]]/g,'').slice(0,80);
+ replyTo={id:m.id,senderName:nmOf(m.sender),snippet:snip};
+ render();
+ const inp=$('#mi');if(inp)inp.focus();
+}
+function cancelReply(){replyTo=null;render()}
+function toggleMsgReceipt(id){openMsgId=(openMsgId===id?null:id);render()}
+function msgStatusInfo(m,conv){
+ const members=(conv&&conv.members?conv.members.map(x=>x.user_id):[]).filter(uid=>uid!==m.sender);
+ const seenMap=getSeenMap(conv.id);
+ const seenBy=[];
+ let delivered=false;
+ for(const uid of members){
+  const u=users.find(x=>x.id===uid);
+  const lastSeenAt=u&&u.last_seen?new Date(u.last_seen).getTime():0;
+  const msgAt=new Date(m.created_at).getTime();
+  if((seenMap[uid]&&seenMap[uid]>=m.id)||(lastSeenAt>=msgAt&&online(uid))){
+   seenBy.push(nmOf(uid));
+  }
+  if(lastSeenAt>=msgAt||online(uid)){
+   delivered=true;
+  }
+ }
+ if(seenBy.length){
+  return `Seen by ${seenBy.map(esc).join(', ')}`;
+ }
+ if(delivered){
+  return 'Delivered';
+ }
+ return 'Sent';
+}
 function vMsgs(){if(chat)return vChat();
  const recent=id=>{const L=locs[id];if(!L)return false;return Date.now()-new Date(L.updated_at).getTime()<24*3600*1000};
  const ppl=users.filter(u=>u.id!=S.id).map(u=>`<div class=pp onclick="profile('${u.id}')">${av(u.id,48)}${esc(u.name)}${recent(u.id)?'<span class=loc-pin title="Shared location">📍</span>':''}</div>`).join('');
  const list=convs.map(c=>{const o=c.members.map(m=>m.user_id).filter(i=>i!=S.id),l=lastM[c.id];
-  return `<div class="card top" onclick="chat=${c.id};load()">${c.is_group?'<div class=av style="background:var(--ac)">👥</div>':av(o[0])}<div class=m><b>${esc(c.is_group?(c.title||'Group'):nmOf(o[0]))}${!c.is_group&&recent(o[0])?' 📍':''}</b><small>${l?esc((l.sender==S.id?'You: ':'')+(l.body.slice(0,50)||'📷 Photo')):'No messages yet'}</small></div>${l?`<small>${fmt(l.created_at)}</small>`:''}</div>`}).join('');
+  const lText=l?parseMsgBody(l.body).text:'';
+  return `<div class="card top" onclick="chat=${c.id};replyTo=null;openMsgId=null;load()">${c.is_group?'<div class=av style="background:var(--ac)">👥</div>':av(o[0])}<div class=m><b>${esc(c.is_group?(c.title||'Group'):nmOf(o[0]))}${!c.is_group&&recent(o[0])?' 📍':''}</b><small>${l?esc((l.sender==S.id?'You: ':'')+(lText.slice(0,50)||'📷 Photo')):'No messages yet'}</small></div>${l?`<small>${fmt(l.created_at)}</small>`:''}</div>`}).join('');
  return `<header><h1>Messages</h1><span style="display:flex;gap:6px"><button class=g onclick="mapView()">📍 Map</button><button class=g onclick="groupView()">＋ Group</button></span></header><div class=row>${ppl}</div>
  ${alertsL.length?`<div class="card top" onclick="alertsView()"><div class=av style="background:#e5484d">🔔</div><div class=m><b>System Alerts</b><small>${esc(alertsL[0].body+(alertsL[0].ends_at?' · ends '+fmt(alertsL[0].ends_at):''))}</small></div></div>`:''}${list||'<div class=empty>Tap a person above to chat, or make a group</div>'}`}
 function vChat(){const c=convs.find(x=>x.id==chat);if(!c){chat=null;return vMsgs()}
  const o=c.members.map(m=>m.user_id).filter(i=>i!=S.id);
- return `<header><button class=g onclick="chat=null;activeCall=null;render()">‹ Back</button><b>${esc(c.is_group?(c.title||'Group'):nmOf(o[0]))}</b><span>${activeCall?`<button class=join-call onclick="joinCall('${activeCall.id}',${chat},true)">Join 📞</button>`:`<button class=ic title="Start call" aria-label="Start call" onclick="startCall()">📞</button>`}${c.is_group?' <button class=g onclick="grpMenu()">⋯</button>':''}</span></header>
- <div class=chat-area>${chatMsgs.map(m=>`<div class="bub ${m.sender==S.id?'me':''}"><small>${esc(nmOf(m.sender))} · ${fmt(m.created_at)}</small><div>${esc(m.body)}</div>${imgs(m.images,m.sender==S.id,'m',m.id)}${m.sender==S.id?`<a onclick="delM(${m.id})">🗑 Delete</a>`:''}</div>`).join('')||'<div class=empty>Say hi 👋</div>'}</div>
+ const rowsHtml=chatMsgs.map(m=>{
+  const isMe=m.sender==S.id;
+  const parsed=parseMsgBody(m.body);
+  const receiptOpen=openMsgId===m.id;
+  const statusText=receiptOpen?msgStatusInfo(m,c):'';
+  const quoteHtml=parsed.reply?`<div class=reply-quote><b>${esc(parsed.reply.sender)}</b><br>${esc(parsed.reply.snippet||'📷 Photo')}</div>`:'';
+  const bubble=`<div class="bub ${isMe?'me':''}" onclick="toggleMsgReceipt(${m.id})">${quoteHtml}<div>${esc(parsed.text)}</div>${imgs(m.images,isMe,'m',m.id)}<small>${fmt(m.created_at)}</small><div><a onclick="event.stopPropagation();startReply(${m.id})">↩ Reply</a>${isMe?`<a onclick="event.stopPropagation();delM(${m.id})">🗑 Delete</a>`:''}</div>${receiptOpen?`<div class=msg-receipt>${statusText}</div>`:''}</div>`;
+  if(isMe){
+   return `<div class="msg-row me"><div class=msg-col>${bubble}</div></div>`;
+  }
+  return `<div class=msg-row>${av(m.sender,34)}<div class=msg-col><div class=msg-name>${esc(nmOf(m.sender))}</div>${bubble}</div></div>`;
+ }).join('')||'<div class=empty>Say hi 👋</div>';
+ const replyBarHtml=replyTo?`<div class=reply-bar><div style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Replying to <b>${esc(replyTo.senderName)}</b>: ${esc(replyTo.snippet)}</div><button class=ic style="padding:2px 6px;font-size:16px" onclick="cancelReply()">✕</button></div>`:'';
+ return `<header><button class=g onclick="chat=null;replyTo=null;openMsgId=null;activeCall=null;render()">‹ Back</button><b>${esc(c.is_group?(c.title||'Group'):nmOf(o[0]))}</b><span>${activeCall?`<button class=join-call onclick="joinCall('${activeCall.id}',${chat},true)">Join 📞</button>`:`<button class=ic title="Start call" aria-label="Start call" onclick="startCall()">📞</button>`}${c.is_group?' <button class=g onclick="grpMenu()">⋯</button>':''}</span></header>
+ <div class=chat-area style="padding-bottom:${replyTo?'135px':'90px'}">${rowsHtml}</div>
+ ${replyBarHtml}
  <div class=cin style="position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom));padding:8px 16px;background:var(--bg);z-index:3"><button class=g onclick="attach()">📎<span id=pc>${pend.length||''}</span></button><input id=mi placeholder="Message…" maxlength=1000><button onclick="sendM()">Send</button></div>`}
 async function sendM(){const el=$('#mi'),b=el.value.trim();if(!b&&!pend.length)return;el.value='';el.blur();
- try{const im=[];for(const x of pend)im.push(await upload(x));pend=[];await db('/rest/v1/msgs',{m:'POST',b:{conv_id:chat,body:b,images:im}})}catch{alert('Could not send')}load()}
+ const finalBody=replyTo?`[[reply:${replyTo.id}|${replyTo.senderName}|${replyTo.snippet}]]\n${b}`:b;
+ replyTo=null;
+ try{const im=[];for(const x of pend)im.push(await upload(x));pend=[];await db('/rest/v1/msgs',{m:'POST',b:{conv_id:chat,body:finalBody,images:im}})}catch{alert('Could not send')}load()}
 async function delM(id){const m=chatMsgs.find(x=>x.id==id);try{await db(`/rest/v1/msgs?id=eq.${id}`,{m:'DELETE'});if(m&&m.images&&m.images.length)rmFiles(m.images)}catch{}load()}
 function alertsView(){$('#shc').innerHTML=`<h2>🔔 System Alerts</h2>${alertsL.map(a=>`<div class=cm style="margin-top:12px"><b>${esc(a.body)}</b>${a.ends_at?`<br>⏳ Screen time ends <b>${fmt(a.ends_at)}</b>`:''}<br><small>${fmt(a.created_at)}</small></div>`).join('')}<button class=g style="width:100%;margin-top:14px" onclick="closeSh()">Close</button>`;$('#sh').classList.add('show')}
 let gSel=new Set();
@@ -420,7 +532,6 @@ async function updateMapMarkers(){
 }
 async function toggleShareLoc(){
  if(shareLoc){await stopShareLoc();return}
- // Start sharing
  if(!navigator.geolocation){alert('Geolocation is not supported on this device.');return}
  const btn=$('#shareBtn');if(btn){btn.disabled=true;btn.textContent='Getting location…'}
  try{
@@ -447,11 +558,9 @@ async function stopShareLoc(){
 }
 async function upsertLocation(lat,lng){
  const body={user_id:S.id,lat,lng,updated_at:new Date().toISOString()};
- // Prefer upsert via Prefer: resolution=merge-duplicates if primary key is user_id
  try{
   await req('/rest/v1/locations',{m:'POST',h:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(body)});
  }catch(e){
-  // fallback patch then insert
   try{await db(`/rest/v1/locations?user_id=eq.${S.id}`,{m:'PATCH',b:{lat,lng,updated_at:body.updated_at}})}
   catch{await db('/rest/v1/locations',{m:'POST',b:body})}
  }
@@ -466,7 +575,6 @@ function startLocWatch(){
   }catch{}
  },()=>{},{enableHighAccuracy:true,maximumAge:15000,timeout:20000});
 }
-// Resume watch if user had sharing on
 function resumeLocShare(){if(shareLoc&&S.access&&navigator.geolocation)startLocWatch()}
 
 function walletView(){const w=W[S.id]||{credits:0,screen_seconds:0};
@@ -491,7 +599,7 @@ setInterval(()=>document.querySelectorAll('[data-cd]').forEach(e=>{const w=W[e.d
 const rmFiles=p=>req('/storage/v1/object/proof',{m:'DELETE',h:{'Content-Type':'application/json'},body:JSON.stringify({prefixes:p})}).catch(()=>{});
 const attach=()=>$('#fm').click();
 $('#fm').onchange=async e=>{const fs=[...e.target.files];e.target.value='';for(const f of fs)try{pend.push(await shrink(f))}catch{}const c=$('#pc');if(c)c.textContent=pend.length||''};
-function imgs(list,canDel,kind,id){return list&&list.length?`<div class=pics style="flex-wrap:wrap">${list.map((p,i)=>`<figure style="flex:0 0 31%"><img class=th data-p="${esc(p)}" onclick="show(this.dataset.p)">${canDel?`<figcaption onclick="rmImg('${kind}',${id},${i})" style="color:#ff6b6b">✕ remove</figcaption>`:''}</figure>`).join('')}</div>`:''}
+function imgs(list,canDel,kind,id){return list&&list.length?`<div class=pics style="flex-wrap:wrap">${list.map((p,i)=>`<figure style="flex:0 0 31%"><img class=th data-p="${esc(p)}" onclick="event.stopPropagation();show(this.dataset.p)">${canDel?`<figcaption onclick="event.stopPropagation();rmImg('${kind}',${id},${i})" style="color:#ff6b6b">✕ remove</figcaption>`:''}</figure>`).join('')}</div>`:''}
 async function rmImg(kind,id,i){if(!confirm('Remove this photo?'))return;const o=kind=='t'?tasks.find(x=>x.id==id):chatMsgs.find(x=>x.id==id),p=o.images[i];
  try{await db(`/rest/v1/${kind=='t'?'tasks':'msgs'}?id=eq.${id}`,{m:'PATCH',b:{images:o.images.filter((_,j)=>j!=i)}});rmFiles([p])}catch{alert('Could not remove. To remove the last photo of a photo-only message, delete the message.')}load()}
 function toast(t){const d=document.createElement('div');d.className='toast';d.textContent='🔔 '+t;document.body.appendChild(d);setTimeout(()=>d.remove(),4000)}
@@ -549,7 +657,6 @@ async function pollIncomingCalls(){
   const dismissed=dismissedCalls();
   for(const r of rows){
    if(dismissed.has(r.id))continue;
-   // A call is ringing only while its caller has a fresh participant heartbeat.
    const active=await db(`/rest/v1/call_participants?select=user_id,last_seen_at&call_id=eq.${r.id}&user_id=eq.${r.started_by}&left_at=is.null&last_seen_at=gte.${encodeURIComponent(new Date(Date.now()-25000).toISOString())}`);
    if(active.length){onIncoming(r);return}
   }
@@ -679,16 +786,10 @@ async function switchCamera(){
  const prevDeviceId=(call.stream.getVideoTracks()[0]&&call.stream.getVideoTracks()[0].getSettings)?call.stream.getVideoTracks()[0].getSettings().deviceId:null;
  try{
   const nextFacing=prevFacing==='environment'?'user':'environment';
-
-  // 1) Stop current video only (keep mic). Phones need the camera freed first.
   const oldVideoTracks=call.stream.getVideoTracks().slice();
   oldVideoTracks.forEach(t=>{try{call.stream.removeTrack(t)}catch{};try{t.stop()}catch{}});
   if(call.cameraStream){call.cameraStream.getTracks().forEach(t=>{try{t.stop()}catch{}});call.cameraStream=null}
-
-  // Give the OS a moment to release the hardware (needed on many Androids)
   await new Promise(r=>setTimeout(r,180));
-
-  // 2) Open the other camera
   let lastErr=null;
   const attempts=[
    {video:{facingMode:{exact:nextFacing},width:{ideal:1280},height:{ideal:720}},audio:false},
@@ -699,8 +800,6 @@ async function switchCamera(){
    try{nextStream=await navigator.mediaDevices.getUserMedia(constraints);break}
    catch(e){lastErr=e}
   }
-
-  // 3) deviceId fallback – cycle to a different camera
   if(!nextStream){
    const devices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
    if(devices.length<2)throw lastErr||new Error('Only one camera');
@@ -717,11 +816,8 @@ async function switchCamera(){
    }
    nextStream=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:next.deviceId},width:{ideal:1280},height:{ideal:720}},audio:false});
   }
-
   const newTrack=nextStream.getVideoTracks()[0];
   if(!newTrack)throw new Error('No video track');
-
-  // If browser ignored facingMode and gave the same camera, try the other device once
   const gotId=newTrack.getSettings?newTrack.getSettings().deviceId:null;
   const gotFacing=(newTrack.getSettings&&newTrack.getSettings().facingMode)||'';
   if(prevDeviceId&&gotId===prevDeviceId&&gotFacing!==nextFacing){
@@ -735,26 +831,20 @@ async function switchCamera(){
   }
   const finalTrack=nextStream.getVideoTracks()[0];
   if(!finalTrack)throw new Error('No video track');
-
-  // 4) Attach to call stream + peer connections
   call.stream.addTrack(finalTrack);
   call.cameraStream=nextStream;
   call.cameraFacing=(finalTrack.getSettings&&finalTrack.getSettings().facingMode)||nextFacing;
   call.camera=true;
   call.cameraSwitchAvailable=true;
-
   for(const pc of Object.values(pcs)){
    let sender=pc.getSenders().find(s=>s.track&&s.track.kind==='video');
    if(!sender)sender=pc.getSenders().find(s=>!s.track);
    if(sender)await sender.replaceTrack(finalTrack);
    else pc.addTrack(finalTrack,call.stream);
   }
-
-  // 5) Refresh local preview only (no full callUI rebuild = no flicker)
   let tile=document.getElementById('tile-local');
   let localVid=tile&&tile.querySelector('video');
   if(!tile){
-   // Camera was on but tile missing – light rebuild of local tile only
    const grid=document.getElementById('call-grid');
    if(grid){
     tile=document.createElement('div');tile.id='tile-local';tile.className='call-tile';
@@ -770,12 +860,10 @@ async function switchCamera(){
    try{await localVid.play()}catch{}
    fitVideoToOrientation(localVid,tile);
   }
-
   try{call.cameraDevices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput')}catch{}
  }catch(e){
   if(nextStream)nextStream.getTracks().forEach(t=>{try{t.stop()}catch{}});
   console.warn('switchCamera',e);
-  // Restore previous camera so call is not left without video
   try{
    if(call&&!call.stream.getVideoTracks().length){
     const restore=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:prevFacing}},audio:false});
@@ -792,7 +880,6 @@ async function switchCamera(){
   toast('Could not switch. Tap Switch again, or turn camera off/on.');
  }finally{
   switchingCam=false;
-  // Restore button label without wiping the whole call UI
   const b=[...document.querySelectorAll('#call button')].find(x=>/switch|switching/i.test(x.textContent||''));
   if(b){b.disabled=false;b.textContent='🔄 Switch camera'}
  }
