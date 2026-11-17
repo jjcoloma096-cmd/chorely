@@ -388,8 +388,12 @@ async function pollIncomingCalls(){
   const ids=[...new Set(ms.map(x=>x.conv_id))];if(!ids.length)return;
   const rows=await db(`/rest/v1/calls?select=id,conv_id,started_by,created_at,ended_at&conv_id=in.(${ids.join(',')})&ended_at=is.null&started_by=neq.${S.id}&order=created_at.desc&limit=20`);
   const dismissed=dismissedCalls();
-  const fresh=rows.find(r=>!dismissed.has(r.id));
-  if(fresh)onIncoming(fresh);
+  for(const r of rows){
+   if(dismissed.has(r.id))continue;
+   // A call is ringing only while its caller has a fresh participant heartbeat.
+   const active=await db(`/rest/v1/call_participants?select=user_id,last_seen_at&call_id=eq.${r.id}&user_id=eq.${r.started_by}&left_at=is.null&last_seen_at=gte.${encodeURIComponent(new Date(Date.now()-25000).toISOString())}`);
+   if(active.length){onIncoming(r);return}
+  }
  }catch{}
 }
 async function startCall(){
@@ -503,31 +507,42 @@ async function toggleCamera(){
 }
 async function switchCamera(){
  if(!call||!call.camera)return;
+ let nextStream=null;
  try{
-  const devices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
-  if(devices.length<2){toast('No other camera is available on this device.');return}
-  const currentTrack=call.stream.getVideoTracks()[0];
-  const currentId=currentTrack&&currentTrack.getSettings().deviceId;
-  let idx=devices.findIndex(d=>d.deviceId===currentId);
-  if(idx<0)idx=call.cameraDeviceIndex||0;
-  const next=(idx+1)%devices.length;
-  let nextStream;
+  const oldTrack=call.stream.getVideoTracks()[0];
+  const oldFacing=oldTrack?.getSettings().facingMode||call.cameraFacing||'user';
+  const nextFacing=oldFacing==='environment'?'user':'environment';
+  // Prefer facingMode on phones; deviceId is a fallback for browsers that expose camera IDs.
   try{
-   nextStream=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:devices[next].deviceId}},audio:false});
+   nextStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:nextFacing}},audio:false});
   }catch{
-   const facing=(currentTrack&&currentTrack.getSettings().facingMode)==='environment'?'user':'environment';
-   nextStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:facing}},audio:false});
+   const devices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
+   if(devices.length<2)throw new Error('No alternate camera');
+   const currentId=oldTrack?.getSettings().deviceId;
+   const currentIndex=devices.findIndex(d=>d.deviceId===currentId);
+   const next=devices[(currentIndex<0?0:currentIndex+1)%devices.length];
+   nextStream=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:next.deviceId}},audio:false});
   }
-  const nextTrack=nextStream.getVideoTracks()[0];
-  if(!nextTrack)throw new Error('No video track');
-  const senders=Object.values(pcs).flatMap(pc=>pc.getSenders()).filter(sender=>sender.track&&sender.track.kind==='video');
-  await Promise.all(senders.map(sender=>sender.replaceTrack(nextTrack)));
-  if(currentTrack){call.stream.removeTrack(currentTrack);currentTrack.stop()}
-  call.stream.addTrack(nextTrack);
-  call.cameraStream&&call.cameraStream.getTracks().forEach(t=>{if(t!==nextTrack)t.stop()});
-  call.cameraStream=nextStream;call.cameraDevices=devices;call.cameraDeviceIndex=next;call.cameraFacing=nextTrack.getSettings().facingMode||'unknown';
+  const newTrack=nextStream.getVideoTracks()[0];
+  if(!newTrack)throw new Error('No video track');
+  // Replace the video sender even if its current track is null.
+  for(const pc of Object.values(pcs)){
+   let trans=pc.getTransceivers().find(t=>t.receiver?.track?.kind==='video'||t.sender?.track?.kind==='video');
+   if(trans)await trans.sender.replaceTrack(newTrack);
+   else pc.addTrack(newTrack,new MediaStream([newTrack]));
+  }
+  if(oldTrack){call.stream.removeTrack(oldTrack);oldTrack.stop()}
+  call.stream.addTrack(newTrack);
+  if(call.cameraStream)call.cameraStream.getTracks().forEach(t=>{if(t!==newTrack)t.stop()});
+  call.cameraStream=nextStream;
+  call.cameraFacing=newTrack.getSettings().facingMode||nextFacing;
+  call.cameraDevices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
+  call.cameraSwitchAvailable=call.cameraDevices.length>1;
   callUI();
- }catch(e){toast('Could not switch camera. Check camera permissions and device support.')}
+ }catch(e){
+  if(nextStream)nextStream.getTracks().forEach(t=>t.stop());
+  toast('Could not switch camera. Your device or browser may not expose another camera.');
+ }
 }
 function muteCall(){call.muted=!call.muted;call.stream.getAudioTracks().forEach(t=>t.enabled=!call.muted);callUI()}
 async function endCall(){
@@ -556,7 +571,7 @@ function callUI(){
  Object.entries(remoteStreams).forEach(([id,stream])=>ensureRemoteTile(id,stream));
  layoutCallGrid();
 }
-callPoll=setInterval(()=>{pollIncomingCalls();checkCallEnded()},4000);
+callPoll=setInterval(()=>{pollIncomingCalls();checkCallEnded();if(call)rpc('touch_call',{p_call_id:call.id}).catch(()=>{})},5000);
 let beatT;const beat=()=>{if(S.access&&!document.hidden)rpc('touch',{}).catch(()=>{})};
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.access){beat();load()}});
 S.access?start():loginView();
