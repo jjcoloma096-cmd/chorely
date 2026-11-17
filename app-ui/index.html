@@ -50,19 +50,28 @@ input{width:100%;padding:13px;border-radius:12px;border:1px solid var(--bd);back
 .toast{position:fixed;top:calc(60px + env(safe-area-inset-top));left:12px;right:12px;z-index:9;background:var(--tx);color:var(--bg);padding:12px;border-radius:14px;font-size:14px}.nf{padding:10px 0;border-bottom:1px solid var(--bd);font-size:14px}.nf.un{font-weight:700}
 #call{position:fixed;inset:0;background:#000e;z-index:20;display:none;align-items:center;justify-content:center;flex-direction:column;color:#fff;text-align:center;gap:16px;padding:20px}#call.show{display:flex}
 .login{max-width:380px;margin:10vh auto;padding:20px}.empty{text-align:center;color:var(--mut);padding:40px}#err{color:#ff6b6b;margin-top:8px;font-size:14px}#big{width:100%;border-radius:16px}
+
+/* map / location */
+#mapBox{height:min(62vh,480px);width:100%;border-radius:14px;overflow:hidden;background:var(--bd);margin-top:10px;z-index:0}
+.loc-marker{width:44px;height:44px;border-radius:50%;border:3px solid #7c5cff;box-shadow:0 2px 10px #0008;overflow:hidden;background:#333;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:16px}
+.loc-marker img{width:100%;height:100%;object-fit:cover}
+.loc-marker.me{border-color:#2fd08a}
+.loc-pin{display:inline-block;margin-left:2px;font-size:12px}
 </style></head><body>
 <div id="app"></div><div id="call"></div><div id="wal" onclick="walletView()"></div><nav id="nav"></nav><div class="sheet" id="sh"><div id="shc"></div></div>
 <input id="f" type="file" accept="image/*" capture="environment" hidden>
 <input id="fm" type="file" accept="image/*" multiple hidden>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script src="config.js"></script>
 <script>
 if(!window.CFG||/YOUR/.test(CFG.url)){document.body.innerHTML='<p style="padding:30px">Open app-ui/config.js and paste your Supabase URL and key, then rebuild.</p>';throw 0}
 const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let S={};try{S=JSON.parse(localStorage.getItem('chorely2')||'{}')}catch{}
 const save=()=>{try{localStorage.setItem('chorely2',JSON.stringify(S))}catch{}};
-let CS={theme:'dark',h24:false,def:'pending',sec:20,wallpaper:null};try{Object.assign(CS,JSON.parse(localStorage.getItem('chorely_set')||'{}'))}catch{}
+let CS={theme:'dark',h24:false,def:'pending',sec:20,wallpaper:null,shareLoc:false};try{Object.assign(CS,JSON.parse(localStorage.getItem('chorely_set')||'{}'))}catch{}shareLoc=!!CS.shareLoc;
 const saveCS=()=>{try{localStorage.setItem('chorely_set',JSON.stringify(CS))}catch{}document.body.classList.toggle('light',CS.theme=='light');if(CS.wallpaper)document.body.style.setProperty('--bg',CS.wallpaper);else document.body.style.removeProperty('--bg')};saveCS();
-let pushTopic='',earn=[],seenN=0,notifs=[],lastUn=null,tasks=[],pend=[],tSel=new Set(),schedOn=false,W={},convs=[],lastM={},chat=null,chatMsgs=[],alertsL=[],usage=null,tab='chores',users=[],chores=[],days={},hearts={},cms={},openC={},ph={},who='',flt='all',range='today',leaders=[],mode=null,target=null,timer,newStatus='pending',newBlob=null,refreshing=null;
+let pushTopic='',earn=[],seenN=0,notifs=[],lastUn=null,tasks=[],pend=[],tSel=new Set(),schedOn=false,W={},convs=[],lastM={},chat=null,chatMsgs=[],alertsL=[],usage=null,tab='chores',users=[],chores=[],days={},hearts={},cms={},openC={},ph={},who='',flt='all',range='today',leaders=[],mode=null,target=null,timer,newStatus='pending',newBlob=null,refreshing=null,locs={},shareLoc=false,mapInst=null,locWatch=null,mapMarkers={};
 const local=()=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
 const add=(s,n)=>{const d=new Date(s+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)};
 let date=local();const LBL={later:'Later',pending:'Pending',done:'Done'};
@@ -96,7 +105,7 @@ function rtConnect(){
  try{
   ws=new WebSocket(CFG.url.replace(/^http/,'ws')+'/realtime/v1/websocket?apikey='+CFG.key+'&vsn=1.0.0');
   ws.onopen=()=>{
-   ws.send(JSON.stringify({topic:'realtime:chorely',event:'phx_join',ref:'1',payload:{config:{broadcast:{self:false},presence:{key:''},postgres_changes:['chores','comments','hearts','msgs','tasks','notifs','alerts','wallets','members','calls','signals','call_participants'].map(table=>({event:'*',schema:'public',table}))},access_token:S.access}}));
+   ws.send(JSON.stringify({topic:'realtime:chorely',event:'phx_join',ref:'1',payload:{config:{broadcast:{self:false},presence:{key:''},postgres_changes:['chores','comments','hearts','msgs','tasks','notifs','alerts','wallets','members','calls','signals','call_participants','locations'].map(table=>({event:'*',schema:'public',table}))},access_token:S.access}}));
    clearInterval(wsT);
    wsT=setInterval(()=>{if(ws&&ws.readyState===1)ws.send(JSON.stringify({topic:'phoenix',event:'heartbeat',payload:{},ref:'hb'}))},25000);
   };
@@ -119,7 +128,7 @@ function rtConnect(){
   ws.onclose=()=>{clearInterval(wsT);if(S.access)setTimeout(rtConnect,5000)};
  }catch(e){setTimeout(rtConnect,5000)}
 }
-function start(){rtConnect();checkUpdate().then(()=>render());checkStorage();purgeTasks();load().then(()=>{handleCallRoute();pollIncomingCalls()});clearInterval(beatT);beatT=setInterval(beat,30000);beat();clearInterval(timer);timer=setInterval(()=>{if(!document.hidden)load()},CS.sec*1000)}
+function start(){rtConnect();checkUpdate().then(()=>render());checkStorage();purgeTasks();load().then(()=>{handleCallRoute();pollIncomingCalls();resumeLocShare()});clearInterval(beatT);beatT=setInterval(beat,30000);beat();clearInterval(timer);timer=setInterval(()=>{if(!document.hidden)load()},CS.sec*1000)}
 let busy=false,again=false;
 async function load(){if(busy){again=true;return}busy=true;try{await load0()}finally{busy=false;if(again){again=false;load()}}}
 async function load0(){try{
@@ -251,23 +260,24 @@ const online=id=>{if(id==S.id)return true;const u=users.find(x=>x.id==id);return
 function av(id,z=42){const u=users.find(x=>x.id==id)||{name:'?'},hue=parseInt(String(id).slice(0,6),16)%360;
  return `<div class=aw onclick="event.stopPropagation();profile('${id}')" style="width:${z}px;height:${z}px"><div class=av style="width:100%;height:100%;background:hsl(${hue} 60% 45%);overflow:hidden">${u.avatar_path?`<img data-p="${esc(u.avatar_path)}" style="width:100%;height:100%;object-fit:cover">`:esc((u.name||'?')[0].toUpperCase())}</div><i class="pd ${online(id)?'on':''}"></i></div>`}
 async function loadExtra(){
- const q=[db('/rest/v1/wallets?select=*'),db('/rest/v1/notifs?select=id,body,read,created_at&order=created_at.desc&limit=40')];
+ const q=[db('/rest/v1/wallets?select=*'),db('/rest/v1/notifs?select=id,body,read,created_at&order=created_at.desc&limit=40'),db('/rest/v1/locations?select=user_id,lat,lng,updated_at')];
  if(tab=='tasks')q.push(db(`/rest/v1/tasks?select=*&or=(scheduled.eq.true,created_day.eq.${local()})&order=created_at.desc`));
  if(tab=='credit')q.push(db(`/rest/v1/chores?select=title,credits,done_at&owner=eq.${S.id}&status=eq.done&credits=gt.0&order=done_at.desc&limit=100`));
  if(tab=='settings')q.push(db('/rest/v1/push_topics?select=topic'));
  if(tab=='msgs')q.push(db('/rest/v1/convs?select=id,title,is_group,members(user_id)&order=id.desc'),db('/rest/v1/msgs?select=conv_id,sender,body,created_at&order=created_at.desc&limit=300'),db('/rest/v1/alerts?select=id,body,ends_at,created_at&order=created_at.desc&limit=50'),chat?db(`/rest/v1/msgs?select=id,sender,body,images,created_at&conv_id=eq.${chat}&order=created_at&limit=300`):Promise.resolve(null),
    chat?db(`/rest/v1/calls?select=id,conv_id,started_by,created_at,ended_at&conv_id=eq.${chat}&ended_at=is.null&order=created_at.desc&limit=1`):Promise.resolve(null));
  const r=await Promise.all(q);W={};r[0].forEach(x=>W[x.user_id]=x);notifs=r[1];
+ locs={};(r[2]||[]).forEach(x=>{locs[x.user_id]=x});
  const un=notifs.filter(n=>!n.read).length;if(lastUn!==null&&un>lastUn){navigator.vibrate&&navigator.vibrate(200);toast(notifs.find(n=>!n.read).body)}lastUn=un;
- if(tab=='tasks')tasks=r[2];
- if(tab=='settings')pushTopic=(r[2]&&r[2][0]&&r[2][0].topic)||'';
- if(tab=='credit')earn=r[2];
+ if(tab=='tasks')tasks=r[3];
+ if(tab=='settings')pushTopic=(r[3]&&r[3][0]&&r[3][0].topic)||'';
+ if(tab=='credit')earn=r[3];
  if(tab=='msgs'){
-  convs=r[2];lastM={};r[3].forEach(x=>{if(!lastM[x.conv_id])lastM[x.conv_id]=x});alertsL=r[4];
+  convs=r[3];lastM={};r[4].forEach(x=>{if(!lastM[x.conv_id])lastM[x.conv_id]=x});alertsL=r[5];
   activeCall=null;
   if(chat){
-   chatMsgs=r[5];
-   const candidate=(r[6]&&r[6][0])||null;
+   chatMsgs=r[6];
+   const candidate=(r[7]&&r[7][0])||null;
    if(candidate){
     try{
      const participants=await db(`/rest/v1/call_participants?select=user_id,joined_at,left_at&call_id=eq.${candidate.id}&left_at=is.null`);
@@ -279,10 +289,11 @@ async function loadExtra(){
   }
  }}
 function vMsgs(){if(chat)return vChat();
- const ppl=users.filter(u=>u.id!=S.id).map(u=>`<div class=pp onclick="profile('${u.id}')">${av(u.id,48)}${esc(u.name)}</div>`).join('');
+ const recent=id=>{const L=locs[id];if(!L)return false;return Date.now()-new Date(L.updated_at).getTime()<24*3600*1000};
+ const ppl=users.filter(u=>u.id!=S.id).map(u=>`<div class=pp onclick="profile('${u.id}')">${av(u.id,48)}${esc(u.name)}${recent(u.id)?'<span class=loc-pin title="Shared location">📍</span>':''}</div>`).join('');
  const list=convs.map(c=>{const o=c.members.map(m=>m.user_id).filter(i=>i!=S.id),l=lastM[c.id];
-  return `<div class="card top" onclick="chat=${c.id};load()">${c.is_group?'<div class=av style="background:var(--ac)">👥</div>':av(o[0])}<div class=m><b>${esc(c.is_group?(c.title||'Group'):nmOf(o[0]))}</b><small>${l?esc((l.sender==S.id?'You: ':'')+(l.body.slice(0,50)||'📷 Photo')):'No messages yet'}</small></div>${l?`<small>${fmt(l.created_at)}</small>`:''}</div>`}).join('');
- return `<header><h1>Messages</h1><button class=g onclick="groupView()">＋ Group</button></header><div class=row>${ppl}</div>
+  return `<div class="card top" onclick="chat=${c.id};load()">${c.is_group?'<div class=av style="background:var(--ac)">👥</div>':av(o[0])}<div class=m><b>${esc(c.is_group?(c.title||'Group'):nmOf(o[0]))}${!c.is_group&&recent(o[0])?' 📍':''}</b><small>${l?esc((l.sender==S.id?'You: ':'')+(l.body.slice(0,50)||'📷 Photo')):'No messages yet'}</small></div>${l?`<small>${fmt(l.created_at)}</small>`:''}</div>`}).join('');
+ return `<header><h1>Messages</h1><span style="display:flex;gap:6px"><button class=g onclick="mapView()">📍 Map</button><button class=g onclick="groupView()">＋ Group</button></span></header><div class=row>${ppl}</div>
  ${alertsL.length?`<div class="card top" onclick="alertsView()"><div class=av style="background:#e5484d">🔔</div><div class=m><b>System Alerts</b><small>${esc(alertsL[0].body+(alertsL[0].ends_at?' · ends '+fmt(alertsL[0].ends_at):''))}</small></div></div>`:''}${list||'<div class=empty>Tap a person above to chat, or make a group</div>'}`}
 function vChat(){const c=convs.find(x=>x.id==chat);if(!c){chat=null;return vMsgs()}
  const o=c.members.map(m=>m.user_id).filter(i=>i!=S.id);
@@ -307,10 +318,154 @@ async function leave(){if(!confirm('Leave this group?'))return;try{await db(`/re
 async function profile(id){const w=W[id]||{credits:0,screen_seconds:0};let r=[];try{r=await db(`/rest/v1/chores?select=done_at&owner=eq.${id}&status=eq.done`)}catch{}
  const t=new Date();t.setHours(0,0,0,0);const wk=new Date(t);wk.setDate(wk.getDate()-6);const mo=new Date(t);mo.setDate(1);
  const n=d=>r.filter(x=>new Date(x.done_at)>=d).length;
- $('#shc').innerHTML=`<div style="text-align:center"><div style="display:flex;justify-content:center">${av(id,84)}</div><h2 style="margin-top:8px">${esc(nmOf(id))}</h2><small style="color:var(--mut)">${online(id)?'🟢 Online':'⚪ Offline'}</small></div>
+ const L=locs[id];const locLine=L?`<small style="color:var(--mut)">📍 ${locAge(L.updated_at)} · <a href="#" onclick="event.preventDefault();closeSh();mapView();setTimeout(()=>focusMapUser('${id}'),300)">Show on map</a></small>`:'<small style="color:var(--mut)">📍 No shared location</small>';
+ $('#shc').innerHTML=`<div style="text-align:center"><div style="display:flex;justify-content:center">${av(id,84)}</div><h2 style="margin-top:8px">${esc(nmOf(id))}</h2><small style="color:var(--mut)">${online(id)?'🟢 Online':'⚪ Offline'}</small><br>${locLine}</div>
  <div class=st><div><b>👛 ${w.credits}</b>credits</div><div><b>₱${(w.credits/MR).toFixed(2)}</b>money value</div><div style="grid-column:span 2"><b data-cd="${id}">${fmtDur(leftSec(w))}</b>screen time left${leftSec(w)?' · ends '+fmt(w.screen_until):''}</div>
  <div><b>${n(t)}</b>today</div><div><b>${n(wk)}</b>last 7 days</div><div><b>${n(mo)}</b>this month</div><div><b>${r.length}</b>all time</div></div>
  <div style="display:flex;gap:8px;margin-top:16px"><button class=g style="flex:1" onclick="closeSh()">Close</button>${id!=S.id?`<button style="flex:1" onclick="dm('${id}')">💬 Message</button>`:''}</div>`;$('#sh').classList.add('show');loadImgs()}
+
+const locAge=t=>{if(!t)return '';const s=Math.floor((Date.now()-new Date(t).getTime())/1000);if(s<60)return 'just now';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';return Math.floor(s/86400)+'d ago'};
+function mapView(){
+ const sharing=shareLoc;
+ $('#shc').innerHTML=`<h2>📍 Locations</h2>
+ <small style="color:var(--mut)">See where everyone is. Avatars on the map are profile pictures. Locations older than 24h still show but are faded.</small>
+ <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+  <button id=shareBtn onclick="toggleShareLoc()" style="flex:1">${sharing?'🛑 Stop sharing':'📍 Share my location'}</button>
+  <button class=g onclick="refreshMapLocs()">↻ Refresh</button>
+ </div>
+ <div id=mapBox></div>
+ <div id=mapList style="margin-top:10px;max-height:20vh;overflow:auto"></div>
+ <button class=g style="width:100%;margin-top:12px" onclick="closeMapView()">Close</button>`;
+ $('#sh').classList.add('show');
+ setTimeout(initMap,50);
+}
+function closeMapView(){
+ if(mapInst){try{mapInst.remove()}catch{}mapInst=null;mapMarkers={}}
+ closeSh();
+}
+async function refreshMapLocs(){
+ try{
+  const rows=await db('/rest/v1/locations?select=user_id,lat,lng,updated_at');
+  locs={};(rows||[]).forEach(x=>{locs[x.user_id]=x});
+  updateMapMarkers();
+  renderMapList();
+ }catch{toast('Could not refresh locations')}
+}
+function renderMapList(){
+ const el=$('#mapList');if(!el)return;
+ const rows=Object.values(locs).sort((a,b)=>new Date(b.updated_at)-new Date(a.updated_at));
+ el.innerHTML=rows.map(L=>{
+  const stale=Date.now()-new Date(L.updated_at).getTime()>24*3600*1000;
+  return `<div class="top" style="margin:6px 0;opacity:${stale?.55:1};cursor:pointer" onclick="focusMapUser('${L.user_id}')">
+   ${av(L.user_id,36)}<div class=m><b>${esc(nmOf(L.user_id))}${L.user_id==S.id?' (you)':''}</b>
+   <small>${locAge(L.updated_at)} · ${Number(L.lat).toFixed(4)}, ${Number(L.lng).toFixed(4)}</small></div></div>`}).join('')||'<small style="color:var(--mut)">No one is sharing a location yet. Tap “Share my location”.</small>';
+ loadImgs();
+}
+function focusMapUser(id){
+ const L=locs[id];if(!L||!mapInst)return;
+ mapInst.setView([L.lat,L.lng],16);
+ const m=mapMarkers[id];if(m)m.openPopup();
+}
+function initMap(){
+ const box=$('#mapBox');if(!box||typeof L==='undefined'){if(box)box.innerHTML='<div class=empty>Map library failed to load. Check your internet.</div>';return}
+ if(mapInst){try{mapInst.remove()}catch{}mapInst=null;mapMarkers={}}
+ // Default center: Philippines (Angeles City area) or first known location
+ let center=[15.145,120.585],zoom=12;
+ const mine=locs[S.id];
+ if(mine){center=[mine.lat,mine.lng];zoom=14}
+ else{const any=Object.values(locs)[0];if(any){center=[any.lat,any.lng];zoom=13}}
+ mapInst=L.map(box,{zoomControl:true}).setView(center,zoom);
+ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(mapInst);
+ updateMapMarkers();
+ renderMapList();
+ setTimeout(()=>{try{mapInst.invalidateSize()}catch{}},200);
+}
+async function markerIcon(id){
+ const u=users.find(x=>x.id==id)||{name:'?'};
+ const isMe=id==S.id;
+ let html;
+ if(u.avatar_path){
+  try{
+   const url=await photo(u.avatar_path);
+   html=`<div class="loc-marker${isMe?' me':''}"><img src="${url}" alt=""></div>`;
+  }catch{
+   html=`<div class="loc-marker${isMe?' me':''}">${esc((u.name||'?')[0].toUpperCase())}</div>`;
+  }
+ }else{
+  const hue=parseInt(String(id).slice(0,6),16)%360;
+  html=`<div class="loc-marker${isMe?' me':''}" style="background:hsl(${hue} 60% 45%)">${esc((u.name||'?')[0].toUpperCase())}</div>`;
+ }
+ return L.divIcon({className:'',html,iconSize:[44,44],iconAnchor:[22,22],popupAnchor:[0,-22]});
+}
+async function updateMapMarkers(){
+ if(!mapInst)return;
+ // remove old
+ Object.values(mapMarkers).forEach(m=>{try{mapInst.removeLayer(m)}catch{}});
+ mapMarkers={};
+ const bounds=[];
+ for(const L of Object.values(locs)){
+  if(L.lat==null||L.lng==null)continue;
+  const stale=Date.now()-new Date(L.updated_at).getTime()>24*3600*1000;
+  const icon=await markerIcon(L.user_id);
+  const m=L.marker([L.lat,L.lng],{icon,opacity:stale?0.55:1}).addTo(mapInst);
+  m.bindPopup(`<b>${esc(nmOf(L.user_id))}${L.user_id==S.id?' (you)':''}</b><br><small>${locAge(L.updated_at)}</small>`);
+  mapMarkers[L.user_id]=m;
+  bounds.push([L.lat,L.lng]);
+ }
+ if(bounds.length>1)try{mapInst.fitBounds(bounds,{padding:[40,40],maxZoom:15})}catch{}
+ else if(bounds.length===1)mapInst.setView(bounds[0],15);
+}
+async function toggleShareLoc(){
+ if(shareLoc){await stopShareLoc();return}
+ // Start sharing
+ if(!navigator.geolocation){alert('Geolocation is not supported on this device.');return}
+ const btn=$('#shareBtn');if(btn){btn.disabled=true;btn.textContent='Getting location…'}
+ try{
+  const pos=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:true,timeout:20000,maximumAge:10000}));
+  await upsertLocation(pos.coords.latitude,pos.coords.longitude);
+  shareLoc=true;CS.shareLoc=true;saveCS();
+  startLocWatch();
+  toast('Location sharing on');
+  if(btn){btn.disabled=false;btn.textContent='🛑 Stop sharing'}
+  updateMapMarkers();renderMapList();
+ }catch(e){
+  if(btn){btn.disabled=false;btn.textContent='📍 Share my location'}
+  alert('Could not get location. Allow location permission for this site and try again.');
+ }
+}
+async function stopShareLoc(){
+ shareLoc=false;CS.shareLoc=false;saveCS();
+ if(locWatch!=null){navigator.geolocation.clearWatch(locWatch);locWatch=null}
+ try{await db(`/rest/v1/locations?user_id=eq.${S.id}`,{m:'DELETE'})}catch{}
+ delete locs[S.id];
+ toast('Location sharing off');
+ const btn=$('#shareBtn');if(btn)btn.textContent='📍 Share my location';
+ updateMapMarkers();renderMapList();
+}
+async function upsertLocation(lat,lng){
+ const body={user_id:S.id,lat,lng,updated_at:new Date().toISOString()};
+ // Prefer upsert via Prefer: resolution=merge-duplicates if primary key is user_id
+ try{
+  await req('/rest/v1/locations',{m:'POST',h:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(body)});
+ }catch(e){
+  // fallback patch then insert
+  try{await db(`/rest/v1/locations?user_id=eq.${S.id}`,{m:'PATCH',b:{lat,lng,updated_at:body.updated_at}})}
+  catch{await db('/rest/v1/locations',{m:'POST',b:body})}
+ }
+ locs[S.id]={user_id:S.id,lat,lng,updated_at:body.updated_at};
+}
+function startLocWatch(){
+ if(locWatch!=null)navigator.geolocation.clearWatch(locWatch);
+ locWatch=navigator.geolocation.watchPosition(async pos=>{
+  if(!shareLoc||!S.access)return;
+  try{await upsertLocation(pos.coords.latitude,pos.coords.longitude);
+   if(mapInst){updateMapMarkers();renderMapList()}
+  }catch{}
+ },()=>{},{enableHighAccuracy:true,maximumAge:15000,timeout:20000});
+}
+// Resume watch if user had sharing on
+function resumeLocShare(){if(shareLoc&&S.access&&navigator.geolocation)startLocWatch()}
+
 function walletView(){const w=W[S.id]||{credits:0,screen_seconds:0};
  $('#shc').innerHTML=`<h2>👛 My wallet</h2><div class=set style="margin:10px 0"><h3>${w.credits} credits</h3><small>≈ ₱${(w.credits/MR).toFixed(2)} (${MR} credits = ₱1). Your credits never reset.</small></div>
  <div class=set style="margin:10px 0"><h3>⏳ Screen time: <span data-cd="${S.id}">${fmtDur(leftSec(w))}</span></h3><small>${leftSec(w)?'Ends '+fmt(w.screen_until):'No active screen time'} · counts down automatically</small></div>
@@ -360,7 +515,7 @@ async function checkUpdate(){try{const r=await fetch(`https://api.github.com/rep
 const updBanner=()=>upd?`<div class=warn style="background:#7c5cff22;border-color:var(--ac)">⬆ Update v${upd.v} is ready.<br><button style="margin-top:8px" onclick="window.open('${esc(upd.url)}','_blank')">Download update</button><br><small style="color:var(--mut)">If nothing opens, visit github.com/${REPO}/releases/latest in your browser.</small></div>`:'';
 const pushTest=()=>rpc('push_test',{}).then(()=>alert('Sent! It should pop up in ntfy in a few seconds.')).catch(()=>alert('Could not send the test'));
 const ICE=[{urls:'stun:stun.l.google.com:19302'},...(CFG.turn||[])];
-let call=null,incoming=null,activeCall=null,pcs={},icePend={},remoteStreams={},makingOffer={},ignoreOffer={},callPoll=null,callTimer=null;
+let call=null,incoming=null,activeCall=null,pcs={},icePend={},remoteStreams={},makingOffer={},ignoreOffer={},callPoll=null,callTimer=null,switchingCam=false;
 const dismissedCallKey=()=>`chorely_dismissed_calls_${S.id||'guest'}`;
 function dismissedCalls(){try{return new Set(JSON.parse(localStorage.getItem(dismissedCallKey())||'[]'))}catch{return new Set()}}
 function rememberDismissedCall(id){const x=dismissedCalls();x.add(id);localStorage.setItem(dismissedCallKey(),JSON.stringify([...x].slice(-50)))}
@@ -512,107 +667,131 @@ async function toggleCamera(){
  }catch{alert('Camera permission was not granted or no camera is available.')}
 }
 async function switchCamera(){
- if(!call||!call.camera)return;
+ if(!call||!call.camera||switchingCam)return;
+ switchingCam=true;
+ const btn=[...document.querySelectorAll('#call button')].find(b=>/switch camera/i.test(b.textContent||''));
+ if(btn){btn.disabled=true;btn.textContent='⏳ Switching…'}
  let nextStream=null;
+ const prevFacing=call.cameraFacing||'user';
+ const prevDeviceId=(call.stream.getVideoTracks()[0]&&call.stream.getVideoTracks()[0].getSettings)?call.stream.getVideoTracks()[0].getSettings().deviceId:null;
  try{
-  // Figure out current facing and flip it
-  const oldTrack=call.stream.getVideoTracks()[0];
-  let oldFacing='user';
-  try{oldFacing=(oldTrack&&oldTrack.getSettings&&oldTrack.getSettings().facingMode)||call.cameraFacing||'user'}catch{}
-  if(oldFacing!=='environment'&&oldFacing!=='user')oldFacing=call.cameraFacing||'user';
-  const nextFacing=oldFacing==='environment'?'user':'environment';
+  const nextFacing=prevFacing==='environment'?'user':'environment';
 
-  // CRITICAL on phones: fully release the current camera BEFORE opening the other one.
-  // Many Android/iOS browsers refuse a second camera (or keep giving front) while the first is still open.
-  call.stream.getVideoTracks().forEach(t=>{
-   try{call.stream.removeTrack(t)}catch{}
-   try{t.stop()}catch{}
-  });
-  if(call.cameraStream){
-   call.cameraStream.getTracks().forEach(t=>{try{t.stop()}catch{}});
-   call.cameraStream=null;
-  }
-  // Brief pause so the OS releases the hardware
-  await new Promise(r=>setTimeout(r,120));
+  // 1) Stop current video only (keep mic). Phones need the camera freed first.
+  const oldVideoTracks=call.stream.getVideoTracks().slice();
+  oldVideoTracks.forEach(t=>{try{call.stream.removeTrack(t)}catch{};try{t.stop()}catch{}});
+  if(call.cameraStream){call.cameraStream.getTracks().forEach(t=>{try{t.stop()}catch{}});call.cameraStream=null}
 
+  // Give the OS a moment to release the hardware (needed on many Androids)
+  await new Promise(r=>setTimeout(r,180));
+
+  // 2) Open the other camera
   let lastErr=null;
-  // Try opposite facingMode several ways (mobile browsers vary a lot)
   const attempts=[
-   {video:{facingMode:{exact:nextFacing}},audio:false},
-   {video:{facingMode:{ideal:nextFacing}},audio:false},
+   {video:{facingMode:{exact:nextFacing},width:{ideal:1280},height:{ideal:720}},audio:false},
+   {video:{facingMode:{ideal:nextFacing},width:{ideal:1280},height:{ideal:720}},audio:false},
    {video:{facingMode:nextFacing},audio:false}
   ];
-  for(const c of attempts){
-   try{nextStream=await navigator.mediaDevices.getUserMedia(c);break}
+  for(const constraints of attempts){
+   try{nextStream=await navigator.mediaDevices.getUserMedia(constraints);break}
    catch(e){lastErr=e}
   }
 
-  // Fallback: enumerate cameras and pick a different deviceId
+  // 3) deviceId fallback – cycle to a different camera
   if(!nextStream){
    const devices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
    if(devices.length<2)throw lastErr||new Error('Only one camera');
-   const currentId=oldTrack&&oldTrack.getSettings?oldTrack.getSettings().deviceId:null;
-   // Prefer a device whose label suggests the other camera
    const wantBack=nextFacing==='environment';
    let next=devices.find(d=>{
     const lab=(d.label||'').toLowerCase();
-    if(wantBack)return /back|rear|environment|posterior|world/i.test(lab);
-    return /front|user|face|selfie/i.test(lab);
+    if(d.deviceId===prevDeviceId)return false;
+    if(wantBack)return /back|rear|environment|world|0\b/.test(lab);
+    return /front|user|face|selfie|1\b/.test(lab);
    });
-   if(!next||next.deviceId===currentId){
-    const idx=Math.max(0,devices.findIndex(d=>d.deviceId===currentId));
+   if(!next){
+    const idx=Math.max(0,devices.findIndex(d=>d.deviceId===prevDeviceId));
     next=devices[(idx+1)%devices.length];
    }
-   nextStream=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:next.deviceId}},audio:false});
+   nextStream=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:next.deviceId},width:{ideal:1280},height:{ideal:720}},audio:false});
   }
 
   const newTrack=nextStream.getVideoTracks()[0];
   if(!newTrack)throw new Error('No video track');
 
-  // Put new track into the shared call stream
-  call.stream.addTrack(newTrack);
+  // If browser ignored facingMode and gave the same camera, try the other device once
+  const gotId=newTrack.getSettings?newTrack.getSettings().deviceId:null;
+  const gotFacing=(newTrack.getSettings&&newTrack.getSettings().facingMode)||'';
+  if(prevDeviceId&&gotId===prevDeviceId&&gotFacing!==nextFacing){
+   try{
+    const devices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput'&&d.deviceId!==prevDeviceId);
+    if(devices.length){
+     nextStream.getTracks().forEach(t=>{try{t.stop()}catch{}});
+     nextStream=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:devices[0].deviceId}},audio:false});
+    }
+   }catch{}
+  }
+  const finalTrack=nextStream.getVideoTracks()[0];
+  if(!finalTrack)throw new Error('No video track');
+
+  // 4) Attach to call stream + peer connections
+  call.stream.addTrack(finalTrack);
   call.cameraStream=nextStream;
-  call.cameraFacing=(newTrack.getSettings&&newTrack.getSettings().facingMode)||nextFacing;
+  call.cameraFacing=(finalTrack.getSettings&&finalTrack.getSettings().facingMode)||nextFacing;
   call.camera=true;
   call.cameraSwitchAvailable=true;
 
-  // Push new track to all peer connections
   for(const pc of Object.values(pcs)){
-   const sender=pc.getSenders().find(s=>s.track&&s.track.kind==='video')
-     ||pc.getSenders().find(s=>!s.track||(s.track&&s.track.kind==='video'));
-   if(sender)await sender.replaceTrack(newTrack);
-   else pc.addTrack(newTrack,call.stream);
+   let sender=pc.getSenders().find(s=>s.track&&s.track.kind==='video');
+   if(!sender)sender=pc.getSenders().find(s=>!s.track);
+   if(sender)await sender.replaceTrack(finalTrack);
+   else pc.addTrack(finalTrack,call.stream);
   }
 
-  // Update local preview video element immediately
-  const localVid=document.querySelector('#tile-local video');
+  // 5) Refresh local preview only (no full callUI rebuild = no flicker)
+  let tile=document.getElementById('tile-local');
+  let localVid=tile&&tile.querySelector('video');
+  if(!tile){
+   // Camera was on but tile missing – light rebuild of local tile only
+   const grid=document.getElementById('call-grid');
+   if(grid){
+    tile=document.createElement('div');tile.id='tile-local';tile.className='call-tile';
+    localVid=document.createElement('video');localVid.autoplay=true;localVid.muted=true;localVid.playsInline=true;
+    tile.appendChild(localVid);
+    const cap=document.createElement('small');cap.textContent='You';tile.appendChild(cap);
+    grid.insertBefore(tile,grid.firstChild);
+    layoutCallGrid();
+   }
+  }
   if(localVid){
-   localVid.srcObject=new MediaStream(call.stream.getVideoTracks());
-   fitVideoToOrientation(localVid,document.getElementById('tile-local'));
+   localVid.srcObject=new MediaStream([finalTrack]);
+   try{await localVid.play()}catch{}
+   fitVideoToOrientation(localVid,tile);
   }
 
-  try{
-   call.cameraDevices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
-  }catch{}
-
-  callUI();
+  try{call.cameraDevices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput')}catch{}
  }catch(e){
   if(nextStream)nextStream.getTracks().forEach(t=>{try{t.stop()}catch{}});
   console.warn('switchCamera',e);
-  // Try to restore previous camera so user is not left without video
+  // Restore previous camera so call is not left without video
   try{
    if(call&&!call.stream.getVideoTracks().length){
-    const restore=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:call.cameraFacing||'user'}},audio:false});
+    const restore=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:prevFacing}},audio:false});
     const t=restore.getVideoTracks()[0];
-    call.stream.addTrack(t);call.cameraStream=restore;call.camera=true;
+    call.stream.addTrack(t);call.cameraStream=restore;call.camera=true;call.cameraFacing=prevFacing;
     for(const pc of Object.values(pcs)){
      const sender=pc.getSenders().find(s=>s.track&&s.track.kind==='video')||pc.getSenders().find(s=>!s.track);
      if(sender)await sender.replaceTrack(t);else pc.addTrack(t,call.stream);
     }
-    callUI();
+    const localVid=document.querySelector('#tile-local video');
+    if(localVid){localVid.srcObject=new MediaStream([t]);try{await localVid.play()}catch{}}
    }
   }catch{}
-  toast('Could not switch camera. Try turning camera off then on again.');
+  toast('Could not switch. Tap Switch again, or turn camera off/on.');
+ }finally{
+  switchingCam=false;
+  // Restore button label without wiping the whole call UI
+  const b=[...document.querySelectorAll('#call button')].find(x=>/switch|switching/i.test(x.textContent||''));
+  if(b){b.disabled=false;b.textContent='🔄 Switch camera'}
  }
 }
 function muteCall(){call.muted=!call.muted;call.stream.getAudioTracks().forEach(t=>t.enabled=!call.muted);callUI()}
