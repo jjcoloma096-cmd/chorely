@@ -22,7 +22,7 @@ jobs:
           export NDK_HOME=$ANDROID_NDK_LATEST_HOME
           cargo tauri icon src-tauri/app-icon.png
           cargo tauri android init
-          sed -i 's|<application|<uses-permission android:name="android.permission.CAMERA" /><uses-permission android:name="android.permission.RECORD_AUDIO" /><uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />\n<application|' src-tauri/gen/android/app/src/main/AndroidManifest.xml
+          sed -i 's|<application|<uses-permission android:name="android.permission.CAMERA" /><uses-permission android:name="android.permission.RECORD_AUDIO" /><uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" /><uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /><uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n<application|' src-tauri/gen/android/app/src/main/AndroidManifest.xml
           cargo tauri android build --apk --debug --target aarch64 --target armv7
           cp "$(find src-tauri/gen/android/app/build/outputs/apk -name '*.apk' | head -1)" chorely.apk
       - uses: softprops/action-gh-release@v2
