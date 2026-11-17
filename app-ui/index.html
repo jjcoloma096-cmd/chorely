@@ -501,7 +501,7 @@ async function toggleCamera(){
    const track=v.getVideoTracks()[0];
    call.stream.addTrack(track);call.cameraStream=v;call.camera=true;
    call.cameraFacing=(track.getSettings&&track.getSettings().facingMode)||facing;
-   try{call.cameraDevices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');call.cameraSwitchAvailable=call.cameraDevices.length>1;const current=call.cameraDevices.findIndex(d=>d.deviceId===track.getSettings().deviceId);if(current>=0)call.cameraDeviceIndex=current;}catch{call.cameraSwitchAvailable=true}
+   call.cameraSwitchAvailable=true;try{call.cameraDevices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');const current=call.cameraDevices.findIndex(d=>d.deviceId===track.getSettings().deviceId);if(current>=0)call.cameraDeviceIndex=current;}catch{}
    Object.keys(pcs).forEach(f=>{const pc=pcs[f];const sender=pc.getSenders().find(x=>x.track&&x.track.kind==='video');if(sender)sender.replaceTrack(track);else pc.addTrack(track,call.stream)});
   }else{
    call.stream.getVideoTracks().forEach(t=>{call.stream.removeTrack(t);t.stop()});
@@ -515,51 +515,104 @@ async function switchCamera(){
  if(!call||!call.camera)return;
  let nextStream=null;
  try{
+  // Figure out current facing and flip it
   const oldTrack=call.stream.getVideoTracks()[0];
-  const oldFacing=(oldTrack&&oldTrack.getSettings&&oldTrack.getSettings().facingMode)||call.cameraFacing||'user';
+  let oldFacing='user';
+  try{oldFacing=(oldTrack&&oldTrack.getSettings&&oldTrack.getSettings().facingMode)||call.cameraFacing||'user'}catch{}
+  if(oldFacing!=='environment'&&oldFacing!=='user')oldFacing=call.cameraFacing||'user';
   const nextFacing=oldFacing==='environment'?'user':'environment';
-  // Phones: try ideal first (exact often fails). Then cycle deviceId.
+
+  // CRITICAL on phones: fully release the current camera BEFORE opening the other one.
+  // Many Android/iOS browsers refuse a second camera (or keep giving front) while the first is still open.
+  call.stream.getVideoTracks().forEach(t=>{
+   try{call.stream.removeTrack(t)}catch{}
+   try{t.stop()}catch{}
+  });
+  if(call.cameraStream){
+   call.cameraStream.getTracks().forEach(t=>{try{t.stop()}catch{}});
+   call.cameraStream=null;
+  }
+  // Brief pause so the OS releases the hardware
+  await new Promise(r=>setTimeout(r,120));
+
+  let lastErr=null;
+  // Try opposite facingMode several ways (mobile browsers vary a lot)
   const attempts=[
+   {video:{facingMode:{exact:nextFacing}},audio:false},
    {video:{facingMode:{ideal:nextFacing}},audio:false},
    {video:{facingMode:nextFacing},audio:false}
   ];
-  let lastErr=null;
-  for(const constraints of attempts){
-   try{nextStream=await navigator.mediaDevices.getUserMedia(constraints);break}catch(e){lastErr=e}
+  for(const c of attempts){
+   try{nextStream=await navigator.mediaDevices.getUserMedia(c);break}
+   catch(e){lastErr=e}
   }
+
+  // Fallback: enumerate cameras and pick a different deviceId
   if(!nextStream){
    const devices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
-   if(devices.length<2)throw lastErr||new Error('No alternate camera');
+   if(devices.length<2)throw lastErr||new Error('Only one camera');
    const currentId=oldTrack&&oldTrack.getSettings?oldTrack.getSettings().deviceId:null;
-   const currentIndex=Math.max(0,devices.findIndex(d=>d.deviceId===currentId));
-   const next=devices[(currentIndex+1)%devices.length];
+   // Prefer a device whose label suggests the other camera
+   const wantBack=nextFacing==='environment';
+   let next=devices.find(d=>{
+    const lab=(d.label||'').toLowerCase();
+    if(wantBack)return /back|rear|environment|posterior|world/i.test(lab);
+    return /front|user|face|selfie/i.test(lab);
+   });
+   if(!next||next.deviceId===currentId){
+    const idx=Math.max(0,devices.findIndex(d=>d.deviceId===currentId));
+    next=devices[(idx+1)%devices.length];
+   }
    nextStream=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:next.deviceId}},audio:false});
   }
+
   const newTrack=nextStream.getVideoTracks()[0];
   if(!newTrack)throw new Error('No video track');
-  // Replace sender track on every peer connection
+
+  // Put new track into the shared call stream
+  call.stream.addTrack(newTrack);
+  call.cameraStream=nextStream;
+  call.cameraFacing=(newTrack.getSettings&&newTrack.getSettings().facingMode)||nextFacing;
+  call.camera=true;
+  call.cameraSwitchAvailable=true;
+
+  // Push new track to all peer connections
   for(const pc of Object.values(pcs)){
-   const sender=pc.getSenders().find(s=>s.track&&s.track.kind==='video')||pc.getSenders().find(s=>!s.track);
+   const sender=pc.getSenders().find(s=>s.track&&s.track.kind==='video')
+     ||pc.getSenders().find(s=>!s.track||(s.track&&s.track.kind==='video'));
    if(sender)await sender.replaceTrack(newTrack);
    else pc.addTrack(newTrack,call.stream);
   }
-  if(oldTrack){call.stream.removeTrack(oldTrack);try{oldTrack.stop()}catch{}}
-  call.stream.addTrack(newTrack);
-  if(call.cameraStream)call.cameraStream.getTracks().forEach(t=>{if(t!==newTrack)try{t.stop()}catch{}});
-  call.cameraStream=nextStream;
-  call.cameraFacing=newTrack.getSettings().facingMode||nextFacing;
+
+  // Update local preview video element immediately
+  const localVid=document.querySelector('#tile-local video');
+  if(localVid){
+   localVid.srcObject=new MediaStream(call.stream.getVideoTracks());
+   fitVideoToOrientation(localVid,document.getElementById('tile-local'));
+  }
+
   try{
    call.cameraDevices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
-   call.cameraSwitchAvailable=call.cameraDevices.length>1;
-  }catch{call.cameraSwitchAvailable=true}
-  // Refresh local preview without full callUI rebuild so peers stay
-  const localVid=document.querySelector('#tile-local video');
-  if(localVid){localVid.srcObject=call.stream;fitVideoToOrientation(localVid,document.getElementById('tile-local'))}
+  }catch{}
+
   callUI();
  }catch(e){
   if(nextStream)nextStream.getTracks().forEach(t=>{try{t.stop()}catch{}});
   console.warn('switchCamera',e);
-  toast('Could not switch camera. Your device or browser may not expose another camera.');
+  // Try to restore previous camera so user is not left without video
+  try{
+   if(call&&!call.stream.getVideoTracks().length){
+    const restore=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:call.cameraFacing||'user'}},audio:false});
+    const t=restore.getVideoTracks()[0];
+    call.stream.addTrack(t);call.cameraStream=restore;call.camera=true;
+    for(const pc of Object.values(pcs)){
+     const sender=pc.getSenders().find(s=>s.track&&s.track.kind==='video')||pc.getSenders().find(s=>!s.track);
+     if(sender)await sender.replaceTrack(t);else pc.addTrack(t,call.stream);
+    }
+    callUI();
+   }
+  }catch{}
+  toast('Could not switch camera. Try turning camera off then on again.');
  }
 }
 function muteCall(){call.muted=!call.muted;call.stream.getAudioTracks().forEach(t=>t.enabled=!call.muted);callUI()}
