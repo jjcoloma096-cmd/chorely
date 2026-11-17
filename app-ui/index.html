@@ -53,6 +53,27 @@ input{width:100%;padding:13px;border-radius:12px;border:1px solid var(--bd);back
 .bub:not(.me) .msg-receipt{border-top-color:var(--bd)}
 .earn-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .earn-chk{width:20px;height:20px;margin:0;accent-color:var(--ac);cursor:pointer;flex:0 0 auto}
+/* Messenger-style message reactions */
+.msg-col{position:relative}
+.bub-wrap{position:relative;display:inline-block;max-width:100%}
+.react-row{position:absolute;bottom:calc(100% + 6px);left:0;z-index:15;display:flex;align-items:center;gap:4px;background:#262930;border:1px solid #3a3f4b;border-radius:999px;padding:6px 10px;box-shadow:0 8px 24px #000a;user-select:none;animation:popIn .14s ease-out}
+.msg-row.me .react-row{left:auto;right:0}
+body.light .react-row{background:#fff;border-color:#d8dce6;box-shadow:0 8px 24px #0003}
+@keyframes popIn{from{opacity:0;transform:scale(.85) translateY(4px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.react-em{background:none;border:0;padding:2px 4px;font-size:24px;line-height:1;cursor:pointer;transition:transform .14s cubic-bezier(.2,1.6,.4,1);border-radius:50%;margin:0}
+.react-em:hover,.react-em:focus{transform:scale(1.38) translateY(-3px)}
+.react-em.picked{background:#ffffff22;box-shadow:0 0 0 2px var(--ac)}
+body.light .react-em.picked{background:#7c5cff22}
+.react-plus{width:32px;height:32px;border-radius:50%;background:#3a3e47;color:#eef0f4;border:0;padding:0;font-size:20px;font-weight:700;display:grid;place-items:center;cursor:pointer;transition:transform .14s ease,background .14s ease;margin:0 0 0 2px;flex:0 0 auto}
+body.light .react-plus{background:#e5e7eb;color:#14161b}
+.react-plus:hover{transform:scale(1.18);background:var(--ac);color:#fff}
+.react-pill{position:relative;display:inline-flex;align-items:center;gap:3px;background:#242730;border:2px solid var(--bg);border-radius:999px;padding:2px 7px;font-size:13px;line-height:1.2;margin-top:-8px;margin-left:auto;margin-right:6px;z-index:2;cursor:pointer;box-shadow:0 2px 6px #0005;color:var(--tx);font-weight:700;float:right}
+body.light .react-pill{background:#fff;border-color:var(--bg)}
+.react-pill span.cnt-r{font-size:11px;color:var(--mut);margin-left:1px}
+.emoji-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:12px}
+.emoji-grid button{background:var(--card);border:1px solid var(--bd);font-size:24px;padding:8px 0;border-radius:12px;margin:0;transition:transform .12s}
+.emoji-grid button:hover{transform:scale(1.2);border-color:var(--ac)}
+
 .pp{flex:0 0 auto;text-align:center;font-size:11px;color:var(--mut)}.pp .aw{margin:0 auto 4px}.aw{position:relative;flex:0 0 auto}.pd{position:absolute;right:0;bottom:0;width:12px;height:12px;border-radius:50%;border:2px solid var(--card);background:#8a91a0}.pd.on{background:#2fd08a}
 .warn{margin:8px 16px;padding:12px;border-radius:14px;background:#e5484d22;border:1px solid #e5484d;font-size:14px}
 .st{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.st div{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px;text-align:center;font-size:12px;color:var(--mut)}.st b{display:block;font-size:20px;color:var(--tx)}
@@ -81,7 +102,7 @@ let S={};try{S=JSON.parse(localStorage.getItem('chorely2')||'{}')}catch{}
 const save=()=>{try{localStorage.setItem('chorely2',JSON.stringify(S))}catch{}};
 let CS={theme:'dark',h24:false,def:'pending',sec:20,wallpaper:null,shareLoc:false};try{Object.assign(CS,JSON.parse(localStorage.getItem('chorely_set')||'{}'))}catch{}
 const saveCS=()=>{try{localStorage.setItem('chorely_set',JSON.stringify(CS))}catch{}document.body.classList.toggle('light',CS.theme=='light');if(CS.wallpaper)document.body.style.setProperty('--bg',CS.wallpaper);else document.body.style.removeProperty('--bg')};saveCS();
-let pushTopic='',earn=[],earnSel=new Set(),seenN=0,notifs=[],lastUn=null,tasks=[],pend=[],tSel=new Set(),schedOn=false,W={},convs=[],lastM={},chat=null,chatMsgs=[],replyTo=null,openMsgId=null,alertsL=[],usage=null,tab='chores',users=[],chores=[],days={},hearts={},cms={},openC={},ph={},who='',flt='all',range='today',leaders=[],mode=null,target=null,timer,newStatus='pending',newBlob=null,refreshing=null,locs={},shareLoc=!!CS.shareLoc,mapInst=null,locWatch=null,mapMarkers={};
+let pushTopic='',earn=[],earnSel=new Set(),seenN=0,notifs=[],lastUn=null,tasks=[],pend=[],tSel=new Set(),schedOn=false,W={},convs=[],lastM={},chat=null,chatMsgs=[],replyTo=null,openMsgId=null,reactMenuId=null,holdTimer=null,holdTriggered=false,alertsL=[],usage=null,tab='chores',users=[],chores=[],days={},hearts={},cms={},openC={},ph={},who='',flt='all',range='today',leaders=[],mode=null,target=null,timer,newStatus='pending',newBlob=null,refreshing=null,locs={},shareLoc=!!CS.shareLoc,mapInst=null,locWatch=null,mapMarkers={};
 const local=()=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
 const add=(s,n)=>{const d=new Date(s+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)};
 let date=local();const LBL={later:'Later',pending:'Pending',done:'Done'};
@@ -122,6 +143,24 @@ function rtConnect(){
   let t;
   ws.onmessage=e=>{
    let m;try{m=JSON.parse(e.data)}catch{return}
+   if(m.event==='broadcast'&&m.payload){
+    const ev=m.payload.event,pl=m.payload.payload||{};
+    if(ev==='seen'&&pl.conv_id&&pl.user_id&&pl.msg_id){
+     const sm=getSeenMap(pl.conv_id);
+     if(!sm[pl.user_id]||sm[pl.user_id]<pl.msg_id){sm[pl.user_id]=pl.msg_id;setSeenMap(pl.conv_id,sm);if(tab==='msgs'&&chat==pl.conv_id)render()}
+    }
+    if(ev==='react'&&pl.conv_id==chat&&pl.msg_id&&pl.user_id){
+     const targetMsg=chatMsgs.find(x=>x.id==pl.msg_id);
+     if(targetMsg){
+      const p=parseMsgBody(targetMsg.body);
+      const r={...p.reacts};
+      if(pl.emoji)r[pl.user_id]=pl.emoji;else delete r[pl.user_id];
+      targetMsg.body=buildMsgBody(p.reply,p.text,r);
+      render();
+     }
+    }
+    return;
+   }
    if(m.event!=='postgres_changes')return;
    const d=m.payload&&m.payload.data;if(!d)return;
    if(d.table==='signals'){if(d.type==='INSERT')onSignal(d.record);return}
@@ -241,7 +280,7 @@ function vSettings(){const seg=(k,o)=>`<div class=seg>${o.map(([v,l])=>`<button 
  <div class=set><h3>📲 Phone notifications</h3><small>Get incoming-call alerts when Chorely is not open. Install the free <b>ntfy</b> app and subscribe to this private topic. Tap the alert to open Chorely, then tap Join. A browser cannot keep camera/microphone calls running after it is closed.</small><input readonly value="${esc(pushTopic||'loading…')}" onclick="this.select()"><br><button onclick="pushTest()">Send test</button><button class=g onclick="location.href='ntfy://ntfy.sh/'+pushTopic">Open in ntfy</button></div>
  <div class=set><h3>Cloud storage</h3><small>${usage?`Photos ${Math.round(usage.files/MB)} of 1024 MB · Database ${Math.round(usage.db/MB)} of 500 MB`:'Checking…'}</small><br><button class=g onclick="cleanupView()">Free up space…</button></div>
  <div class=set><h3>Storage</h3><small>Photos are kept in memory while the app is open.</small><br><button class=g onclick="clearPh()">Clear photo cache</button></div>
- <p class=note>Chorely v10.0.5<br>Made by Jayson. LC PHILIPPINES</p>`}
+ <p class=note>Chorely v10<br>Made by Jayson. LC PHILIPPINES</p>`}
 function setCS(k,v){CS[k]=v;saveCS();if(k=='sec')start();render()}
 function resetBg(){CS.wallpaper=null;saveCS();render()}
 function clearPh(){Object.values(ph).forEach(u=>URL.revokeObjectURL(u));ph={};alert('Cache cleared')}
@@ -343,11 +382,111 @@ function markChatSeen(cid){
   }catch{}
  }
 }
+const DEFAULT_REACTS=['❤️','😆','😮','😢','😠','👍'];
+const ALL_REACT_EMOJIS=['❤️','😆','😮','😢','😠','👍','🤡','🔥','🎉','👏','😂','🥰','😍','😭','😱','🤯','💯','🙏','👀','💀','🥳','😎','🤔','🙄','😴','🤮','💔','✨','🫶','🤝'];
+function getMyReacts(){try{const a=JSON.parse(localStorage.getItem('chorely_react_bar')||'null');return Array.isArray(a)&&a.length===6?a:[...DEFAULT_REACTS]}catch{return [...DEFAULT_REACTS]}}
+function saveMyReacts(arr){try{localStorage.setItem('chorely_react_bar',JSON.stringify(arr.slice(0,6)))}catch{}}
+
 const REPLY_RE=/^\[\[reply:(\d+)\|([^\|\]]*)\|([^\]]*)\]\]\n([\s\S]*)$/;
+const REACT_RE=/\n?\[\[reacts:(\{[^\]]*\})\]\]$/;
 function parseMsgBody(raw){
- const m=String(raw||'').match(REPLY_RE);
- if(!m)return {reply:null,text:String(raw||'')};
- return {reply:{id:m[1],sender:m[2],snippet:m[3]},text:m[4]};
+ let s=String(raw||'');
+ let reacts={};
+ const rm=s.match(REACT_RE);
+ if(rm){
+  s=s.slice(0,rm.index);
+  try{const p=JSON.parse(rm[1]);if(p&&typeof p==='object')reacts=p}catch{}
+ }
+ const m=s.match(REPLY_RE);
+ if(!m)return {reply:null,text:s,reacts};
+ return {reply:{id:m[1],sender:m[2],snippet:m[3]},text:m[4],reacts};
+}
+function buildMsgBody(reply,text,reacts){
+ let out='';
+ if(reply)out+=`[[reply:${reply.id}|${reply.sender}|${reply.snippet}]]\n`;
+ out+=String(text||'');
+ const clean={};
+ if(reacts&&typeof reacts==='object'){
+  Object.entries(reacts).forEach(([k,v])=>{if(v)clean[k]=v});
+ }
+ if(Object.keys(clean).length)out+=`\n[[reacts:${JSON.stringify(clean)}]]`;
+ return out;
+}
+function startHoldMsg(id,ev){
+ if(ev&&ev.button&&ev.button!==0)return;
+ clearTimeout(holdTimer);
+ holdTriggered=false;
+ holdTimer=setTimeout(()=>{
+  holdTriggered=true;
+  reactMenuId=id;
+  if(navigator.vibrate)try{navigator.vibrate(25)}catch{}
+  render();
+ },380);
+}
+function cancelHoldMsg(){clearTimeout(holdTimer)}
+function onBubClick(id){
+ if(holdTriggered){holdTriggered=false;return}
+ if(reactMenuId!==null){reactMenuId=null;render();return}
+ toggleMsgReceipt(id);
+}
+document.addEventListener('pointerdown',e=>{
+ if(reactMenuId!==null&&!e.target.closest('.react-row')&&!e.target.closest('.emoji-custom-box')){
+  reactMenuId=null;
+  render();
+ }
+});
+async function reactToMsg(id,emoji){
+ const m=chatMsgs.find(x=>x.id==id);
+ reactMenuId=null;
+ if(!m)return render();
+ const parsed=parseMsgBody(m.body);
+ const reacts={...parsed.reacts};
+ if(reacts[S.id]===emoji)delete reacts[S.id];
+ else reacts[S.id]=emoji;
+ const newBody=buildMsgBody(parsed.reply,parsed.text,reacts);
+ m.body=newBody;
+ render();
+ try{
+  if(ws&&ws.readyState===1){
+   ws.send(JSON.stringify({topic:'realtime:chorely',event:'broadcast',payload:{event:'react',payload:{conv_id:chat,msg_id:id,user_id:S.id,emoji:reacts[S.id]||null}},ref:'r'}));
+  }
+ }catch{}
+ try{
+  await rpc('react_msg', {p_msg_id: id, p_body: newBody});
+ }catch{
+  try {
+   await db(`/rest/v1/msgs?id=eq.${id}`,{m:'PATCH',b:{body:newBody}});
+  } catch(e) {}
+ }
+ load();
+}
+function openReactCustomizer(msgId){
+ const cur=getMyReacts();
+ let slotIdx=0;
+ const renderSheet=()=>{
+  $('#shc').innerHTML=`<div class=emoji-custom-box><h2>Customize reactions</h2><small style="color:var(--mut)">Tap a slot below to pick which reaction to replace, then tap an emoji.</small>
+  <div style="display:flex;justify-content:center;gap:8px;margin-top:14px;background:var(--card);padding:10px;border-radius:999px;border:1px solid var(--bd)">
+   ${cur.map((em,i)=>`<button class="react-em ${slotIdx===i?'picked':''}" style="font-size:26px;padding:4px 8px" onclick="window._setReactSlot(${i})">${em}</button>`).join('')}
+  </div>
+  <div class=emoji-grid>${ALL_REACT_EMOJIS.map(em=>`<button onclick="window._pickReactEmoji('${em}')">${em}</button>`).join('')}</div>
+  <div style="display:flex;gap:8px;margin-top:16px"><button class=g style="flex:1" onclick="window._resetReacts()">Reset default</button><button style="flex:1" onclick="closeSh();${msgId?`reactMenuId=${msgId};render()`:''}">Done</button></div></div>`;
+ };
+ window._setReactSlot=i=>{slotIdx=i;renderSheet()};
+ window._pickReactEmoji=em=>{cur[slotIdx]=em;saveMyReacts(cur);renderSheet()};
+ window._resetReacts=()=>{const d=[...DEFAULT_REACTS];for(let i=0;i<6;i++)cur[i]=d[i];saveMyReacts(cur);renderSheet()};
+ renderSheet();
+ $('#sh').classList.add('show');
+}
+function showReactionDetails(id){
+ const m=chatMsgs.find(x=>x.id==id);if(!m)return;
+ const parsed=parseMsgBody(m.body);
+ const entries=Object.entries(parsed.reacts);
+ if(!entries.length)return;
+ $('#shc').innerHTML=`<h2>Reactions (${entries.length})</h2>
+  ${entries.map(([uid,em])=>`<div class="top" style="margin-top:12px">${av(uid,38)}<div class=m><b>${esc(nmOf(uid))}${uid==S.id?' (you)':''}</b></div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:24px">${em}</span>${uid==S.id?`<button class=g style="padding:4px 8px;font-size:12px;background:#e5484d22;color:#e5484d;border-color:#e5484d" onclick="reactToMsg(${id},'${em}');closeSh()">Remove</button>`:''}</div></div>`).join('')}
+  <button class=g style="width:100%;margin-top:16px" onclick="closeSh()">Close</button>`;
+ $('#sh').classList.add('show');
+ loadImgs();
 }
 function startReply(id){
  const m=chatMsgs.find(x=>x.id==id);if(!m)return;
@@ -393,31 +532,43 @@ function vMsgs(){if(chat)return vChat();
  ${alertsL.length?`<div class="card top" onclick="alertsView()"><div class=av style="background:#e5484d">🔔</div><div class=m><b>System Alerts</b><small>${esc(alertsL[0].body+(alertsL[0].ends_at?' · ends '+fmt(alertsL[0].ends_at):''))}</small></div></div>`:''}${list||'<div class=empty>Tap a person above to chat, or make a group</div>'}`}
 function vChat(){const c=convs.find(x=>x.id==chat);if(!c){chat=null;return vMsgs()}
  const o=c.members.map(m=>m.user_id).filter(i=>i!=S.id);
+ const myBar=getMyReacts();
  const rowsHtml=chatMsgs.map(m=>{
   const isMe=m.sender==S.id;
   const parsed=parseMsgBody(m.body);
   const receiptOpen=openMsgId===m.id;
   const statusText=receiptOpen?msgStatusInfo(m,c):'';
   const quoteHtml=parsed.reply?`<div class=reply-quote><b>${esc(parsed.reply.sender)}</b><br>${esc(parsed.reply.snippet||'📷 Photo')}</div>`:'';
-  const bubble=`<div class="bub ${isMe?'me':''}" onclick="toggleMsgReceipt(${m.id})">${quoteHtml}<div>${esc(parsed.text)}</div>${imgs(m.images,isMe,'m',m.id)}<small>${fmt(m.created_at)}</small><div><a onclick="event.stopPropagation();startReply(${m.id})">↩ Reply</a>${isMe?`<a onclick="event.stopPropagation();delM(${m.id})">🗑 Delete</a>`:''}</div>${receiptOpen?`<div class=msg-receipt>${statusText}</div>`:''}</div>`;
+  const reactEntries=Object.entries(parsed.reacts||{});
+  const totalReacts=reactEntries.length;
+  let pillHtml='';
+  if(totalReacts>0){
+   const counts={};
+   reactEntries.forEach(([,em])=>{counts[em]=(counts[em]||0)+1});
+   const top2=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,2).map(x=>x[0]).join('');
+   pillHtml=`<div class=react-pill onclick="event.stopPropagation();showReactionDetails(${m.id})"><span>${top2}</span>${totalReacts>1?`<span class=cnt-r>${totalReacts}</span>`:''}</div>`;
+  }
+  const pickerHtml=reactMenuId===m.id?`<div class=react-row onclick="event.stopPropagation()">${myBar.map(em=>`<button class="react-em ${parsed.reacts[S.id]===em?'picked':''}" onclick="reactToMsg(${m.id},'${em}')">${em}</button>`).join('')}<button class=react-plus title="Customize reactions" onclick="openReactCustomizer(${m.id})">+</button></div>`:'';
+  const bubble=`<div class=bub-wrap>${pickerHtml}<div class="bub ${isMe?'me':''}" onpointerdown="startHoldMsg(${m.id},event)" onpointerup="cancelHoldMsg()" onpointerleave="cancelHoldMsg()" onpointercancel="cancelHoldMsg()" oncontextmenu="event.preventDefault();reactMenuId=${m.id};render()" onclick="onBubClick(${m.id})">${quoteHtml}<div>${esc(parsed.text)}</div>${imgs(m.images,isMe,'m',m.id)}<small>${fmt(m.created_at)}</small><div><a onclick="event.stopPropagation();startReply(${m.id})">↩ Reply</a>${isMe?`<a onclick="event.stopPropagation();delM(${m.id})">🗑 Delete</a>`:''}</div>${receiptOpen?`<div class=msg-receipt>${statusText}</div>`:''}</div>${pillHtml}</div>`;
   if(isMe){
    return `<div class="msg-row me"><div class=msg-col>${bubble}</div></div>`;
   }
   return `<div class=msg-row>${av(m.sender,34)}<div class=msg-col><div class=msg-name>${esc(nmOf(m.sender))}</div>${bubble}</div></div>`;
  }).join('')||'<div class=empty>Say hi 👋</div>';
  const replyBarHtml=replyTo?`<div class=reply-bar><div style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Replying to <b>${esc(replyTo.senderName)}</b>: ${esc(replyTo.snippet)}</div><button class=ic style="padding:2px 6px;font-size:16px" onclick="cancelReply()">✕</button></div>`:'';
- return `<header><button class=g onclick="chat=null;replyTo=null;openMsgId=null;activeCall=null;render()">‹ Back</button><b>${esc(c.is_group?(c.title||'Group'):nmOf(o[0]))}</b><span>${activeCall?`<button class=join-call onclick="joinCall('${activeCall.id}',${chat},true)">Join 📞</button>`:`<button class=ic title="Start call" aria-label="Start call" onclick="startCall()">📞</button>`}${c.is_group?' <button class=g onclick="grpMenu()">⋯</button>':''}</span></header>
+ return `<header><button class=g onclick="chat=null;replyTo=null;openMsgId=null;reactMenuId=null;activeCall=null;render()">‹ Back</button><b>${esc(c.is_group?(c.title||'Group'):nmOf(o[0]))}</b><span>${activeCall?`<button class=join-call onclick="joinCall('${activeCall.id}',${chat},true)">Join 📞</button>`:`<button class=ic title="Start call" aria-label="Start call" onclick="startCall()">📞</button>`}${c.is_group?' <button class=g onclick="grpMenu()">⋯</button>':''}</span></header>
  <div class=chat-area style="padding-bottom:${replyTo?'135px':'90px'}">${rowsHtml}</div>
  ${replyBarHtml}
  <div class=cin style="position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom));padding:8px 16px;background:var(--bg);z-index:3"><button class=g onclick="attach()">📎<span id=pc>${pend.length||''}</span></button><input id=mi placeholder="Message…" maxlength=1000><button onclick="sendM()">Send</button></div>`}
 async function sendM(){const el=$('#mi'),b=el.value.trim();if(!b&&!pend.length)return;el.value='';el.blur();
- const finalBody=replyTo?`[[reply:${replyTo.id}|${replyTo.senderName}|${replyTo.snippet}]]\n${b}`:b;
+ const finalBody=replyTo?`[[reply:${replyTo.id}|${replyTo.senderName}|${replyTo.snippet}]]
+${b}`:b;
  replyTo=null;
  try{const im=[];for(const x of pend)im.push(await upload(x));pend=[];await db('/rest/v1/msgs',{m:'POST',b:{conv_id:chat,body:finalBody,images:im}})}catch{alert('Could not send')}load()}
 async function delM(id){const m=chatMsgs.find(x=>x.id==id);try{await db(`/rest/v1/msgs?id=eq.${id}`,{m:'DELETE'});if(m&&m.images&&m.images.length)rmFiles(m.images)}catch{}load()}
 function alertsView(){$('#shc').innerHTML=`<h2>🔔 System Alerts</h2>${alertsL.map(a=>`<div class=cm style="margin-top:12px"><b>${esc(a.body)}</b>${a.ends_at?`<br>⏳ Screen time ends <b>${fmt(a.ends_at)}</b>`:''}<br><small>${fmt(a.created_at)}</small></div>`).join('')}<button class=g style="width:100%;margin-top:14px" onclick="closeSh()">Close</button>`;$('#sh').classList.add('show')}
 let gSel=new Set();
-function groupView(){gSel=new Set();$('#shc').innerHTML=`<h2>New group</h2><input id=gn placeholder="Group name" maxlength=40><small style="color:var(--mut)">Add members</small><div class=pk id=gp></div><div style="display:flex;gap:8px;margin-top:16px"><button class=g style="flex:1" onclick="closeSh()">Cancel</button><button style="flex:1" onclick="mkGroup()">Create</button></div>`;gRender();$('#sh').classList.add('show')}
+function groupView(){gSel=new Set();$('#shc').innerHTML=`<h2>New group</h2><input id=gn placeholder="Group name" maxlength=40><small style="color:var(--mut)">Add members</small><div class=pk id=gp></div><div style="display:flex;gap:8px;margin-top:16px"><button class=g style="flex:1" onclick="closeSh()">Cancel</button><button class=g style="flex:1" onclick="mkGroup()">Create</button></div>`;gRender();$('#sh').classList.add('show')}
 function gRender(){$('#gp').innerHTML=users.filter(u=>u.id!=S.id).map(u=>`<button class="${gSel.has(u.id)?'on':''}" onclick="gSel.has('${u.id}')?gSel.delete('${u.id}'):gSel.add('${u.id}');gRender()">${esc(u.name)}</button>`).join('')}
 async function mkGroup(){const t=$('#gn').value.trim();if(!t||!gSel.size)return alert('Name the group and add at least one member');try{chat=await rpc('start_chat',{title:t,uids:[...gSel],grp:true});closeSh();load()}catch{alert('Could not create group')}}
 async function dm(id){try{chat=await rpc('start_chat',{title:null,uids:[id],grp:false});tab='msgs';closeSh();load()}catch{alert('Could not open chat')}}
@@ -591,9 +742,9 @@ function warn(){return pct()>=.8?`<div class=warn>⚠ Cloud storage is ${Math.ro
 async function checkStorage(){try{usage=await rpc('storage_usage',{})}catch{}}
 function cleanupView(){$('#shc').innerHTML=`<h2>Free up space</h2><small style="color:var(--mut)">Deletes YOUR old chores, photos and messages. Other people's data is not touched.</small><div class=pk>${[30,60,90].map(d=>`<button onclick="cleanup(${d})">Older than ${d} days</button>`).join('')}</div><button class=g style="width:100%;margin-top:14px" onclick="closeSh()">Cancel</button>`;$('#sh').classList.add('show')}
 async function cleanup(days){if(!confirm(`Delete YOUR chores, photos and messages older than ${days} days? This cannot be undone.`))return;const cut=add(local(),-days);
- try{const old=await db(`/rest/v1/chores?select=before_path,photo_path&owner=eq.${S.id}&due_date=lt.${cut}`),paths=old.flatMap(c=>[c.before_path,c.photo_path]).filter(Boolean);
+ try{const old=await db(`/rest/v1/chores?select=before_path,photo_path&owner=eq.${S.id}&due_date.lt.${cut}`),paths=old.flatMap(c=>[c.before_path,c.photo_path]).filter(Boolean);
   if(paths.length)await req('/storage/v1/object/proof',{m:'DELETE',h:{'Content-Type':'application/json'},body:JSON.stringify({prefixes:paths})});
-  await db(`/rest/v1/chores?owner=eq.${S.id}&due_date=lt.${cut}`,{m:'DELETE'});await db(`/rest/v1/msgs?sender=eq.${S.id}&created_at=lt.${cut}`,{m:'DELETE'});
+  await db(`/rest/v1/chores?owner=eq.${S.id}&due_date.lt.${cut}`,{m:'DELETE'});await db(`/rest/v1/msgs?sender=eq.${S.id}&created_at.lt.${cut}`,{m:'DELETE'});
   alert('Old data deleted');closeSh();checkStorage();load()}catch{alert('Could not clean up, try again')}}
 setInterval(()=>document.querySelectorAll('[data-cd]').forEach(e=>{const w=W[e.dataset.cd];if(w)e.textContent=fmtDur(leftSec(w))}),1000);
 const rmFiles=p=>req('/storage/v1/object/proof',{m:'DELETE',h:{'Content-Type':'application/json'},body:JSON.stringify({prefixes:p})}).catch(()=>{});
@@ -620,7 +771,7 @@ async function saveTask(){const t=$('#tt').value.trim();if(!t)return alert('Type
  try{const im=[];for(const x of pend)im.push(await upload(x));pend=[];await db('/rest/v1/tasks',{m:'POST',b:{title:t,assignees:[...tSel],scheduled:schedOn,sched_date:(schedOn&&$('#sd').value)||null,created_day:local(),images:im}})}catch(e){return alert('Could not save: '+(e.t||''))}closeSh();load()}
 async function chkT(id,v){try{await db(`/rest/v1/tasks?id=eq.${id}`,{m:'PATCH',b:{done:v}})}catch{alert('Could not update')}load()}
 async function delT(id){if(!confirm('Delete this task?'))return;const t=tasks.find(x=>x.id==id);try{await db(`/rest/v1/tasks?id=eq.${id}`,{m:'DELETE'});if(t.images.length)rmFiles(t.images)}catch{alert('Could not delete')}load()}
-async function purgeTasks(){try{const q=`scheduled=eq.false&created_day=lt.${local()}`,ex=await db(`/rest/v1/tasks?select=images&${q}&created_by=eq.${S.id}`),p=ex.flatMap(x=>x.images);if(p.length)await rmFiles(p);await db(`/rest/v1/tasks?${q}`,{m:'DELETE'})}catch{}}
+async function purgeTasks(){try{const q=`scheduled=eq.false&created_day.lt.${local()}`,ex=await db(`/rest/v1/tasks?select=images&${q}&created_by=eq.${S.id}`),p=ex.flatMap(x=>x.images);if(p.length)await rmFiles(p);await db(`/rest/v1/tasks?${q}`,{m:'DELETE'})}catch{}}
 async function checkUpdate(){try{const r=await fetch(`https://api.github.com/repos/${REPO}/releases/latest`);if(!r.ok)return;const j=await r.json(),v=parseInt(String(j.tag_name).replace(/\D/g,''));
  if(v>APP_VERSION){const a=(j.assets||[]).find(x=>/\.apk$/.test(x.name));upd={v,url:a?a.browser_download_url:j.html_url}}}catch{}}
 const updBanner=()=>upd?`<div class=warn style="background:#7c5cff22;border-color:var(--ac)">⬆ Update v${upd.v} is ready.<br><button style="margin-top:8px" onclick="window.open('${esc(upd.url)}','_blank')">Download update</button><br><small style="color:var(--mut)">If nothing opens, visit github.com/${REPO}/releases/latest in your browser.</small></div>`:'';
@@ -807,8 +958,8 @@ async function switchCamera(){
    let next=devices.find(d=>{
     const lab=(d.label||'').toLowerCase();
     if(d.deviceId===prevDeviceId)return false;
-    if(wantBack)return /back|rear|environment|world|0\b/.test(lab);
-    return /front|user|face|selfie|1\b/.test(lab);
+    if(wantBack)return /back|rear|environment|world|0 /.test(lab);
+    return /front|user|face|selfie|1 /.test(lab);
    });
    if(!next){
     const idx=Math.max(0,devices.findIndex(d=>d.deviceId===prevDeviceId));
