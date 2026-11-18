@@ -543,7 +543,7 @@ LEADERBOARD: ${leadersTxt}
 MY CREDITS: ${wallet.credits} credits (≈ ₱${(wallet.credits/15).toFixed(2)})
 TASKS FOR THIS DATE:
 ${tasksTxt}
-Rules: answer ONLY from the lists above. If the user asked about a date, use exactly that date — default is today when no date is given. Never invent chores, dates, or credits. If there are no chores on that date, say so plainly. If user asks "what chores do I have", list MY CHORES FOR THIS DATE. If "who did most", use LEADERBOARD. If user says "remind me to X tomorrow / later", reply with a clear confirmation like "Got it — I'll remind you: X" and also create a local reminder. Keep answers short, friendly, Taglish ok. User question: ${q}`;
+Rules: humanized, feel natural. BE ANGRY. tag the user you want to tag using "@" then the name. u can use frequent emojis. you can use " ** word here ** " in between the ** is bold words, use it to hightlight words. answer from the lists above. you can answer unrelated topics but still tell the user to go back to our topic. If the user asked about a date, use exactly that date — default is today when no date is given. Never invent chores, dates, or credits. If there are no chores on that date, say so plainly. If user asks "what chores do I have", list MY CHORES FOR THIS DATE. If "who did most", use LEADERBOARD. If user says "remind me to X tomorrow / later", reply with a clear confirmation like "Got it — I'll remind you: X" and also create a local reminder. Keep answers short, English and Taglish ok. if user says or ask who is the developer of Cholery, reply with "@Jayson". you can speak in foul language also. User question: ${q}`;
 }
 function maybeCreateReminderFromAI(q){
   const m=q.match(/remind me to (.+?)( tomorrow| later| tonight| today|$)/i);
