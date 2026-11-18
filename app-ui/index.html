@@ -204,6 +204,28 @@ input{width:100%;padding:13px;border-radius:12px;border:1px solid var(--bd);back
 .quest-form label{font-size:12px;font-weight:700;color:var(--mut);display:block;margin-top:10px}
 .quest-form input{margin-top:4px}
 .quest-take{flex:1}
+
+/* ===== V24: DAILY SPIN ===== */
+.spin-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9998;display:none;align-items:center;justify-content:center;padding:16px}
+.spin-overlay.show{display:flex}
+.spin-box{background:var(--card);border:1px solid var(--bd);border-radius:22px;padding:22px;width:100%;max-width:380px;text-align:center}
+.spin-wheel{width:210px;height:210px;border-radius:50%;margin:14px auto;position:relative;border:8px solid var(--ac);background:conic-gradient(#ff6b6b 0 45deg,#ffd93d 45deg 90deg,#6bcb77 90deg 135deg,#4d96ff 135deg 180deg,#b983ff 180deg 225deg,#ff9f45 225deg 270deg,#2ec4b6 270deg 315deg,#ff6b6b 315deg 360deg);display:flex;align-items:center;justify-content:center;transition:transform 2.2s cubic-bezier(.15,.9,.25,1)}
+.spin-wheel.spinning{transform:rotate(1440deg)}
+.spin-center{width:86px;height:86px;background:#111;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:28px;box-shadow:0 0 0 5px #fff}
+
+/* ===== V29: SCRATCH CARDS ===== */
+.scratch-overlay{position:fixed;inset:0;background:var(--bg);z-index:9999;display:none;flex-direction:column;overflow:hidden}
+.scratch-overlay.show{display:flex}
+.scratch-top{padding:12px 14px;display:flex;align-items:center;gap:10px;background:var(--card);border-bottom:1px solid var(--bd);flex-shrink:0}
+.scratch-body{flex:1;overflow-y:auto;padding:14px;padding-bottom:90px;max-width:560px;width:100%;margin:0 auto;box-sizing:border-box}
+.scratch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+.scratch-tile{aspect-ratio:1;border-radius:16px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:clamp(18px,5vw,26px);cursor:pointer;border:2px solid var(--bd);user-select:none;-webkit-tap-highlight-color:transparent;box-sizing:border-box}
+.scratch-tile.covered{background:linear-gradient(135deg,#7c5cff,#ff6b6b);color:#fff;font-size:clamp(24px,7vw,34px)}
+.scratch-tile.revealed-win{background:#22c55e;color:#fff;border-color:#22c55e;transform:scale(1.03)}
+.scratch-tile.revealed-zero{background:#333;color:#aaa}
+.scratch-tile:disabled{cursor:default}
+
+
 .quest-where-chip{display:inline-block;padding:3px 9px;border-radius:999px;background:#7c5cff22;border:1px solid var(--ac);font-size:12px;font-weight:700;margin-top:6px}
 
 </style><link rel="preload" as="style" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" onload="this.rel='stylesheet'"><noscript><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"></noscript><script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -266,12 +288,12 @@ function rtConnect(){if(!S.access)return;try{if(ws){ws.onclose=null;ws.close()}}
     if(ev==='react'&&pl.conv_id==chat&&pl.msg_id&&pl.user_id){const targetMsg=chatMsgs.find(x=>x.id==pl.msg_id);if(targetMsg){const p=parseMsgBody(targetMsg.body);const r={...p.reacts};if(pl.emoji)r[pl.user_id]=pl.emoji;else delete r[pl.user_id];targetMsg.body=buildMsgBody(p.reply,p.text,r,{poll:p.poll,sticker:p.sticker,voice:p.voice,system:p.system});render()}}return}if(m.event!=='postgres_changes')return;const d=m.payload&&m.payload.data;if(!d)return;if(d.table==='signals'){if(d.type==='INSERT')onSignal(d.record);return}if(d.table==='calls'){if(d.type==='INSERT')onIncoming(d.record);if(d.type==='UPDATE'&&call&&d.record.id===call.id&&d.record.ended_at)checkCallEnded()}if(d.table==='call_participants'&&call&&d.record.call_id===call.id){if(d.type==='INSERT'&&d.record.user_id!==S.id&&!call.peers.includes(d.record.user_id)){call.peers.push(d.record.user_id);callUI()}if(d.type==='UPDATE'&&d.record.left_at){closePc(d.record.user_id);call.peers=call.peers.filter(x=>x!==d.record.user_id);callUI()}}if(d.table==='msgs'&&d.type==='INSERT'&&d.record&&d.record.sender!==S.id){ handleInstantMsg({...d.record,user_id:d.record.sender}); if(/\[\[team-(invite|accept|decline|credits)/.test(String(d.record.body||''))){ try{scanTeamInvites();claimTeamCredits();}catch{} } }
     if(d.table==='tasks'&&d.type==='INSERT'&&d.record){ maybeAutoChoreForTask(d.record); }
     clearTimeout(t);t=setTimeout(()=>load(),700)};ws.onclose=()=>{clearInterval(wsT);if(S.access)setTimeout(rtConnect,5000)}}catch(e){setTimeout(rtConnect,5000)}}
-function start(){const _hadFull=restoreFullCache();try{const cached=JSON.parse(localStorage.getItem('chorely_cache')||'null');if(cached&&cached.chores&&!Array.isArray(cached.chores)){localStorage.removeItem('chorely_cache');}if(cached&&cached.users&&!_hadFull){users=Array.isArray(cached.users)?cached.users:[];chores=dedupeChores(Array.isArray(cached.chores)?cached.chores:[]);choresAll=dedupeChores([...(choresAll||[]),...chores]);W=cached.W||{};}}catch{}pruneExpiredChoreSched();if(Array.isArray(choresAll))choresAll=dedupeChores(choresAll);if(Array.isArray(tasks))tasks=dedupeTasks(tasks);applyCachedChoresForDate();render();setupOfflineListeners();rtConnect();setTimeout(()=>{load().then(()=>{try{fetchQuestsFromServer();}catch{} handleCallRoute();pollIncomingCalls();resumeLocShare();if(isOnlineNow())flushOfflineQueue('open');});},350);setTimeout(()=>{checkUpdate().then(()=>render());checkStorage();purgeTasks();pruneExpiredTaskSched();purgeOldEarnings()},2500);clearInterval(beatT);beatT=setInterval(beat,60000);beat();clearInterval(timer);timer=setInterval(()=>{if(document.hidden)return;if(pruneExpiredChoreSched()){applyCachedChoresForDate();render();}pruneExpiredTaskSched();load();},Math.max(CS.sec,45)*1000)}
+function start(){const _hadFull=restoreFullCache();try{const cached=JSON.parse(localStorage.getItem('chorely_cache')||'null');if(cached&&cached.chores&&!Array.isArray(cached.chores)){localStorage.removeItem('chorely_cache');}if(cached&&cached.users&&!_hadFull){users=Array.isArray(cached.users)?cached.users:[];chores=dedupeChores(Array.isArray(cached.chores)?cached.chores:[]);choresAll=dedupeChores([...(choresAll||[]),...chores]);W=cached.W||{};}}catch{}pruneExpiredChoreSched();if(Array.isArray(choresAll))choresAll=dedupeChores(choresAll);if(Array.isArray(tasks))tasks=dedupeTasks(tasks);applyCachedChoresForDate();render();setupOfflineListeners();rtConnect();setTimeout(()=>{load().then(()=>{try{syncPendingWallet();}catch{} try{fetchQuestsFromServer();}catch{} handleCallRoute();pollIncomingCalls();resumeLocShare();if(isOnlineNow())flushOfflineQueue('open');});},350);setTimeout(()=>{checkUpdate().then(()=>render());checkStorage();purgeTasks();pruneExpiredTaskSched();purgeOldEarnings()},2500);clearInterval(beatT);beatT=setInterval(beat,60000);beat();clearInterval(timer);timer=setInterval(()=>{if(document.hidden)return;if(pruneExpiredChoreSched()){applyCachedChoresForDate();render();}pruneExpiredTaskSched();load();},Math.max(CS.sec,45)*1000)}
 let busy=false,again=false,lastLoadAt=0;
 async function load(force){if(!force&&Date.now()-lastLoadAt<800){again=true;return}if(busy){again=true;return}busy=true;lastLoadAt=Date.now();try{await load0()}finally{busy=false;if(again){again=false;load()}}}
 function switchTab(t){tab=t;if(t==='chores')applyCachedChoresForDate();if(t==='msgs'&&chat&&msgsByConv[String(chat)]){chatMsgs=sortMsgs(msgsByConv[String(chat)]);needChatScroll=true;}render();loadPart(t);queueBackgroundSync();}
 function openChat(cid){chat=cid;replyTo=null;openMsgId=null;needChatScroll=true;if(msgsByConv[String(cid)])chatMsgs=sortMsgs(msgsByConv[String(cid)]);else chatMsgs=[];tab='msgs';render();loadPart('msgs');}
-async function loadPart(part){try{if(part==='chores'||part==='choresAll'||part==='all'){try{fetchQuestsFromServer();}catch{} const hot=await db(`/rest/v1/chores?select=id,title,owner,status,created_at,done_at,before_path,photo_path,credits,due_date&due_date=gte.${add(date,-3)}&due_date=lte.${add(date,7)}&order=created_at.desc,id.desc&limit=500`);choresAll=reconcileChoresWithServer(hot,add(date,-3),add(date,7));cacheAt.choresAll=Date.now();pruneExpiredChoreSched();applyCachedChoresForDate();if(part==='choresAll'){const all=await db(`/rest/v1/chores?select=id,title,owner,status,created_at,done_at,before_path,photo_path,credits,due_date&order=created_at.desc&limit=1000`);const _oldAll=choresAll;choresAll=dedupeChores([...all,..._oldAll.filter(x=>_isTmpId(x.id))]);applyCachedChoresForDate();}const d2=await db(`/rest/v1/chores?select=due_date,status&due_date=gte.${add(date,-3)}&due_date=lte.${add(date,7)}`);const dy2={};d2.forEach(x=>{const k=dy2[x.due_date]||(dy2[x.due_date]={total:0,done:0});k.total++;if(x.status=='done')k.done++});days=dy2;saveFullCache();if(tab==='chores')render();}if(part==='tasks'||part==='all'){const tr=await db(`/rest/v1/tasks?select=*&or=(scheduled.eq.true,created_day.eq.${local()})&order=created_at.desc&limit=500`);tasks=reconcileTasksWithServer(tr);cacheAt.tasks=Date.now();await pruneExpiredTaskSched();tasks.forEach(t=>maybeAutoChoreForTask(t));saveFullCache();if(tab==='tasks')render();}if(part==='msgs'||part==='all'){const cr=await db('/rest/v1/convs?select=id,title,is_group,members(user_id)&order=id.desc&limit=200');if(Array.isArray(cr)&&cr.length)convs=cr;cacheAt.convs=Date.now();const lm=await db('/rest/v1/msgs?select=conv_id,sender,body,created_at&order=created_at.desc&limit=200');lastM={};lm.forEach(x=>{if(!lastM[x.conv_id])lastM[x.conv_id]=x});const recent=await db('/rest/v1/msgs?select=id,sender,body,images,created_at,conv_id&order=created_at.desc&limit=500');const grouped={};recent.forEach(m=>{(grouped[m.conv_id]||(grouped[m.conv_id]=[])).push(m)});Object.keys(grouped).forEach(cid=>{msgsByConv[String(cid)]=mergeMsgs(msgsByConv[String(cid)]||[],grouped[cid])});cacheAt.lastM=Date.now();if(chat&&chat!==AI_ID){const cm=await db(`/rest/v1/msgs?select=id,sender,body,images,created_at&conv_id=eq.${chat}&order=created_at.desc&limit=150`);const sorted=sortMsgs(cm);chatMsgs=applyLocalReactions(sorted,chat);chatMsgs=sortMsgs(chatMsgs);msgsByConv[String(chat)]=chatMsgs;if(chatMsgs.length)markChatSeen(chat);if(tab==='msgs')scrollChatToBottom();}saveFullCache();if(tab==='msgs')render();}if(part==='credit'||part==='all'){const er=await db(`/rest/v1/chores?select=id,title,credits,done_at,before_path,photo_path&owner=eq.${S.id}&status=eq.done&credits=gt.0&done_at.gte.${encodeURIComponent(monthStartISO())}&order=done_at.desc&limit=200`);earn=er;cacheAt.earn=Date.now();saveFullCache();if(tab==='credit')render();}if(part==='wallets'||part==='all'){const wr=await db('/rest/v1/wallets?select=*');if(Array.isArray(wr)&&wr.length){W={};wr.forEach(x=>W[x.user_id]=x);}cacheAt.wallets=Date.now();saveFullCache();}if(part==='leaders'){await loadLeaders();cacheAt.leaders=Date.now();saveFullCache();if(tab==='leaders')render();}}catch(e){}}
+async function loadPart(part){try{if(part==='chores'||part==='choresAll'||part==='all'){try{fetchQuestsFromServer();}catch{} const hot=await db(`/rest/v1/chores?select=id,title,owner,status,created_at,done_at,before_path,photo_path,credits,due_date&due_date=gte.${add(date,-3)}&due_date=lte.${add(date,7)}&order=created_at.desc,id.desc&limit=500`);choresAll=reconcileChoresWithServer(hot,add(date,-3),add(date,7));cacheAt.choresAll=Date.now();pruneExpiredChoreSched();applyCachedChoresForDate();if(part==='choresAll'){const all=await db(`/rest/v1/chores?select=id,title,owner,status,created_at,done_at,before_path,photo_path,credits,due_date&order=created_at.desc&limit=1000`);const _oldAll=choresAll;choresAll=dedupeChores([...all,..._oldAll.filter(x=>_isTmpId(x.id))]);applyCachedChoresForDate();}const d2=await db(`/rest/v1/chores?select=due_date,status&due_date=gte.${add(date,-3)}&due_date=lte.${add(date,7)}`);const dy2={};d2.forEach(x=>{const k=dy2[x.due_date]||(dy2[x.due_date]={total:0,done:0});k.total++;if(x.status=='done')k.done++});days=dy2;saveFullCache();if(tab==='chores')render();}if(part==='tasks'||part==='all'){const tr=await db(`/rest/v1/tasks?select=*&or=(scheduled.eq.true,created_day.eq.${local()})&order=created_at.desc&limit=500`);tasks=reconcileTasksWithServer(tr);cacheAt.tasks=Date.now();await pruneExpiredTaskSched();tasks.forEach(t=>maybeAutoChoreForTask(t));saveFullCache();if(tab==='tasks')render();}if(part==='msgs'||part==='all'){const cr=await db('/rest/v1/convs?select=id,title,is_group,members(user_id)&order=id.desc&limit=200');if(Array.isArray(cr)&&cr.length)convs=cr;cacheAt.convs=Date.now();const lm=await db('/rest/v1/msgs?select=conv_id,sender,body,created_at&order=created_at.desc&limit=200');lastM={};lm.forEach(x=>{if(!lastM[x.conv_id])lastM[x.conv_id]=x});const recent=await db('/rest/v1/msgs?select=id,sender,body,images,created_at,conv_id&order=created_at.desc&limit=500');const grouped={};recent.forEach(m=>{(grouped[m.conv_id]||(grouped[m.conv_id]=[])).push(m)});Object.keys(grouped).forEach(cid=>{msgsByConv[String(cid)]=mergeMsgs(msgsByConv[String(cid)]||[],grouped[cid])});cacheAt.lastM=Date.now();if(chat&&chat!==AI_ID){const cm=await db(`/rest/v1/msgs?select=id,sender,body,images,created_at&conv_id=eq.${chat}&order=created_at.desc&limit=150`);const sorted=sortMsgs(cm);chatMsgs=applyLocalReactions(sorted,chat);chatMsgs=sortMsgs(chatMsgs);msgsByConv[String(chat)]=chatMsgs;if(chatMsgs.length)markChatSeen(chat);if(tab==='msgs')scrollChatToBottom();}saveFullCache();if(tab==='msgs')render();}if(part==='credit'||part==='all'){const er=await db(`/rest/v1/chores?select=id,title,credits,done_at,before_path,photo_path&owner=eq.${S.id}&status=eq.done&credits=gt.0&done_at.gte.${encodeURIComponent(monthStartISO())}&order=done_at.desc&limit=200`);earn=er;cacheAt.earn=Date.now();saveFullCache();if(tab==='credit')render();}if(part==='wallets'||part==='all'){const wr=await db('/rest/v1/wallets?select=*');if(Array.isArray(wr)&&wr.length){W={};wr.forEach(x=>W[x.user_id]=x); applyMyWalletToW();}cacheAt.wallets=Date.now();saveFullCache();}if(part==='leaders'){await loadLeaders();cacheAt.leaders=Date.now();saveFullCache();if(tab==='leaders')render();}}catch(e){}}
 function queueBackgroundSync(){if(bgSyncQueued)return;if(Date.now()-bgSyncAt<30000)return;bgSyncQueued=true;setTimeout(async()=>{bgSyncQueued=false;bgSyncAt=Date.now();try{const curTab=tab;if(curTab!=='chores')await loadPart('chores');if(curTab!=='tasks')await loadPart('tasks');if(curTab!=='msgs')await loadPart('msgs');if(curTab!=='credit')await loadPart('credit');await loadPart('choresAll');await loadPart('wallets');}catch{}},700);}
 async function load0(){try{const [u,c,d]=await Promise.all([db('/rest/v1/profiles?select=id,name,avatar_path,last_seen&order=name'),db(`/rest/v1/chores?select=id,title,owner,status,created_at,done_at,before_path,photo_path,credits,due_date&due_date=gte.${add(date,-3)}&due_date=lte.${add(date,7)}&order=created_at.desc,id.desc&limit=500`),db(`/rest/v1/chores?select=due_date,status&due_date=gte.${add(date,-3)}&due_date=lte.${add(date,7)}`),loadExtra()]);const h={},m={},dy={};d.forEach(x=>{const k=dy[x.due_date]||(dy[x.due_date]={total:0,done:0});k.total++;if(x.status=='done')k.done++});if(c.length){const ids=c.map(x=>x.id).join(',');const [hh,mm]=await Promise.all([db(`/rest/v1/hearts?select=chore_id,user_id&chore_id=in.(${ids})`),db(`/rest/v1/comments?select=id,chore_id,author,body,created_at&chore_id=in.(${ids})&order=created_at`)]);hh.forEach(x=>{const k=h[x.chore_id]||(h[x.chore_id]={n:0,mine:false});k.n++;if(x.user_id==S.id)k.mine=true});mm.forEach(x=>(m[x.chore_id]||(m[x.chore_id]=[])).push(x))}if(Array.isArray(u)&&u.length)users=u;choresAll=reconcileChoresWithServer(Array.isArray(c)?c:[],add(date,-3),add(date,7));chores=dedupeChores(choresAll.filter(x=>String(x.due_date||'').slice(0,10)===date));if(Array.isArray(d)&&d.length){days=dy;hearts=h;cms=m;}try{scanTeamInvites();claimTeamCredits();}catch{}migratePendingSched();pruneExpiredChoreSched();await cleanupDuplicateChores();await pruneExpiredTaskSched();choresAll=dedupeChores(choresAll);tasks=dedupeTasks(tasks);saveFullCache();queueBackgroundSync();try{localStorage.setItem('chorely_cache',JSON.stringify({users:u,chores:chores,W:W,at:Date.now()}))}catch{};if(tab=='leaders')await loadLeaders();render()}catch(e){if(e==401||e.s==401)logout();else if(e.s)$('#app').innerHTML='<div class=empty>Problem: '+esc(e.t||e.s)+'<br><br>Did you run ALL the .sql update files in Supabase?</div>';else if(!users.length)$('#app').innerHTML='<div class=empty>Cannot reach the internet. Retrying…</div>'}}
 const ld=t=>new Date(new Date(t).getTime()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
@@ -399,10 +421,303 @@ function handleQuestBroadcast(ev,pl){
 }
 loadQuests();
 
+
+/* ===== V24: DAILY SPIN ===== */
+const WALLET_LEDGER_KEY='chorely_wallet_ledger_v32';
+const WALLET_BASE_KEY='chorely_wallet_base_v32';
+function loadWalletLedger(){ try{ const a=JSON.parse(localStorage.getItem(WALLET_LEDGER_KEY)||'[]'); return Array.isArray(a)?a:[]; }catch{ return []; } }
+function saveWalletLedger(a){ try{ localStorage.setItem(WALLET_LEDGER_KEY, JSON.stringify(a.slice(-200))); }catch{} }
+function walletLedgerTotal(){ return loadWalletLedger().reduce((s,x)=>s+(x.amount||0),0); }
+function walletBaseline(){ try{ const v=parseInt(localStorage.getItem(WALLET_BASE_KEY)||''); return isNaN(v)?null:v; }catch{ return null; } }
+function saveWalletBaseline(v){ try{ localStorage.setItem(WALLET_BASE_KEY, String(v)); }catch{} }
+// MY balance = verified server baseline + all un-synced ledger deltas. This NEVER reverts.
+function myWalletCredits(){
+  try{
+    const _oldPend=JSON.parse(localStorage.getItem('chorely_pending_wallet')||'[]');
+    if(_oldPend.length && !loadWalletLedger().length){
+      const _led=_oldPend.map(p=>({amount:p.amount||0, label:p.label||'migrated', at:p.at||Date.now(), id:'mig_'+Date.now()+'_'+Math.floor(Math.random()*1000)}));
+      saveWalletLedger(_led);
+      localStorage.setItem('chorely_pending_wallet','[]');
+    }
+  }catch{}
+  const base=walletBaseline();
+  if(base!==null) return base + walletLedgerTotal();
+  return (W[S.id]||{credits:0}).credits + walletLedgerTotal();
+}
+function applyMyWalletToW(){
+  // After any server fetch that rebuilds W, re-apply MY ledger-based balance so others' wallets update but mine never snaps back
+  try{
+    const mine=myWalletCredits();
+    if(W[S.id]) W[S.id].credits=mine; else W[S.id]={credits:mine, user_id:S.id};
+  }catch{}
+}
+let _walletBusy=false;
+async function _waitWalletLock(){ let n=0; while(_walletBusy && n<100){ await new Promise(r=>setTimeout(r,30)); n++; } _walletBusy=true; }
+function _unlockWallet(){ _walletBusy=false; }
+// Verify server actually stored the value - PATCH with return=minimal gives no proof, RLS can silently drop it
+async function walletPushToServer(expected){
+  // Try PATCH first
+  try{ await db(`/rest/v1/wallets?user_id=eq.${S.id}`,{m:'PATCH',b:{credits:expected}}); }catch{}
+  // Verify by GET
+  try{
+    const vr=await db('/rest/v1/wallets?select=*&user_id=eq.'+S.id);
+    if(vr&&vr[0]&&vr[0].credits===expected) return true;
+  }catch{}
+  // PATCH didn't stick (row missing or RLS) - try UPSERT: POST with merge-duplicates
+  try{
+    await db('/rest/v1/wallets',{m:'POST',b:{user_id:S.id, credits:expected}, h:{Prefer:'resolution=merge-duplicates,return=minimal'}});
+  }catch(e){
+    // try plain POST then PATCH again
+    try{ await db('/rest/v1/wallets',{m:'POST',b:{user_id:S.id, credits:expected}}); }catch{}
+    try{ await db(`/rest/v1/wallets?user_id=eq.${S.id}`,{m:'PATCH',b:{credits:expected}}); }catch{}
+  }
+  // Verify again
+  try{
+    const vr2=await db('/rest/v1/wallets?select=*&user_id=eq.'+S.id);
+    if(vr2&&vr2[0]&&vr2[0].credits===expected) return true;
+    // If server still shows old value, it did NOT stick - return false so ledger stays
+    return false;
+  }catch{ return false; }
+}
+async function refreshMyWallet(){
+  // Sync: fetch server, reconcile with ledger. Never overwrite local with stale server if ledger pending.
+  try{
+    const wr=await db('/rest/v1/wallets?select=*&user_id=eq.'+S.id);
+    if(wr&&wr[0]){
+      const serverBal=wr[0].credits;
+      const ledger=walletLedgerTotal();
+      const base=walletBaseline();
+      if(ledger!==0){
+        // We have un-synced changes. Server may be behind. Try to push local total.
+        const localTotal=(base!==null?base:serverBal)+ledger;
+        // If server already equals localTotal, ledger is already synced - clear it
+        if(serverBal===localTotal){
+          saveWalletBaseline(serverBal); saveWalletLedger([]);
+          applyMyWalletToW(); try{saveFullCache();}catch{}
+          return serverBal;
+        }
+        // Try to push
+        const ok=await walletPushToServer(localTotal);
+        if(ok){
+          saveWalletBaseline(localTotal); saveWalletLedger([]);
+          applyMyWalletToW(); try{saveFullCache();}catch{}
+          return localTotal;
+        }
+        // Push failed - keep ledger, keep showing localTotal. Do NOT revert.
+        if(base===null) saveWalletBaseline(serverBal);
+        applyMyWalletToW(); try{saveFullCache();}catch{}
+        return localTotal;
+      } else {
+        // No pending - server is truth
+        saveWalletBaseline(serverBal);
+        applyMyWalletToW(); try{saveFullCache();}catch{}
+        return serverBal;
+      }
+    }
+  }catch{}
+  return myWalletCredits();
+}
+async function addCreditsSimple(amount,label){
+  if(!amount) return false;
+  await _waitWalletLock();
+  try{
+    // 1) Make sure baseline is set from server if we never had one, WITHOUT losing ledger
+    if(walletBaseline()===null){
+      try{
+        const wr=await db('/rest/v1/wallets?select=*&user_id=eq.'+S.id);
+        if(wr&&wr[0]) saveWalletBaseline(wr[0].credits);
+        else saveWalletBaseline((W[S.id]||{credits:0}).credits);
+      }catch{ if(walletBaseline()===null) saveWalletBaseline((W[S.id]||{credits:0}).credits); }
+    }
+    const cur=myWalletCredits();
+    const nt=cur+amount;
+    if(nt<0){ _unlockWallet(); return false; }
+    // 2) LEDGER FIRST - this is the source of truth, survives reload + server fetch
+    const ledger=loadWalletLedger();
+    ledger.push({amount, label:label||'', at:Date.now(), id:'w_'+Date.now()+'_'+Math.floor(Math.random()*1000)});
+    saveWalletLedger(ledger);
+    applyMyWalletToW();
+    try{saveFullCache();}catch{}
+    try{ if(tab) render(); }catch{}
+    // 3) Try to push to server. If it verifies, clear ledger + update baseline. If NOT, ledger STAYS so next load won't revert.
+    try{
+      const ok=await walletPushToServer(nt);
+      if(ok){
+        saveWalletBaseline(nt); saveWalletLedger([]);
+        applyMyWalletToW(); try{saveFullCache();}catch{}
+      } else {
+        // Keep ledger - will retry on next refresh / load. Do NOT clear pending.
+        try{ let pend=JSON.parse(localStorage.getItem('chorely_pending_wallet')||'[]'); pend.push({amount, label:label||'', at:Date.now()}); localStorage.setItem('chorely_pending_wallet', JSON.stringify(pend)); }catch{}
+      }
+    }catch(e){
+      // server unreachable - ledger keeps it safe
+    }
+    _unlockWallet();
+    return true;
+  }catch(e){ _unlockWallet(); return false; }
+}
+async function deductCreditsSimple(amount){
+  if(!amount||amount<=0) return true;
+  if(myWalletCredits()<amount){
+    // One fresh sync attempt in case baseline is stale low but server is higher AND no ledger pending
+    try{ await refreshMyWallet(); }catch{}
+    if(myWalletCredits()<amount) return false;
+  }
+  const ok=await addCreditsSimple(-amount,'deduct');
+  return ok;
+}
+async function syncPendingWallet(){
+  // Called on app start - retry pushing any ledger that didn't stick
+  try{
+    if(!loadWalletLedger().length) return;
+    const total=myWalletCredits();
+    const ok=await walletPushToServer(total);
+    if(ok){ saveWalletBaseline(total); saveWalletLedger([]); applyMyWalletToW(); try{saveFullCache();}catch{} }
+  }catch{}
+}
+// --- Daily Spin: 5 to 20 credits, once per day ---
+function spinKey(){return 'chorely_daily_spin_'+String(S.id);}
+function lastSpinDate(){try{return localStorage.getItem(spinKey())||'';}catch{return '';}}
+function canSpinToday(){return lastSpinDate()!==local();}
+function spinBadgeHtml(){return canSpinToday()?`<b style="background:#f59e0b;color:#000;border-radius:999px;padding:1px 7px;font-size:11px;margin-left:4px">NEW</b>`:'';}
+function openDailySpin(){
+  if(!canSpinToday()){ toast('🎡 You already spun today — come back tomorrow!'); return; }
+  let el=document.getElementById('spinOverlay');
+  if(!el){ el=document.createElement('div'); el.id='spinOverlay'; el.className='spin-overlay'; document.body.appendChild(el); }
+  el.innerHTML=`<div class=spin-box><div style="font-size:36px">🎡</div><h2 style="margin:4px 0">Daily Spin</h2><small style="color:var(--mut)">1 spin per day · Win <b>5 to 20 credits</b></small><div class=spin-wheel id=spinWheel><div class=spin-center id=spinCenter>?</div></div><div id=spinResult style="font-weight:800;min-height:22px;margin:6px 0">Tap SPIN to win!</div><div style="display:flex;gap:8px"><button class=g style="flex:1" onclick="closeDailySpin()">Close</button><button id=spinBtn style="flex:1" onclick="doDailySpin()">🎡 SPIN</button></div><small style="color:var(--mut)">Your balance: ${myWalletCredits()} credits</small></div>`;
+  el.classList.add('show');
+}
+function closeDailySpin(){ const el=document.getElementById('spinOverlay'); if(el) el.classList.remove('show'); }
+async function doDailySpin(){
+  if(!canSpinToday()){ toast('Already spun today!'); closeDailySpin(); return; }
+  const btn=document.getElementById('spinBtn'); if(btn) btn.disabled=true;
+  const wheel=document.getElementById('spinWheel'); const center=document.getElementById('spinCenter'); const res=document.getElementById('spinResult');
+  const prize=5+Math.floor(Math.random()*16); // 5..20
+  if(wheel) wheel.classList.add('spinning');
+  let ticks=0; const iv=setInterval(()=>{
+    ticks++;
+    if(center) center.textContent=5+Math.floor(Math.random()*16);
+    if(ticks>18){ clearInterval(iv); }
+  },90);
+  await new Promise(r=>setTimeout(r,2300));
+  if(center) center.textContent=prize;
+  if(res) res.textContent=`🎉 You won ${prize} credits!`;
+  try{ localStorage.setItem(spinKey(), local()); }catch{}
+  const ok=await addCreditsSimple(prize,'daily-spin');
+  if(ok){ toast(`🎡 Daily Spin: +${prize} credits! Balance now ${myWalletCredits()}`); }
+  else { toast(`🎡 You won ${prize} credits! (will sync when online)`); }
+  try{ bcast('daily_spin',{user_id:S.id,prize}); }catch{}
+  if(btn) btn.textContent='Done ✓';
+  setTimeout(()=>{ closeDailySpin(); if(tab==='chores'||tab==='credit') render(); },1400);
+}
+// V31 cleanup - Scratch only
+
+
+
+/* ===== V29: SCRATCH CARDS ===== */
+let scratchCurrent=null;
+const GAME_EARN_KEY='chorely_game_earnings_v31';
+function loadGameEarnings(){ try{ const a=JSON.parse(localStorage.getItem(GAME_EARN_KEY)||'[]'); return Array.isArray(a)?a:[]; }catch{ return []; } }
+function saveGameEarnings(a){ try{ localStorage.setItem(GAME_EARN_KEY, JSON.stringify(a.slice(-200))); }catch{} }
+function addGameEarning(title, credits){
+  const entry={ id: Date.now()+Math.floor(Math.random()*1000), title, credits, done_at: new Date().toISOString(), kind:'scratch' };
+  const a=loadGameEarnings(); a.push(entry); saveGameEarnings(a);
+  return entry;
+}
+
+function openScratch(){
+  let el=document.getElementById('scratchOverlay');
+  if(!el){ el=document.createElement('div'); el.id='scratchOverlay'; el.className='scratch-overlay'; document.body.appendChild(el); }
+  el.classList.add('show');
+  renderScratch();
+}
+function closeScratch(){ const el=document.getElementById('scratchOverlay'); if(el) el.classList.remove('show'); }
+function makeScratchCard(){
+  // 9 spots, 2 winners (5-10), 7 zeros -> scratch 3, ~58% chance to hit a winner = MEDIUM difficulty
+  const spots=Array.from({length:9},()=>({value:0, revealed:false}));
+  const idxs=[0,1,2,3,4,5,6,7,8];
+  for(let i=idxs.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [idxs[i],idxs[j]]=[idxs[j],idxs[i]]; }
+  const winIdx=idxs.slice(0,2);
+  winIdx.forEach(ii=>{ spots[ii].value=5+Math.floor(Math.random()*6); }); // V30: lowered to 5-10 only
+  return {id:'scratch_'+Date.now(), spots, scratchesLeft:3, status:'playing', winAmount:0, created_at:Date.now()};
+}
+async function buyScratchCard(){
+  await refreshMyWallet();
+  if(myWalletCredits()<14){ toast('Need 14 credits for a scratch card! You have '+myWalletCredits()+'. Spin or do chores!'); return; }
+  if(scratchCurrent && scratchCurrent.status==='playing'){ if(!confirm('You have an unfinished card. Buy a new one for 14 credits and abandon the old one?')) return; }
+  if(!confirm('Buy a scratch card for 14 credits? You get 3 scratches. Hit numbers that are NOT 0 to win 5-10 credits each. You keep playing until all 3 scratches are used!')) return;
+  const ok=await deductCreditsSimple(14);
+  if(!ok){ toast('Could not deduct 14 credits — you have '+myWalletCredits()+'. Reload and try again.'); return; }
+  // balance already updated locally - do NOT refreshMyWallet() here or it reverts with stale server value
+  scratchCurrent=makeScratchCard();
+  toast('🎫 Card bought! -14 credits. Scratch 3 tiles — find a number that is NOT 0!');
+  renderScratch();
+}
+async function scratchTile(i){
+  if(!scratchCurrent||scratchCurrent.status!=='playing') return;
+  const spot=scratchCurrent.spots[i];
+  if(!spot||spot.revealed) return;
+  if(scratchCurrent.scratchesLeft<=0) return;
+  spot.revealed=true;
+  scratchCurrent.scratchesLeft--;
+  // V30: if you hit a number, DON'T end instantly - keep playing until scratches run out
+  if(spot.value!==0){
+    scratchCurrent.winAmount=(scratchCurrent.winAmount||0)+spot.value;
+    toast(`✨ You hit +${spot.value}! Keep scratching — ${scratchCurrent.scratchesLeft} left`);
+  } else {
+    if(scratchCurrent.scratchesLeft>0) toast(`0 — ${scratchCurrent.scratchesLeft} scratch${scratchCurrent.scratchesLeft>1?'es':''} left, keep going!`);
+  }
+  // only finish when all 3 scratches used
+  if(scratchCurrent.scratchesLeft<=0){
+    if((scratchCurrent.winAmount||0)>0){
+      scratchCurrent.status='won';
+      const total=scratchCurrent.winAmount;
+      // reveal all so they see where the other winner was
+      scratchCurrent.spots.forEach(s=>s.revealed=true);
+      renderScratch();
+      const ok=await addCreditsSimple(total,'scratch-win');
+      // V31: add win to Recent Earnings in Credit tab
+      try{ addGameEarning('🎫 Scratch Card Win', total); }catch{}
+      // DO NOT refreshMyWallet() here - it would revert the local win with stale server value
+      if(ok) toast(`🎉 SCRATCH WIN! +${total} credits! Balance now ${myWalletCredits()}`);
+      else toast(`🎉 You won ${total} credits! Balance ${myWalletCredits()}`);
+      try{ bcast('scratch_win',{user_id:S.id, amount:total}); }catch{}
+    } else {
+      scratchCurrent.status='lost';
+      scratchCurrent.spots.forEach(s=>s.revealed=true);
+      renderScratch();
+      toast('😅 No luck — all 3 were 0. Try another card!');
+    }
+    return;
+  }
+  renderScratch();
+}
+function renderScratch(){
+  const el=document.getElementById('scratchOverlay'); if(!el) return;
+  const bal=myWalletCredits();
+  let cardHtml='';
+  if(!scratchCurrent){
+    cardHtml=`<div style="text-align:center;padding:20px 0"><div style="font-size:56px">🎫</div><h2 style="margin:6px 0">Scratch Cards</h2><p style="color:var(--mut)">Each card costs <b>14 credits</b><br>You get <b>3 scratches</b><br>Find a number that is <b>NOT 0</b> to win <b>5-10 credits</b> per hit<br><small>2 winning tiles hidden in 9 — medium difficulty, ~58% win chance · Each win is 5-10</small></p><button style="width:100%;margin-top:14px;font-size:16px;padding:14px" onclick="buyScratchCard()">🎫 Buy Scratch Card — 14 credits</button><small style="color:var(--mut)">Balance: ${bal} credits</small></div>`;
+  } else {
+    const g=scratchCurrent;
+    const tiles=g.spots.map((s,idx)=>{
+      if(!s.revealed) return `<button class="scratch-tile covered" onclick="scratchTile(${idx})">✨</button>`;
+      if(s.value!==0) return `<div class="scratch-tile revealed-win">+${s.value}</div>`;
+      return `<div class="scratch-tile revealed-zero">0</div>`;
+    }).join('');
+    let statusHtml='';
+    if(g.status==='won') statusHtml=`<div style="text-align:center;background:#22c55e22;border:1px solid #22c55e;padding:12px;border-radius:14px;margin-top:12px"><b style="font-size:20px">🎉 YOU WON +${g.winAmount} credits!</b><br><small>Total from all 3 scratches · Balance now: ${bal}</small><button style="width:100%;margin-top:10px" onclick="buyScratchCard()">🎫 Buy Another — 14 credits</button></div>`;
+    else if(g.status==='lost') statusHtml=`<div style="text-align:center;background:#3332;border:1px solid var(--bd);padding:12px;border-radius:14px;margin-top:12px"><b>😅 All 0 — no win this card</b><br><small>Winners were hidden — try again!</small><button style="width:100%;margin-top:10px" onclick="buyScratchCard()">🎫 Try Again — 14 credits</button></div>`;
+    else statusHtml=`<div style="text-align:center;margin-top:12px"><b>Scratches left: ${g.scratchesLeft} / 3 · Banked so far: +${g.winAmount||0}</b><br><small style="color:var(--mut)">Tap a ✨ tile to scratch. Hit a number? Keep going — you still have scratches left! Total added at the end.</small></div>`;
+    cardHtml=`<div style="text-align:center"><b style="font-size:18px">🎫 Your Scratch Card</b><br><small style="color:var(--mut)">3 scratches · 2 winners hidden · Win 5-10 per hit · Don't stop on first hit!</small></div><div class=scratch-grid>${tiles}</div>${statusHtml}${g.status!=='playing'?``:`<button class=g style="width:100%;margin-top:14px" onclick="if(confirm('Abandon this card? No refund.')){scratchCurrent=null;renderScratch();}">Abandon card (no refund)</button>`}`;
+  }
+  el.innerHTML=`<div class=scratch-top><button onclick="closeScratch()" style="padding:8px 12px">✕ Close</button><div><b>🎫 Scratch Cards</b><br><small style="color:var(--mut)">14 per card · Win 5-10 per hit · Keep playing till 3 scratches used</small></div><span style="margin-left:auto;font-weight:800">👛 ${bal}</span></div><div class=scratch-body>${cardHtml}<div style="margin-top:18px;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px"><b>How it works</b><br><small style="color:var(--mut)">1. Buy a card for 14 credits<br>2. You get 3 scratches — tap any covered tile<br>3. If you reveal a number that is NOT 0, you bank that many credits (5-10). You KEEP playing until all 3 scratches are used, then total is added<br>4. If all 3 are 0, you lose the 14. No tricks — winners are randomly placed each card.</small></div></div>`;
+}
+
 function vChores(){if(!Array.isArray(chores))chores=[];if(!Array.isArray(users))users=[];const t=local(),mo=new Date(date+'T12:00:00Z').toLocaleDateString([], {month:'long',year:'numeric',timeZone:'UTC'});const strip=Array.from({length:14},(_,i)=>add(date,i-3)).map(d=>{const x=days[d],c=!x?'':x.done==x.total?'d':'p',w=new Date(d+'T12:00:00Z').toLocaleDateString([], {weekday:'short',timeZone:'UTC'});return `<div class="day ${d==date?'on':''}" onclick="go('${d}')">${w}<b>${+d.slice(8)}</b><i class="dot ${c}"></i></div>`}).join('');const chips=[{id:'',name:'Everyone'},...users].map(u=>`<div class="chip ${who==u.id?'on':''}" onclick="who='${u.id}';render()">${esc(u.id==S.id?'Me':u.name)}</div>`).join('');const fl=['all','later','pending','done'].map(s=>`<div class="chip ${flt==s?'on':''}" onclick="flt='${s}';render()">${s=='all'?'All':LBL[s]}</div>`).join('');const tot=chores.length,dn=chores.filter(c=>c.status=='done').length;const prog=tot?`<div class=prog><div class=pb><i style="width:${dn/tot*100}%"></i></div><small style="color:var(--mut)">${dn} of ${tot} done</small></div>`:'';
 const _otherDates=[...new Set((choresAll||[]).map(x=>String(x.due_date||'').slice(0,10)).filter(d=>d&&d!==date))].sort();const _upcoming=_otherDates.filter(d=>d>date),_past=[..._otherDates.filter(d=>d<date)].reverse();const _jump=_upcoming[0]||_past[0]||'';const _otherCount=(choresAll||[]).filter(x=>String(x.due_date||'').slice(0,10)!==date).length;const _otherBanner=_otherCount?`<div class=card style="border-color:var(--ac)">📅 <b>${_otherCount} chore${_otherCount>1?'s':''} on other days</b> — not gone, just on ${ _upcoming.length?'its own date':'another date'}. ${_jump?`<button style="margin-top:8px" onclick="go('${_jump}')">Jump to ${_jump}</button>`:''}<small style="color:var(--mut);display:block;margin-top:4px">Chores only show on their own due date — tap the date strip or this button.</small></div>`:'';
 const _pendBanner='';/* v19: no top Team-invites popup — join only via Accept/Decline below the specific chore post */_seenTeamInviteTitles=new Set();const cards=chores.filter(c=>(!who||c.owner==who)&&(flt=='all'||c.status==flt)).map(card).join('')||'<div class=empty>No chores here</div>';
-return `<header><h1>Chorely</h1><span style="display:flex;gap:6px;align-items:center"><button class=g onclick="openQuests()">📋 Quests ${questBadgeHtml()}</button>${date!=t?`<button class=g onclick="go('${t}')">Today</button>`:''}</span></header>${_pendBanner}${_otherBanner}<div class=mo><button class=g onclick="shiftMonth(-1)">‹</button><b>${mo}</b><button class=g onclick="shiftMonth(1)">›</button></div><div class=row>${strip}</div><div class=row>${chips}</div><div class=row>${fl}</div>${warn()}${prog}${cards}<button class=fab onclick="addView()">+</button>`}
+return `<header><h1>Chorely</h1><span style="display:flex;gap:6px;align-items:center"><button class=g onclick="openScratch()">🎫 Scratch</button><button class=g onclick="openDailySpin()">🎡 Spin ${spinBadgeHtml()}</button><button class=g onclick="openQuests()">📋 Quests ${questBadgeHtml()}</button>${date!=t?`<button class=g onclick="go('${t}')">Today</button>`:''}</span></header>${_pendBanner}${_otherBanner}<div class=mo><button class=g onclick="shiftMonth(-1)">‹</button><b>${mo}</b><button class=g onclick="shiftMonth(1)">›</button></div><div class=row>${strip}</div><div class=row>${chips}</div><div class=row>${fl}</div>${warn()}${prog}${cards}<button class=fab onclick="addView()">+</button>`}
 
 /* ================= V12: TIMER ================= */
 function timerState(id){const m=getChoreMeta(id);return (m&&m.timer)||null}
@@ -423,7 +738,32 @@ function openTeamChore(id){const _c=(choresAll||[]).find(x=>String(x.id)===Strin
 async function acceptTeamInvite(choreId,allIds){const ids=(allIds&&allIds.length?allIds:[String(choreId)]);let _okAll=true,_offline=false;for(const id of ids){const _ok=await postTeamComment(id,`[[team-accept:${S.id}|${id}]]`);if(_ok){const _arr=cms[String(id)]||(cms[String(id)]=[]);if(!_arr.some(cm=>parseTeamMarkers(cm.body||'').some(k=>k.kind==='team-accept'&&String(k.user)===String(S.id))))_arr.push({chore_id:String(id),author:S.id,body:`[[team-accept:${S.id}|${id}]]`,created_at:new Date().toISOString()});const _m=getChoreMeta(id)||{};const _t=_m.team||{};saveChoreMeta(id,{team:{invited:[...new Set([...(_t.invited||[]),String(S.id)])],accepted:[...new Set([...(_t.accepted||[]),String(S.id)])],declined:(_t.declined||[])}});}else if(!isOnlineNow()){_offline=true;queueOfflineItem('comment',{chore_id:id,body:`[[team-accept:${S.id}|${id}]]`},{silent:true});const _arr=cms[String(id)]||(cms[String(id)]=[]);if(!_arr.some(cm=>parseTeamMarkers(cm.body||'').some(k=>k.kind==='team-accept'&&String(k.user)===String(S.id))))_arr.push({chore_id:String(id),author:S.id,body:`[[team-accept:${S.id}|${id}]]`,created_at:new Date().toISOString()});const _m2=getChoreMeta(id)||{};const _t2=_m2.team||{};saveChoreMeta(id,{team:{invited:[...new Set([...(_t2.invited||[]),String(S.id)])],accepted:[...new Set([...(_t2.accepted||[]),String(S.id)])],declined:(_t2.declined||[])}});}else{_okAll=false;}}const c=(chores||[]).find(x=>String(x.id)===String(choreId))||(choresAll||[]).find(x=>String(x.id)===String(choreId));bcast('team_accept',{chore_ids:ids,user_id:S.id});if(_okAll&&!_offline)toast('✅ You joined the team'+(c?' — '+c.title:''));else if(_offline)toast('⏳ Saved — Accept will send when back online');else toast('Could not save Accept — check connection, tap Accept again');render();load(true)}
 async function declineTeamInvite(choreId,allIds){const ids=(allIds&&allIds.length?allIds:[String(choreId)]);let _okAll=true,_offline=false;for(const id of ids){const _ok=await postTeamComment(id,`[[team-decline:${S.id}|${id}]]`);if(_ok){const _arr=cms[String(id)]||(cms[String(id)]=[]);if(!_arr.some(cm=>parseTeamMarkers(cm.body||'').some(k=>k.kind==='team-decline'&&String(k.user)===String(S.id))))_arr.push({chore_id:String(id),author:S.id,body:`[[team-decline:${S.id}|${id}]]`,created_at:new Date().toISOString()});const _m=getChoreMeta(id)||{};const _t=_m.team||{};saveChoreMeta(id,{team:{invited:[...new Set([...(_t.invited||[]),String(S.id)])],accepted:(_t.accepted||[]),declined:[...new Set([...(_t.declined||[]),String(S.id)])]}});}else if(!isOnlineNow()){_offline=true;queueOfflineItem('comment',{chore_id:id,body:`[[team-decline:${S.id}|${id}]]`},{silent:true});const _arr=cms[String(id)]||(cms[String(id)]=[]);if(!_arr.some(cm=>parseTeamMarkers(cm.body||'').some(k=>k.kind==='team-decline'&&String(k.user)===String(S.id))))_arr.push({chore_id:String(id),author:S.id,body:`[[team-decline:${S.id}|${id}]]`,created_at:new Date().toISOString()});const _m2=getChoreMeta(id)||{};const _t2=_m2.team||{};saveChoreMeta(id,{team:{invited:[...new Set([...(_t2.invited||[]),String(S.id)])],accepted:(_t2.accepted||[]),declined:[...new Set([...(_t2.declined||[]),String(S.id)])]}});}else{_okAll=false;}}bcast('team_decline',{chore_ids:ids,user_id:S.id});if(_okAll&&!_offline)toast('You declined the team invite');else if(_offline)toast('⏳ Saved — Decline will send when back online');else toast('Could not save Decline — check connection, tap again');render();load(true)}
 function scanTeamInvites(){try{teamInvites={};const allChores=[...(choresAll||[]),...(chores||[])];allChores.forEach(c=>{const cl=cms[c.id]||[];cl.forEach(cm=>{parseTeamMarkers(cm.body||'').forEach(mk=>{if(mk.kind==='team-invite'&&String(mk.user)===String(S.id)){const st=myTeamStatus(c,teamInfoFor(c));if(st==='invited')teamInvites[String(c.id)]={from:cm.author,title:c.title,ids:[String(c.id)]};}})});});Object.values(msgsByConv||{}).forEach(list=>{(list||[]).forEach(mm=>{parseTeamMarkers(mm.body||'').forEach(mk=>{if(mk.kind==='team-invite'&&String(mk.user)===String(S.id)){mk.ids.forEach(id=>{if(!teamInvites[String(id)]){const cc=allChores.find(x=>String(x.id)===String(id));teamInvites[String(id)]={from:mm.sender,title:(cc&&cc.title)||'a chore',ids:mk.ids};}});}})});});}catch{}}
-let _walletChain=Promise.resolve();async function awardTopUp(amount,choreId,label){if(!amount||amount<=0)return false;const _run=_walletChain.then(async()=>{try{try{const _cm=await db(`/rest/v1/comments?select=body&chore_id=eq.${choreId}&order=created_at`);if((Array.isArray(_cm)?_cm:[]).some(cm=>parseTeamMarkers(cm.body||'').some(mk=>mk.kind==='credit-claim'&&String(mk.user)===String(S.id)&&String(mk.chore)===String(choreId))))return true;}catch{}let _cur=(W[S.id]||{credits:0}).credits;try{const _wr=await db('/rest/v1/wallets?select=*&user_id=eq.'+S.id);if(_wr&&_wr[0])_cur=_wr[0].credits;}catch{}const _nt=_cur+amount;try{await db(`/rest/v1/wallets?user_id=eq.${S.id}`,{m:'PATCH',b:{credits:_nt}});}catch(e){const pc=loadPendingClaims();if(!pc.some(x=>String(x.choreId)===String(choreId)&&String(x.user)===String(S.id)))pc.push({choreId:String(choreId),amount,user:String(S.id),label:label||'',at:new Date().toISOString()});savePendingClaims(pc);return false;}try{const _vr=await db('/rest/v1/wallets?select=*&user_id=eq.'+S.id);const _actual=_vr&&_vr[0]?_vr[0].credits:_nt;if(W[S.id])W[S.id].credits=_actual;if(_actual<_nt){const _missing=_nt-_actual;await db(`/rest/v1/wallets?user_id=eq.${S.id}`,{m:'PATCH',b:{credits:_actual+_missing}});if(W[S.id])W[S.id].credits=_actual+_missing;}}catch{}if(W[S.id])W[S.id].credits=Math.max(W[S.id].credits||0,_nt);try{await postTeamComment(choreId,`[[credit-claim:${S.id}|${choreId}|${amount}]]`);}catch{queueOfflineItem('comment',{chore_id:choreId,body:`[[credit-claim:${S.id}|${choreId}|${amount}]]`},{silent:true});}return true;}catch(e){const pc=loadPendingClaims();if(!pc.some(x=>String(x.choreId)===String(choreId)&&String(x.user)===String(S.id)))pc.push({choreId:String(choreId),amount,user:String(S.id),label:label||'',at:new Date().toISOString()});savePendingClaims(pc);return false;}});_walletChain=_run.catch(()=>{});return _run;}
+let _walletChain=Promise.resolve();async function awardTopUp(amount,choreId,label){
+  if(!amount||amount<=0) return Promise.resolve(false);
+  // V32: route chore credits through the same ledger as Scratch/Spin so they never revert
+  return (async()=>{
+    try{
+      try{
+        const _cm=await db(`/rest/v1/comments?select=body&chore_id=eq.${choreId}&order=created_at`);
+        if((Array.isArray(_cm)?_cm:[]).some(cm=>parseTeamMarkers(cm.body||'').some(mk=>mk.kind==='credit-claim'&&String(mk.user)===String(S.id)&&String(mk.chore)===String(choreId)))) return true;
+      }catch{}
+      const ok=await addCreditsSimple(amount, label||'chore');
+      if(!ok){
+        const pc=loadPendingClaims();
+        if(!pc.some(x=>String(x.choreId)===String(choreId)&&String(x.user)===String(S.id))) pc.push({choreId:String(choreId),amount,user:String(S.id),label:label||'',at:new Date().toISOString()});
+        savePendingClaims(pc);
+        return false;
+      }
+      try{ await postTeamComment(choreId,`[[credit-claim:${S.id}|${choreId}|${amount}]]`); }catch{ queueOfflineItem('comment',{chore_id:choreId,body:`[[credit-claim:${S.id}|${choreId}|${amount}]]`},{silent:true}); }
+      return true;
+    }catch(e){
+      const pc=loadPendingClaims();
+      if(!pc.some(x=>String(x.choreId)===String(choreId)&&String(x.user)===String(S.id))) pc.push({choreId:String(choreId),amount,user:String(S.id),label:label||'',at:new Date().toISOString()});
+      savePendingClaims(pc);
+      return false;
+    }
+  })();
+}
 async function retryPendingClaim(choreId){const pc=loadPendingClaims();const cl=pc.find(x=>String(x.choreId)===String(choreId));if(!cl)return;const ok=await awardTopUp(cl.amount,choreId,cl.label);if(ok){savePendingClaims(loadPendingClaims().filter(x=>String(x.choreId)!==String(choreId)));toast('✅ +'+cl.amount+' credits claimed');load()}else{toast('Still could not update wallet — try again later, same amount, no double.');render()}}
 async function claimTeamCredits(){try{const allChores=[...(choresAll||[]),...(chores||[])];for(const c of allChores){if(c.status!=='done')continue;const info=teamInfoFor(c);if(info.mode!=='team'||!info.credits)continue;if(myTeamStatus(c,info)!=='accepted')continue;const cl=cms[c.id]||[];const already=cl.some(cm=>parseTeamMarkers(cm.body||'').some(mk=>mk.kind==='credit-claim'&&String(mk.user)===String(S.id)&&String(mk.chore)===String(c.id)));if(already)continue;if(loadPendingClaims().some(x=>String(x.choreId)===String(c.id)))continue;const ok=await awardTopUp(info.credits,c.id,'team');if(ok)toast('👥 Team bonus +'+info.credits+' credits');}}catch{}}
 /* ================= V12: ROULETTE + AI CREDIT GIVER ================= */
@@ -440,10 +780,17 @@ const _ti=teamInfoFor(c);const _myTeam=myTeamStatus(c,_ti);const _timerHtml=(c.s
 const monthStartISO=()=>{const d=new Date();d.setDate(1);d.setHours(0,0,0,0);return d.toISOString()};
 async function purgeOldEarnings(){/* v13: no-op. The old version DELETEd every done chore from before this month, so finished chores vanished "after some time". The Credit tab already filters earnings to this month — the chores themselves stay. */return;}
 function toggleEarnSel(id,checked){if(checked)earnSel.add(id);else earnSel.delete(id);render()}
-async function delSelectedEarn(){if(!earnSel.size)return alert('Select at least one earning to delete.');if(!confirm(`Delete ${earnSel.size} selected earning record(s)? Your wallet credits will NOT change.`))return;const ids=[...earnSel];try{const rows=earn.filter(x=>earnSel.has(x.id));const paths=rows.flatMap(x=>[x.before_path,x.photo_path]).filter(Boolean);if(paths.length)rmFiles(paths);await db(`/rest/v1/chores?id=in.(${ids.join(',')})&owner=eq.${S.id}`,{m:'DELETE'});earnSel.clear();toast('Selected earnings deleted');load()}catch{alert('Could not delete selected earnings')}}
-function vCredit(){const _pc=loadPendingClaims();const _pcHtml=_pc.length?`<div class=set style="border-color:var(--wa)"><h3>⏳ Pending bonus</h3><small>Wallet did not update yet — tap to claim the same roulette / team amount.</small>${_pc.map(x=>`<div style="display:flex;gap:8px;align-items:center;margin-top:8px"><span style="flex:1">+${x.amount} credits${x.label?' · '+esc(x.label):''}</span><button onclick="retryPendingClaim('${x.choreId}')">Claim</button></div>`).join('')}</div>`:'';const w=W[S.id]||{credits:0},left=leftSec(w);const t0=new Date();t0.setHours(0,0,0,0);const wk=new Date(t0);wk.setDate(wk.getDate()-6);const mo=new Date(t0);mo.setDate(1);const monthEarn=earn.filter(x=>new Date(x.done_at)>=mo);const sum=d=>monthEarn.filter(x=>new Date(x.done_at)>=d).reduce((a,x)=>a+x.credits,0);const all=Object.values(W).sort((a,b)=>b.credits-a.credits);return `<header><h1>Credits</h1></header>${_pcHtml}<div class=set><h3 style="font-size:24px">👛 ${w.credits} credits</h3><small>≈ ₱${(w.credits/MR).toFixed(2)} · ${MR} credits = ₱1 · your credits never reset</small></div><div class=set><h3>⏳ Screen time left</h3><b data-cd="${S.id}" style="font-size:24px">${fmtDur(left)}</b><br><small>${left?'Ends '+fmt(w.screen_until):'No active screen time'}</small></div><div class=set><h3>Cash out</h3><small>60 credits = 1h 45m screen time · ${MR} credits = ₱1.</small><input id=ca type=number min=1 placeholder="Credits to cash out"><div class=seg><button class=g onclick="$('#ca').value=${w.credits}">All</button></div><div style="display:flex;gap:8px;margin-top:12px"><button style="flex:1" onclick="cash('screen')">⏳ Screen time</button><button style="flex:1;background:var(--ok);color:#000" onclick="cash('money')">💵 Money (₱)</button></div></div><div class=set><h3>Earned</h3><div class=st><div><b>${sum(t0)}</b>today</div><div><b>${sum(wk)}</b>last 7 days</div><div><b>${sum(mo)}</b>this month</div><div><b>${monthEarn.length}</b>paid chores</div></div></div><div class=set><h3>Everyone's credits</h3>${all.map(x=>`<div class=top style="margin-top:10px">${av(x.user_id,38)}<div class=m><b>${esc(nmOf(x.user_id))}${x.user_id==S.id?' (you)':''}</b><small>₱${(x.credits/MR).toFixed(2)} · ⏳ <span data-cd="${x.user_id}">${fmtDur(leftSec(x))}</span></small></div><b class=cnt>${x.credits}</b></div>`).join('')||'<small>No wallets yet</small>'}</div><div class=set><div style="display:flex;align-items:center;justify-content:space-between"><h3>Recent earnings (this month)</h3><button class=ic onclick="delSelectedEarn()">🗑</button></div>${monthEarn.map(x=>`<div class="nf earn-row"><div style="flex:1">${esc(x.title)} <b style="color:var(--ok)">+${x.credits}</b><br><small style="color:var(--mut)">${fmt(x.done_at)}</small></div><input type=checkbox class=earn-chk ${earnSel.has(x.id)?'checked':''} onchange="toggleEarnSel(${x.id},this.checked)"></div>`).join('')||'<small>Finish a chore with before and after photos to earn credits</small>'}</div>`}
+async function delSelectedEarn(){if(!earnSel.size)return alert('Select at least one earning to delete.');if(!confirm(`Delete ${earnSel.size} selected earning record(s)? Your wallet credits will NOT change.`))return;const ids=[...earnSel];try{
+  // V31: game earnings (Scratch) live in localStorage, not in chores table
+  const _gameAll=loadGameEarnings(); const _gameSel=_gameAll.filter(x=>earnSel.has(x.id));
+  if(_gameSel.length){ saveGameEarnings(_gameAll.filter(x=>!earnSel.has(x.id))); }
+  const rows=earn.filter(x=>earnSel.has(x.id)); const choreIds=rows.map(x=>x.id);
+  if(choreIds.length){ const paths=rows.flatMap(x=>[x.before_path,x.photo_path]).filter(Boolean); if(paths.length)rmFiles(paths); await db(`/rest/v1/chores?id=in.(${choreIds.join(',')})&owner=eq.${S.id}`,{m:'DELETE'}); }
+  earnSel.clear();toast('Selected earnings deleted');load()}catch{alert('Could not delete selected earnings')}}
+function vCredit(){const _pc=loadPendingClaims();const _pcHtml=_pc.length?`<div class=set style="border-color:var(--wa)"><h3>⏳ Pending bonus</h3><small>Wallet did not update yet — tap to claim the same roulette / team amount.</small>${_pc.map(x=>`<div style="display:flex;gap:8px;align-items:center;margin-top:8px"><span style="flex:1">+${x.amount} credits${x.label?' · '+esc(x.label):''}</span><button onclick="retryPendingClaim('${x.choreId}')">Claim</button></div>`).join('')}</div>`:'';const w=W[S.id]||{credits:0},left=leftSec(w);const t0=new Date();t0.setHours(0,0,0,0);const wk=new Date(t0);wk.setDate(wk.getDate()-6);const mo=new Date(t0);mo.setDate(1);const _gameEarnAll=loadGameEarnings();
+const monthEarn=[...earn.filter(x=>new Date(x.done_at)>=mo), ..._gameEarnAll.filter(x=>new Date(x.done_at)>=mo)].sort((a,b)=>new Date(b.done_at)-new Date(a.done_at));const sum=d=>monthEarn.filter(x=>new Date(x.done_at)>=d).reduce((a,x)=>a+x.credits,0);const all=Object.values(W).sort((a,b)=>b.credits-a.credits);return `<header><h1>Credits</h1></header>${_pcHtml}<div class=set><h3 style="font-size:24px">👛 ${w.credits} credits</h3><small>≈ ₱${(w.credits/MR).toFixed(2)} · ${MR} credits = ₱1 · your credits never reset</small></div><div class=set><h3>⏳ Screen time left</h3><b data-cd="${S.id}" style="font-size:24px">${fmtDur(left)}</b><br><small>${left?'Ends '+fmt(w.screen_until):'No active screen time'}</small></div><div class=set><h3>Cash out</h3><small>60 credits = 1h 45m screen time · ${MR} credits = ₱1.</small><input id=ca type=number min=1 placeholder="Credits to cash out"><div class=seg><button class=g onclick="$('#ca').value=${w.credits}">All</button></div><div style="display:flex;gap:8px;margin-top:12px"><button style="flex:1" onclick="cash('screen')">⏳ Screen time</button><button style="flex:1;background:var(--ok);color:#000" onclick="cash('money')">💵 Money (₱)</button></div></div><div class=set><h3>Earned</h3><div class=st><div><b>${sum(t0)}</b>today</div><div><b>${sum(wk)}</b>last 7 days</div><div><b>${sum(mo)}</b>this month</div><div><b>${monthEarn.length}</b>earnings</div></div></div><div class=set><h3>Everyone's credits</h3>${all.map(x=>`<div class=top style="margin-top:10px">${av(x.user_id,38)}<div class=m><b>${esc(nmOf(x.user_id))}${x.user_id==S.id?' (you)':''}</b><small>₱${(x.credits/MR).toFixed(2)} · ⏳ <span data-cd="${x.user_id}">${fmtDur(leftSec(x))}</span></small></div><b class=cnt>${x.credits}</b></div>`).join('')||'<small>No wallets yet</small>'}</div><div class=set><div style="display:flex;align-items:center;justify-content:space-between"><h3>Recent earnings (this month)</h3><button class=ic onclick="delSelectedEarn()">🗑</button></div>${monthEarn.map(x=>`<div class="nf earn-row"><div style="flex:1">${esc(x.title)} <b style="color:var(--ok)">+${x.credits}</b><br><small style="color:var(--mut)">${fmt(x.done_at)}</small></div><input type=checkbox class=earn-chk ${earnSel.has(x.id)?'checked':''} onchange="toggleEarnSel(${x.id},this.checked)"></div>`).join('')||'<small>Finish a chore with before and after photos to earn credits</small>'}</div>`}
 function vLeaders(){const max=Math.max(1,...leaders.map(x=>x.n)),med=['🥇','🥈','🥉'];return `<header><h1>Leaderboard</h1></header><div class=row>${[['today','Today'],['week','Last 7 days'],['month','This month'],['all','All time']].map(([r,l])=>`<div class="chip ${range==r?'on':''}" onclick="range='${r}';load()">${l}</div>`).join('')}</div>${leaders.map((u,i)=>`<div class="card top"><div class=rk>${(u.n&&med[i])||i+1}</div><div class=m><b>${esc(u.name)}${u.id==S.id?' (you)':''}${u.s?` 🔥${u.s}`:''}</b><div class=pb><i style="width:${u.n/max*100}%"></i></div></div><b class=cnt>${u.n}</b></div>`).join('')||'<div class=empty>No data yet</div>'}`}
-function vSettings(){const seg=(k,o)=>`<div class=seg>${o.map(([v,l])=>`<button class="${CS[k]===v?'on pending':''}" onclick='setCS("${k}",${JSON.stringify(v)})'>${l}</button>`).join('')}</div>`;return `<header><h1>Settings</h1></header><div class=set style="margin-top:12px"><b>💾 Smart Cache</b><br><small style="color:var(--mut)">${cacheStatusText()}</small><div style="display:flex;gap:8px;margin-top:8px"><button class=g style="flex:1" onclick="forceFullSync()">↻ Sync everything</button><button class=g style="flex:1" onclick="clearFullCache()">Clear cache</button></div><small style="color:var(--mut)">Opens instantly from saved data, then only the part you're on updates in the background. Other parts sync quietly after.</small></div><div class=set><h3>Account</h3><small>Signed in as ${esc(S.name||'')}</small><input id=dn value="${esc(S.name||'')}" maxlength=30><button onclick="saveName()">Save name</button><button class=g onclick="pickPhoto('avatar')">🖼 Change picture</button><button class=g onclick="logout()">Log out</button></div><div class=set><h3>Appearance</h3>${seg('theme',[['dark','Dark'],['light','Light']])}<small>App background color</small><div style="display:flex;gap:10px;margin-top:8px"><input type=color value="${esc(CS.wallpaper||'#0f1115')}" onchange="setCS('wallpaper',this.value)" style="height:48px;max-width:100px;margin:0"><button class=g onclick="resetBg()">↺ Reset background</button></div></div><div class=set><h3>Time format</h3>${seg('h24',[[false,'12-hour'],[true,'24-hour']])}</div><div class=set><h3>New chores start as</h3>${seg('def',[['later','Later'],['pending','Pending']])}</div><div class=set><h3>Auto-refresh</h3>${seg('sec',[[10,'10 sec'],[20,'20 sec'],[60,'1 min']])}</div><div class=set><h3>📲 Phone notifications</h3><small>Get incoming-call alerts via ntfy. Install ntfy and subscribe to this private topic.</small><input readonly value="${esc(pushTopic||'loading…')}" onclick="this.select()"><br><button onclick="pushTest()">Send test</button></div><div class=set><h3>Cloud storage</h3><small>${usage?`Photos ${Math.round(usage.files/MB)} of 1024 MB · Database ${Math.round(usage.db/MB)} of 500 MB`:'Checking…'}</small><br><button class=g onclick="cleanupView()">Free up space…</button></div><div class=set><h3>⏰ My AI Reminders</h3><small>Created when you tell Groq AI “remind me to…”</small><div id=remList></div><button class=g onclick="showReminders()">View reminders</button></div><p class=note>Chorely v10.2.9 + V23 (Quests 📋 · Groq Memory 🧠 · Limit-proof AI Images) (Limit-proof AI Images 🎨 · Slider / Edit / Pin / Search / Smart AI / Human Typing)<br>Made by Jayson. LC PHILIPPINES</p>`}
+function vSettings(){const seg=(k,o)=>`<div class=seg>${o.map(([v,l])=>`<button class="${CS[k]===v?'on pending':''}" onclick='setCS("${k}",${JSON.stringify(v)})'>${l}</button>`).join('')}</div>`;return `<header><h1>Settings</h1></header><div class=set style="margin-top:12px"><b>💾 Smart Cache</b><br><small style="color:var(--mut)">${cacheStatusText()}</small><div style="display:flex;gap:8px;margin-top:8px"><button class=g style="flex:1" onclick="forceFullSync()">↻ Sync everything</button><button class=g style="flex:1" onclick="clearFullCache()">Clear cache</button></div><small style="color:var(--mut)">Opens instantly from saved data, then only the part you're on updates in the background. Other parts sync quietly after.</small></div><div class=set><h3>Account</h3><small>Signed in as ${esc(S.name||'')}</small><input id=dn value="${esc(S.name||'')}" maxlength=30><button onclick="saveName()">Save name</button><button class=g onclick="pickPhoto('avatar')">🖼 Change picture</button><button class=g onclick="logout()">Log out</button></div><div class=set><h3>Appearance</h3>${seg('theme',[['dark','Dark'],['light','Light']])}<small>App background color</small><div style="display:flex;gap:10px;margin-top:8px"><input type=color value="${esc(CS.wallpaper||'#0f1115')}" onchange="setCS('wallpaper',this.value)" style="height:48px;max-width:100px;margin:0"><button class=g onclick="resetBg()">↺ Reset background</button></div></div><div class=set><h3>Time format</h3>${seg('h24',[[false,'12-hour'],[true,'24-hour']])}</div><div class=set><h3>New chores start as</h3>${seg('def',[['later','Later'],['pending','Pending']])}</div><div class=set><h3>Auto-refresh</h3>${seg('sec',[[10,'10 sec'],[20,'20 sec'],[60,'1 min']])}</div><div class=set><h3>📲 Phone notifications</h3><small>Get incoming-call alerts via ntfy. Install ntfy and subscribe to this private topic.</small><input readonly value="${esc(pushTopic||'loading…')}" onclick="this.select()"><br><button onclick="pushTest()">Send test</button></div><div class=set><h3>Cloud storage</h3><small>${usage?`Photos ${Math.round(usage.files/MB)} of 1024 MB · Database ${Math.round(usage.db/MB)} of 500 MB`:'Checking…'}</small><br><button class=g onclick="cleanupView()">Free up space…</button></div><div class=set><h3>⏰ My AI Reminders</h3><small>Created when you tell Groq AI “remind me to…”</small><div id=remList></div><button class=g onclick="showReminders()">View reminders</button></div><p class=note>Chorely v10.3.8 + V27 (Wallet ledger - credits never revert) (Scratch 🎫 5-10 · Keep playing) (Quests 📋 · Groq Memory 🧠 · Limit-proof AI Images) (Limit-proof AI Images 🎨 · Slider / Edit / Pin / Search / Smart AI / Human Typing)<br>Made by Jayson. LC PHILIPPINES</p>`}
 function setCS(k,v){CS[k]=v;saveCS();if(k=='sec')start();render()}
 function resetBg(){CS.wallpaper=null;saveCS();render()}
 function clearPh(){Object.values(ph).forEach(u=>URL.revokeObjectURL(u));ph={};alert('Cache cleared')}
@@ -483,7 +830,7 @@ const nmOf=id=>(users.find(u=>u.id==id)||{}).name||(id==='ai-groq'?'Groq AI':'?'
 const pct=()=>usage?Math.max(usage.files/(1024*MB),usage.db/(500*MB)):0;
 const online=id=>{if(id==S.id||id==='ai-groq')return true;const u=users.find(x=>x.id==id);return !!(u&&u.last_seen&&Date.now()-new Date(u.last_seen)<75000)};
 function av(id,z=42){if(id==='ai-groq'){return `<div class=aw style="width:${z}px;height:${z}px"><div class=av style="width:100%;height:100%;background:var(--ac);display:grid;place-items:center;font-size:16px">🤖</div><i class="pd on"></i></div>`}const u=users.find(x=>x.id==id)||{name:'?'},hue=parseInt(String(id).slice(0,6),16)%360;return `<div class=aw onclick="event.stopPropagation();profile('${id}')" style="width:${z}px;height:${z}px"><div class=av style="width:100%;height:100%;background:hsl(${hue} 60% 45%);overflow:hidden">${u.avatar_path?`<img data-p="${esc(u.avatar_path)}" style="width:100%;height:100%;object-fit:cover">`:esc((u.name||'?')[0].toUpperCase())}</div><i class="pd ${online(id)?'on':''}"></i></div>`}
-async function loadExtra(){const q=[db('/rest/v1/wallets?select=*'),db('/rest/v1/notifs?select=id,body,read,created_at&order=created_at.desc&limit=15'),db('/rest/v1/locations?select=user_id,lat,lng,updated_at')];q.push(db(`/rest/v1/tasks?select=*&or=(scheduled.eq.true,created_day.eq.${local()})&order=created_at.desc&limit=500`));q.push(db(`/rest/v1/chores?select=id,title,credits,done_at,before_path,photo_path&owner=eq.${S.id}&status=eq.done&credits=gt.0&done_at.gte.${encodeURIComponent(monthStartISO())}&order=done_at.desc&limit=200`));if(tab=='settings')q.push(db('/rest/v1/push_topics?select=topic'));else q.push(Promise.resolve(null));q.push(db('/rest/v1/convs?select=id,title,is_group,members(user_id)&order=id.desc&limit=200'),db('/rest/v1/msgs?select=conv_id,sender,body,created_at&order=created_at.desc&limit=200'),db('/rest/v1/alerts?select=id,body,ends_at,created_at&order=created_at.desc&limit=50'),chat&&chat!==AI_ID?db(`/rest/v1/msgs?select=id,sender,body,images,created_at&conv_id=eq.${chat}&order=created_at.desc&limit=150`):Promise.resolve(null),chat&&chat!==AI_ID?db(`/rest/v1/calls?select=id,conv_id,started_by,created_at,ended_at&conv_id=eq.${chat}&ended_at=is.null&order=created_at.desc&limit=1`):Promise.resolve(null));const r=await Promise.all(q);if(Array.isArray(r[0])&&r[0].length){W={};r[0].forEach(x=>W[x.user_id]=x);}notifs=r[1];locs={};(r[2]||[]).forEach(x=>{locs[x.user_id]=x});const un=notifs.filter(n=>!n.read).length;if(lastUn!==null&&un>lastUn){navigator.vibrate&&navigator.vibrate(200);toast(notifs.find(n=>!n.read).body)}lastUn=un;tasks=reconcileTasksWithServer(r[3]||[]);await pruneExpiredTaskSched();(tasks||[]).forEach(t=>maybeAutoChoreForTask(t));cacheAt.tasks=Date.now();if(tab=='settings')pushTopic=(r[5]&&r[5][0]&&r[5][0].topic)||'';earn=r[4]||[];cacheAt.earn=Date.now();if(Array.isArray(r[6])&&r[6].length)convs=r[6];cacheAt.convs=Date.now();lastM={};(r[7]||[]).forEach(x=>{if(!lastM[x.conv_id])lastM[x.conv_id]=x});cacheAt.lastM=Date.now();alertsL=r[8]||[];if(true){activeCall=null;if(chat===AI_ID){chatMsgs=applyLocalReactions(JSON.parse(localStorage.getItem('chorely_ai_msgs_'+AI_ID)||'[]'), AI_ID);}else if(chat){const _oldLocal=JSON.parse(localStorage.getItem('chorely_ai_msgs_'+chat)||'[]');if(_oldLocal.length){const toPost=[..._oldLocal];localStorage.removeItem('chorely_ai_msgs_'+chat);(async()=>{for(const om of toPost){try{await db('/rest/v1/msgs',{m:'POST',b:{conv_id:chat,body:om.body}})}catch{}}load()})()}const localAi=[];const baseMsgs=applyLocalReactions(r[9]||[], chat);chatMsgs=sortMsgs([...baseMsgs,...localAi]);if(chat)msgsByConv[String(chat)]=sortMsgs(chatMsgs);if(chatMsgs.length)markChatSeen(chat);const candidate=(r[10]&&r[10][0])||null;if(candidate){try{const participants=await db(`/rest/v1/call_participants?select=user_id,joined_at,left_at&call_id=eq.${candidate.id}&left_at=is.null`);const other=participants.filter(x=>x.user_id!==S.id);if(other.some(x=>online(x.user_id)))activeCall=candidate}catch{activeCall=null}}}}}
+async function loadExtra(){const q=[db('/rest/v1/wallets?select=*'),db('/rest/v1/notifs?select=id,body,read,created_at&order=created_at.desc&limit=15'),db('/rest/v1/locations?select=user_id,lat,lng,updated_at')];q.push(db(`/rest/v1/tasks?select=*&or=(scheduled.eq.true,created_day.eq.${local()})&order=created_at.desc&limit=500`));q.push(db(`/rest/v1/chores?select=id,title,credits,done_at,before_path,photo_path&owner=eq.${S.id}&status=eq.done&credits=gt.0&done_at.gte.${encodeURIComponent(monthStartISO())}&order=done_at.desc&limit=200`));if(tab=='settings')q.push(db('/rest/v1/push_topics?select=topic'));else q.push(Promise.resolve(null));q.push(db('/rest/v1/convs?select=id,title,is_group,members(user_id)&order=id.desc&limit=200'),db('/rest/v1/msgs?select=conv_id,sender,body,created_at&order=created_at.desc&limit=200'),db('/rest/v1/alerts?select=id,body,ends_at,created_at&order=created_at.desc&limit=50'),chat&&chat!==AI_ID?db(`/rest/v1/msgs?select=id,sender,body,images,created_at&conv_id=eq.${chat}&order=created_at.desc&limit=150`):Promise.resolve(null),chat&&chat!==AI_ID?db(`/rest/v1/calls?select=id,conv_id,started_by,created_at,ended_at&conv_id=eq.${chat}&ended_at=is.null&order=created_at.desc&limit=1`):Promise.resolve(null));const r=await Promise.all(q);if(Array.isArray(r[0])&&r[0].length){W={};r[0].forEach(x=>W[x.user_id]=x); applyMyWalletToW();}notifs=r[1];locs={};(r[2]||[]).forEach(x=>{locs[x.user_id]=x});const un=notifs.filter(n=>!n.read).length;if(lastUn!==null&&un>lastUn){navigator.vibrate&&navigator.vibrate(200);toast(notifs.find(n=>!n.read).body)}lastUn=un;tasks=reconcileTasksWithServer(r[3]||[]);await pruneExpiredTaskSched();(tasks||[]).forEach(t=>maybeAutoChoreForTask(t));cacheAt.tasks=Date.now();if(tab=='settings')pushTopic=(r[5]&&r[5][0]&&r[5][0].topic)||'';earn=r[4]||[];cacheAt.earn=Date.now();if(Array.isArray(r[6])&&r[6].length)convs=r[6];cacheAt.convs=Date.now();lastM={};(r[7]||[]).forEach(x=>{if(!lastM[x.conv_id])lastM[x.conv_id]=x});cacheAt.lastM=Date.now();alertsL=r[8]||[];if(true){activeCall=null;if(chat===AI_ID){chatMsgs=applyLocalReactions(JSON.parse(localStorage.getItem('chorely_ai_msgs_'+AI_ID)||'[]'), AI_ID);}else if(chat){const _oldLocal=JSON.parse(localStorage.getItem('chorely_ai_msgs_'+chat)||'[]');if(_oldLocal.length){const toPost=[..._oldLocal];localStorage.removeItem('chorely_ai_msgs_'+chat);(async()=>{for(const om of toPost){try{await db('/rest/v1/msgs',{m:'POST',b:{conv_id:chat,body:om.body}})}catch{}}load()})()}const localAi=[];const baseMsgs=applyLocalReactions(r[9]||[], chat);chatMsgs=sortMsgs([...baseMsgs,...localAi]);if(chat)msgsByConv[String(chat)]=sortMsgs(chatMsgs);if(chatMsgs.length)markChatSeen(chat);const candidate=(r[10]&&r[10][0])||null;if(candidate){try{const participants=await db(`/rest/v1/call_participants?select=user_id,joined_at,left_at&call_id=eq.${candidate.id}&left_at=is.null`);const other=participants.filter(x=>x.user_id!==S.id);if(other.some(x=>online(x.user_id)))activeCall=candidate}catch{activeCall=null}}}}}
 const seenKey=cid=>`chorely_seen_${cid}`;
 // --- FIX: reactions must persist for AI messages too ---
 function applyLocalReactions(list, convId){
@@ -575,7 +922,7 @@ function fullCacheRead(){try{const c=JSON.parse(localStorage.getItem(FULL_CACHE_
 function fullCacheWrite(){try{const cur=fullCacheRead()||{v:3,parts:{}};cur.v=3;cur.at=Date.now();cur.parts.users={at:Date.now(),rows:users.slice(0,1000)};cur.parts.choresAll={at:cacheAt.choresAll||Date.now(),rows:choresAll.slice(0,2000)};cur.parts.tasks={at:cacheAt.tasks||Date.now(),rows:(tasks||[]).slice(0,1000)};cur.parts.convs={at:cacheAt.convs||Date.now(),rows:(convs||[]).slice(0,500)};cur.parts.lastM={at:cacheAt.lastM||Date.now(),rows:Object.values(lastM||{})};cur.parts.wallets={at:cacheAt.wallets||Date.now(),rows:Object.values(W||{})};cur.parts.hearts={at:Date.now(),rows:Object.entries(hearts||{}).map(([k,v])=>({id:k,...v}))};cur.parts.comments={at:Date.now(),rows:Object.entries(cms||{}).flatMap(([k,arr])=>(arr||[]).map(x=>({...x,chore_id:k})))};cur.parts.days={at:Date.now(),rows:Object.entries(days||{}).map(([k,v])=>({id:k,...v}))};cur.parts.earn={at:cacheAt.earn||Date.now(),rows:(typeof earn!=='undefined'?earn:[]).slice(0,200)};cur.parts.notifs={at:cacheAt.notifs||Date.now(),rows:(typeof notifs!=='undefined'?notifs:[]).slice(0,50)};cur.parts.alerts={at:cacheAt.alerts||Date.now(),rows:(typeof alertsL!=='undefined'?alertsL:[]).slice(0,50)};cur.parts.leaders={at:cacheAt.leaders||Date.now(),rows:(typeof leaders!=='undefined'?leaders:[]).slice(0,100)};const prunedMsgs={};Object.keys(msgsByConv||{}).forEach(cid=>{prunedMsgs[cid]=sortMsgs(msgsByConv[cid]||[]).slice(-150)});cur.parts.msgsByConv={at:Date.now(),rows:prunedMsgs};cur.parts.meta={at:Date.now(),rows:[{id:'meta',chat:chat||null,date:date||null,tab:tab||null}]};localStorage.setItem(FULL_CACHE_KEY,JSON.stringify(cur));}catch(e){try{const cur=fullCacheRead()||{v:3,parts:{}};cur.parts.msgsByConv={at:Date.now(),rows:{}};localStorage.setItem(FULL_CACHE_KEY,JSON.stringify(cur));}catch{}}}
 function saveFullCache(){try{if(Array.isArray(chores)&&chores.length)choresAll=dedupeChores([...(choresAll||[]),...chores]);if(Array.isArray(choresAll))choresAll=dedupeChores(choresAll);if(Array.isArray(tasks))tasks=dedupeTasks(tasks);if(chat&&Array.isArray(chatMsgs)&&chatMsgs.length)msgsByConv[String(chat)]=mergeMsgs(msgsByConv[String(chat)]||[],chatMsgs);}catch{}fullCacheWrite();}
 function saveFastCache(){saveFullCache();}
-function restoreFullCache(){try{const c=fullCacheRead();if(!c)return false;const p=c.parts||{};if(p.users&&Array.isArray(p.users.rows))users=p.users.rows;if(p.choresAll&&Array.isArray(p.choresAll.rows))choresAll=p.choresAll.rows;if(p.tasks&&Array.isArray(p.tasks.rows))tasks=p.tasks.rows;if(p.convs&&Array.isArray(p.convs.rows))convs=p.convs.rows;if(p.lastM&&Array.isArray(p.lastM.rows)){lastM={};p.lastM.rows.forEach(x=>{if(x)lastM[x.conv_id]=x});}if(p.wallets&&Array.isArray(p.wallets.rows)){W={};p.wallets.rows.forEach(x=>{if(x&&x.user_id)W[x.user_id]=x});}if(p.hearts&&Array.isArray(p.hearts.rows)){hearts={};p.hearts.rows.forEach(x=>{if(x)hearts[x.id]={n:x.n||0,mine:!!x.mine}});}if(p.comments&&Array.isArray(p.comments.rows)){cms={};p.comments.rows.forEach(x=>{if(!x)return;(cms[x.chore_id]||(cms[x.chore_id]=[])).push(x)});}if(p.days&&Array.isArray(p.days.rows)){days={};p.days.rows.forEach(x=>{if(x)days[x.id]={total:x.total||0,done:x.done||0}});}if(p.earn&&Array.isArray(p.earn.rows))earn=p.earn.rows;if(p.notifs&&Array.isArray(p.notifs.rows))notifs=p.notifs.rows;if(p.alerts&&Array.isArray(p.alerts.rows))alertsL=p.alerts.rows;if(p.leaders&&Array.isArray(p.leaders.rows))leaders=p.leaders.rows;if(p.msgsByConv&&p.msgsByConv.rows&&typeof p.msgsByConv.rows==='object'){msgsByConv=p.msgsByConv.rows;Object.keys(msgsByConv).forEach(cid=>{msgsByConv[cid]=sortMsgs(msgsByConv[cid]||[]);});}Object.keys(p).forEach(k=>{if(p[k]&&p[k].at)cacheAt[k]=p[k].at;});if(p.meta&&p.meta.rows&&p.meta.rows[0]&&p.meta.rows[0].chat!=null&&chat==null)chat=p.meta.rows[0].chat;if(Array.isArray(choresAll))choresAll=dedupeChores(choresAll);if(Array.isArray(tasks))tasks=dedupeTasks(tasks);if(Array.isArray(choresAll)&&choresAll.length)chores=dedupeChores(choresAll.filter(x=>String(x.due_date||'').slice(0,10)===date));else if(Array.isArray(chores)){chores=dedupeChores(chores);}pruneExpiredChoreSched();if(chat&&msgsByConv[String(chat)])chatMsgs=sortMsgs(msgsByConv[String(chat)]);return true;}catch{return false;}}
+function restoreFullCache(){try{const c=fullCacheRead();if(!c)return false;const p=c.parts||{};if(p.users&&Array.isArray(p.users.rows))users=p.users.rows;if(p.choresAll&&Array.isArray(p.choresAll.rows))choresAll=p.choresAll.rows;if(p.tasks&&Array.isArray(p.tasks.rows))tasks=p.tasks.rows;if(p.convs&&Array.isArray(p.convs.rows))convs=p.convs.rows;if(p.lastM&&Array.isArray(p.lastM.rows)){lastM={};p.lastM.rows.forEach(x=>{if(x)lastM[x.conv_id]=x});}if(p.wallets&&Array.isArray(p.wallets.rows)){W={};p.wallets.rows.forEach(x=>{if(x&&x.user_id)W[x.user_id]=x}); applyMyWalletToW();}if(p.hearts&&Array.isArray(p.hearts.rows)){hearts={};p.hearts.rows.forEach(x=>{if(x)hearts[x.id]={n:x.n||0,mine:!!x.mine}});}if(p.comments&&Array.isArray(p.comments.rows)){cms={};p.comments.rows.forEach(x=>{if(!x)return;(cms[x.chore_id]||(cms[x.chore_id]=[])).push(x)});}if(p.days&&Array.isArray(p.days.rows)){days={};p.days.rows.forEach(x=>{if(x)days[x.id]={total:x.total||0,done:x.done||0}});}if(p.earn&&Array.isArray(p.earn.rows))earn=p.earn.rows;if(p.notifs&&Array.isArray(p.notifs.rows))notifs=p.notifs.rows;if(p.alerts&&Array.isArray(p.alerts.rows))alertsL=p.alerts.rows;if(p.leaders&&Array.isArray(p.leaders.rows))leaders=p.leaders.rows;if(p.msgsByConv&&p.msgsByConv.rows&&typeof p.msgsByConv.rows==='object'){msgsByConv=p.msgsByConv.rows;Object.keys(msgsByConv).forEach(cid=>{msgsByConv[cid]=sortMsgs(msgsByConv[cid]||[]);});}Object.keys(p).forEach(k=>{if(p[k]&&p[k].at)cacheAt[k]=p[k].at;});if(p.meta&&p.meta.rows&&p.meta.rows[0]&&p.meta.rows[0].chat!=null&&chat==null)chat=p.meta.rows[0].chat;if(Array.isArray(choresAll))choresAll=dedupeChores(choresAll);if(Array.isArray(tasks))tasks=dedupeTasks(tasks);if(Array.isArray(choresAll)&&choresAll.length)chores=dedupeChores(choresAll.filter(x=>String(x.due_date||'').slice(0,10)===date));else if(Array.isArray(chores)){chores=dedupeChores(chores);}pruneExpiredChoreSched();if(chat&&msgsByConv[String(chat)])chatMsgs=sortMsgs(msgsByConv[String(chat)]);return true;}catch{return false;}}
 function restoreFastCache(){return restoreFullCache();}
 function applyCachedChoresForDate(){try{chores=dedupeChores((choresAll||[]).filter(x=>String(x.due_date||'').slice(0,10)===date));}catch{}}
 function cacheStatusText(){try{const nCh=(choresAll||[]).length,nT=(tasks||[]).length,nC=(convs||[]).length,nM=Object.values(msgsByConv||{}).reduce((a,arr)=>a+(arr||[]).length,0);const last=Math.max(0,...Object.values(cacheAt||{}));const when=last?fmt(new Date(last).toISOString()):'never';return `${nCh} chores • ${nT} tasks • ${nC} chats • ${nM} messages saved • Last sync ${when}${pendingCountText()}`;}catch{return 'Cache ready';}}
@@ -703,7 +1050,7 @@ LEADERBOARD: ${leadersTxt}
 MY CREDITS: ${wallet.credits} credits (≈ ₱${(wallet.credits/15).toFixed(2)})
 TASKS FOR THIS DATE:
 ${tasksTxt}
-Rules: answer from the lists above. you can answer unrelated request but tell the user to ask about these topics after. If the user asked about a date, use exactly that date — default is today when no date is given. Never invent chores, dates, or credits. If there are no chores on that date, say so plainly. If user asks "what chores do I have", list MY CHORES FOR THIS DATE. If "who did most", use LEADERBOARD. If user says "remind me to X tomorrow / later", reply with a clear confirmation like "Got it — I'll remind you: X" and also create a local reminder. Keep answers short, friendly, Taglish ok. User question: ${q}`;
+Rules: answer from the lists above. you can answer to unrelated request but tell the user to ask more about the given topics. If the user asked about a date, use exactly that date — default is today when no date is given. Never invent chores, dates, or credits. If there are no chores on that date, say so plainly. If user asks "what chores do I have", list MY CHORES FOR THIS DATE. If "who did most", use LEADERBOARD. If user says "remind me to X tomorrow / later", reply with a clear confirmation like "Got it — I'll remind you: X" and also create a local reminder. Keep answers short, friendly, Taglish ok. User question: ${q}`;
 }
 function maybeCreateReminderFromAI(q){
   const m=q.match(/remind me to (.+?)( tomorrow| later| tonight| today|$)/i);
@@ -1073,7 +1420,7 @@ function startLocWatch(){if(locWatch!=null)navigator.geolocation.clearWatch(locW
 function resumeLocShare(){if(shareLoc&&S.access&&navigator.geolocation)startLocWatch()}
 function showReminders(){ const arr=JSON.parse(localStorage.getItem('chorely_reminders')||'[]'); $('#shc').innerHTML=`<h2>⏰ Reminders</h2>${arr.map(r=>`<div class=nf>${esc(r.text)}<br><small>${esc(r.when)} · ${fmt(r.created)}</small></div>`).join('')||'<div class=empty>No reminders yet. Tell Groq AI: remind me to sweep tomorrow</div>'}<button class=g style="width:100%;margin-top:12px" onclick="closeSh()">Close</button>`; $('#sh').classList.add('show'); }
 function walletView(){const w=W[S.id]||{credits:0,screen_seconds:0};$('#shc').innerHTML=`<h2>👛 My wallet</h2><div class=set style="margin:10px 0"><h3>${w.credits} credits</h3><small>≈ ₱${(w.credits/MR).toFixed(2)} (${MR} credits = ₱1).</small></div><div class=set style="margin:10px 0"><h3>⏳ Screen time: <span data-cd="${S.id}">${fmtDur(leftSec(w))}</span></h3></div><h3 style="margin-top:12px">Cash out</h3><input id=ca type=number min=1 placeholder="Credits to cash out"><div class=seg><button class=g onclick="$('#ca').value=${w.credits}">All</button></div><div style="display:flex;gap:8px;margin-top:12px"><button style="flex:1" onclick="cash('screen')">Screen time</button><button style="flex:1;background:var(--ok);color:#000" onclick="cash('money')">Money (₱)</button></div><button class=g style="width:100%;margin-top:12px" onclick="closeSh()">Close</button>`;$('#sh').classList.add('show')}
-async function cash(k){const a=parseInt($('#ca').value),w=W[S.id]||{credits:0};if(!a||a<1)return alert('Enter an amount');if(a>w.credits)return alert('Not enough credits');if(!confirm(k=='money'?`Cash out ${a} credits = ₱${(a/MR).toFixed(2)}?`:`Convert ${a} credits to ${fmtDur(a*105)} of screen time?`))return;try{await rpc('cash_out',{kind:k,amount:a});alert('Done!');closeSh();load()}catch(e){alert('Could not cash out: '+(e.t||''))}}
+async function cash(k){const a=parseInt($('#ca').value),w=W[S.id]||{credits:0};if(!a||a<1)return alert('Enter an amount');if(a>w.credits)return alert('Not enough credits');if(!confirm(k=='money'?`Cash out ${a} credits = ₱${(a/MR).toFixed(2)}?`:`Convert ${a} credits to ${fmtDur(a*105)} of screen time?`))return;try{await rpc('cash_out',{kind:k,amount:a}); try{ const _wr=await db('/rest/v1/wallets?select=*&user_id=eq.'+S.id); if(_wr&&_wr[0]){ saveWalletBaseline(_wr[0].credits); saveWalletLedger([]); applyMyWalletToW(); } else { saveWalletLedger([]); saveWalletBaseline(myWalletCredits()-a); } }catch{ saveWalletLedger([]); } alert('Done!');closeSh();load()}catch(e){alert('Could not cash out: '+(e.t||''))}}
 function warn(){return pct()>=.8?`<div class=warn>⚠ Cloud storage is ${Math.round(pct()*100)}% full.<br><button class=g style="margin-top:8px" onclick="cleanupView()">Delete old data…</button></div>`:''}
 async function checkStorage(){try{usage=await rpc('storage_usage',{})}catch{}}
 function cleanupView(){$('#shc').innerHTML=`<h2>Free up space</h2><small style="color:var(--mut)">Deletes YOUR old chores, photos and messages.</small><div class=pk>${[30,60,90].map(d=>`<button onclick="cleanup(${d})">Older than ${d} days</button>`).join('')}</div><button class=g style="width:100%;margin-top:14px" onclick="closeSh()">Cancel</button>`;$('#sh').classList.add('show')}
