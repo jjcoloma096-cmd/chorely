@@ -1366,7 +1366,25 @@ async function sendAIImageToChat(prompt, url){
   toast('🎨 Image sent'); load();
 }
 
-async function queryGroqAI(promptText,convId,opts={}){const apiKey="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";const useMemory=opts.useMemory!==false&&!!convId;let _msgs;if(useMemory){const hist=loadGroqMem(convId);_msgs=[{role:"system",content:"You are Groq AI inside Chorely, a family chores app. You HAVE memory in this chat - remember what the user told you earlier in this conversation (names, chores, preferences, earlier questions, promises). Use it when you answer. If the user asks 'what did I tell you' or 'do you remember', recall from history. Keep answers short, friendly, Taglish ok. Never say every message is new."},...hist.map(m=>({role:m.role,content:m.content})),{role:"user",content:promptText}];}else{_msgs=[{role:"user",content:promptText}];}try{const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Authorization":`Bearer ${apiKey}`,"Content-Type":"application/json"},body:JSON.stringify({model:"openai/gpt-oss-120b",messages:_msgs})});if(r.status===429){ return "⏳ Groq limit reached lol — too many chats at once. Wait 30 seconds then send again, I\'ll be back. In the meantime your chores + credits still work."; }const data=await r.json();if(data&&data.choices&&data.choices[0]&&data.choices[0].message)return data.choices[0].message.content;if(data&&data.error){ if(String(data.error.message||'').toLowerCase().includes('rate')||String(data.error.code||'').includes('429')) return "⏳ Groq limit reached — wait 30s then try again."; return "Groq Error: "+(data.error.message||JSON.stringify(data.error)); }return "No response from Groq AI."}catch(e){return "Error connecting to Groq AI: "+e.message}}
+async function queryGroqAI(promptText,convId,opts={}){
+  const apiKey = (typeof getGroqKey==='function' ? getGroqKey() : '');
+  const groqUrl = (typeof getGroqUrl==='function' ? getGroqUrl() : 'https://api.groq.com/openai/v1/chat/completions');
+  if(!apiKey){ return "Groq key missing — check config.js vault."; }
+  const useMemory=opts.useMemory!==false&&!!convId;
+  let _msgs;
+  if(useMemory){
+    const hist=loadGroqMem(convId);
+    _msgs=[{role:"system",content:"You are Groq AI inside Chorely, a family chores app. You HAVE memory in this chat - remember what the user told you earlier in this conversation (names, chores, preferences, earlier questions, promises). Use it when you answer. If the user asks 'what did I tell you' or 'do you remember', recall from history. Keep answers short, friendly, Taglish ok. Never say every message is new."},...hist.map(m=>({role:m.role,content:m.content})),{role:"user",content:promptText}];
+  }else{ _msgs=[{role:"user",content:promptText}]; }
+  try{
+    const r=await fetch(groqUrl,{method:"POST",headers:{"Authorization":`Bearer ${apiKey}`,"Content-Type":"application/json"},body:JSON.stringify({model:"openai/gpt-oss-120b",messages:_msgs})});
+    if(r.status===429){ return "⏳ Groq limit reached lol — too many chats at once. Wait 30 seconds then send again, I'll be back. In the meantime your chores + credits still work."; }
+    const data=await r.json();
+    if(data&&data.choices&&data.choices[0]&&data.choices[0].message) return data.choices[0].message.content;
+    if(data&&data.error){ if(String(data.error.message||'').toLowerCase().includes('rate')||String(data.error.code||'').includes('429')) return "⏳ Groq limit reached — wait 30s then try again."; return "Groq Error: "+(data.error.message||JSON.stringify(data.error)); }
+    return "No response from Groq AI.";
+  }catch(e){ return "Error connecting to Groq AI: "+e.message; }
+}
 
 async function sendM(){
   const el=$('#mi'),b=el.value.trim(); if(!b&&!pend.length) return; el.value=''; el.blur();
